@@ -1,0 +1,16 @@
+<h1>Dashboard</h1>
+<p class="subtitle">{{ total() }} total referrals</p>
+
+<div class="cards">
+  @for (status of statuses; track status) {
+    <div class="card">
+      <div class="count">{{ counts()[status] }}</div>
+      <div class="label">{{ status }}</div>
+    </div>
+  }
+</div>
+
+<div class="actions">
+  <a routerLink="/referrals">View all referrals</a>
+  <a routerLink="/referrals/new">Create a referral</a>
+</div>

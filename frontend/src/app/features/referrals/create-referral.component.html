@@ -1,0 +1,55 @@
+<h1>Create Referral</h1>
+
+<form (ngSubmit)="submit()" #f="ngForm">
+  <label>
+    Patient
+    <select name="patientId" [(ngModel)]="form.PatientId" required>
+      <option [value]="0" disabled>Select a patient...</option>
+      @for (p of patientService.patients(); track p.PatientId) {
+        <option [value]="p.PatientId">{{ p.Name }}</option>
+      }
+    </select>
+  </label>
+
+  <label>
+    Referring Doctor
+    <select name="referringDoctorId" [(ngModel)]="form.ReferringDoctorId" required>
+      <option [value]="0" disabled>Select a referring doctor...</option>
+      @for (d of doctorService.doctors(); track d.DoctorId) {
+        <option [value]="d.DoctorId">{{ d.Name }} ({{ d.Specialty }})</option>
+      }
+    </select>
+  </label>
+
+  <label>
+    Specialist
+    <select name="specialistId" [(ngModel)]="form.SpecialistId" required>
+      <option [value]="0" disabled>Select a specialist...</option>
+      @for (d of doctorService.doctors(); track d.DoctorId) {
+        <option [value]="d.DoctorId">{{ d.Name }} ({{ d.Specialty }})</option>
+      }
+    </select>
+  </label>
+
+  <label>
+    Priority
+    <select name="priority" [(ngModel)]="form.Priority" required>
+      @for (p of priorities; track p) {
+        <option [value]="p">{{ p }}</option>
+      }
+    </select>
+  </label>
+
+  <label>
+    Reason
+    <textarea name="reason" [(ngModel)]="form.Reason" rows="3" required></textarea>
+  </label>
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  <button type="submit" [disabled]="!f.valid || submitting()">
+    {{ submitting() ? 'Creating...' : 'Create Referral (Draft)' }}
+  </button>
+</form>

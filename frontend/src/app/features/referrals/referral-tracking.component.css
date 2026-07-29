@@ -1,0 +1,106 @@
+.filters {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filters button {
+  padding: 0.35rem 0.9rem;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.filters button.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.error {
+  color: #dc2626;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+}
+
+th {
+  color: #64748b;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.reason {
+  max-width: 220px;
+}
+
+.status {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.status-draft {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.status-submitted {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.status-accepted {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.status-rejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.status-completed {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.actions {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.actions button {
+  padding: 0.25rem 0.6rem;
+  border: none;
+  border-radius: 4px;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.actions button.danger {
+  background: #dc2626;
+}
+
+.actions a {
+  font-size: 0.8rem;
+  color: #2563eb;
+}

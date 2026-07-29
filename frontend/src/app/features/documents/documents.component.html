@@ -1,0 +1,14 @@
+<h1>Documents</h1>
+
+@if (patientId() || referralId()) {
+  <p class="subtitle">
+    @if (patientId()) { Showing documents for patient #{{ patientId() }} }
+    @if (referralId()) { Showing documents for referral #{{ referralId() }} }
+  </p>
+  <app-documents-panel [patientId]="patientId()" [referralId]="referralId()" />
+} @else {
+  <p class="empty">
+    Select a patient or referral to view its documents — e.g. from a patient's
+    detail page or a referral's tracking row.
+  </p>
+}

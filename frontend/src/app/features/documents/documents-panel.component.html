@@ -1,0 +1,22 @@
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>File Name</th>
+      <th>Uploaded</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (doc of documentService.documents(); track doc.DocumentId) {
+      <tr>
+        <td>{{ doc.Type }}</td>
+        <td>{{ doc.FileName }}</td>
+        <td>{{ doc.UploadedDate }}</td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="3">No documents found.</td>
+      </tr>
+    }
+  </tbody>
+</table>

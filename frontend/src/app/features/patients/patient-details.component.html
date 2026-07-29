@@ -1,0 +1,57 @@
+@if (patientService.selected(); as patient) {
+  <a routerLink="/patients" class="back">&larr; Back to Patients</a>
+  <h1>{{ patient.Name }}</h1>
+  <p class="meta">DOB: {{ patient.DOB }} &middot; Gender: {{ patient.Gender }}</p>
+
+  <div class="grid">
+    <section>
+      <h2>Allergies</h2>
+      @if (patient.allergies.length) {
+        <ul>
+          @for (a of patient.allergies; track a.AllergyId) {
+            <li>{{ a.Substance }} — {{ a.Severity }}</li>
+          }
+        </ul>
+      } @else {
+        <p class="empty">No known allergies.</p>
+      }
+    </section>
+
+    <section>
+      <h2>Chronic Conditions</h2>
+      @if (patient.conditions.length) {
+        <ul>
+          @for (c of patient.conditions; track c.ConditionId) {
+            <li>{{ c.Name }} (diagnosed {{ c.DiagnosedDate }})</li>
+          }
+        </ul>
+      } @else {
+        <p class="empty">No chronic conditions on record.</p>
+      }
+    </section>
+
+    <section>
+      <h2>Medications</h2>
+      @if (patient.medications.length) {
+        <ul>
+          @for (m of patient.medications; track m.MedicationId) {
+            <li>{{ m.Name }} {{ m.Dosage }} @if (!m.Active) { <em>(inactive)</em> }</li>
+          }
+        </ul>
+      } @else {
+        <p class="empty">No medications on record.</p>
+      }
+    </section>
+  </div>
+
+  <section>
+    <h2>Documents</h2>
+    <app-documents-panel [patientId]="patient.PatientId" />
+  </section>
+
+  <a class="new-referral" [routerLink]="['/referrals/new']" [queryParams]="{ patientId: patient.PatientId }">
+    + Create referral for {{ patient.Name }}
+  </a>
+} @else {
+  <p>Loading patient...</p>
+}

@@ -1,0 +1,36 @@
+<h1>Patients</h1>
+
+<div class="search-bar">
+  <input
+    type="text"
+    placeholder="Search by name..."
+    [(ngModel)]="searchTerm"
+    (keyup.enter)="onSearch()"
+  />
+  <button (click)="onSearch()">Search</button>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>DOB</th>
+      <th>Gender</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (patient of patientService.patients(); track patient.PatientId) {
+      <tr>
+        <td>{{ patient.Name }}</td>
+        <td>{{ patient.DOB }}</td>
+        <td>{{ patient.Gender }}</td>
+        <td><a [routerLink]="['/patients', patient.PatientId]">View details</a></td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="4">No patients found.</td>
+      </tr>
+    }
+  </tbody>
+</table>

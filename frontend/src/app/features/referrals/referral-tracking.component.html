@@ -1,0 +1,59 @@
+<h1>Referral Tracking</h1>
+
+<div class="filters">
+  @for (status of statusFilters; track status) {
+    <button
+      [class.active]="activeFilter() === status"
+      (click)="setFilter(status)"
+    >
+      {{ status }}
+    </button>
+  }
+</div>
+
+@if (actionError()) {
+  <p class="error">{{ actionError() }}</p>
+}
+
+<table>
+  <thead>
+    <tr>
+      <th>Patient</th>
+      <th>Referring Doctor</th>
+      <th>Specialist</th>
+      <th>Priority</th>
+      <th>Status</th>
+      <th>Reason</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (r of filteredReferrals(); track r.ReferralId) {
+      <tr>
+        <td>{{ patientName(r.PatientId) }}</td>
+        <td>{{ doctorName(r.ReferringDoctorId) }}</td>
+        <td>{{ doctorName(r.SpecialistId) }}</td>
+        <td>{{ r.Priority }}</td>
+        <td><span class="status status-{{ r.Status.toLowerCase() }}">{{ r.Status }}</span></td>
+        <td class="reason">{{ r.Reason }}</td>
+        <td class="actions">
+          @if (r.Status === 'Draft') {
+            <button (click)="submit(r)">Submit</button>
+          }
+          @if (r.Status === 'Submitted') {
+            <button (click)="accept(r)">Accept</button>
+            <button class="danger" (click)="reject(r)">Reject</button>
+          }
+          @if (r.Status === 'Accepted') {
+            <button (click)="complete(r)">Complete</button>
+          }
+          <a [routerLink]="['/documents']" [queryParams]="{ referralId: r.ReferralId }">Docs</a>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="7">No referrals in this status.</td>
+      </tr>
+    }
+  </tbody>
+</table>
