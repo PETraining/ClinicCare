@@ -1,0 +1,20 @@
+
+Intent: Insurance Prior Authorization Tracking
+
+Before scheduling a specialist appointment, check if the patient's insurance company requires prior authorization.
+ If they do, get that approval *before* the visit. If you schedule the visit without approval, 
+ the insurance will deny the claim and the clinic doesn't get paid.
+
+Who needs it:
+Clinic staff scheduling appointments and managing referrals.
+
+Why:
+Right now, staff book appointments first and find out too late that authorization was needed. 
+By then, it's too late to get approval. This feature makes authorization status visible upfront,
+ so staff see the requirement before scheduling.
+
+What it does:
+- Link patient insurance information to their record
+- Request authorization from the insurance company when needed
+- Track whether authorization is: Not Required / Pending / Approved / Denied
+- Show the status when staff view referrals and appointments
