@@ -1,1 +1,7 @@
-nsurance Eligibility & Prior Authorization Given a referral, determine whether insurance requires prior authorization before a specialist visit, and track status: Not Required / Pending / Approved / Denied. Why this matters: we're seeing denied claims because prior authorization wasn't confirmed before the visit happened — staff need this visible before the appointment, not discovered after. The solution should allow insurance information to be associated with a patient, capture authorization requests and decisions, and make the current authorization status visible wherever referrals and appointments are viewed.
+Insurance Eligibility & Prior Authorization Given a referral, 
+determine whether insurance requires prior authorization before a specialist visit, 
+and track status: Not Required / Pending / Approved / Denied. Why this matters: 
+we're seeing denied claims because prior authorization wasn't confirmed before the visit happened — staff need this visible
+ before the appointment, not discovered after. The solution should allow insurance information to be associated with a patient,
+  capture authorization requests and decisions, and make the current authorization status visible wherever referrals and appointments are viewed.
+

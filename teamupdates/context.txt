@@ -1,0 +1,79 @@
+================================================================================
+INSURANCE ELIGIBILITY & PRIOR AUTHORIZATION - CONTEXT
+================================================================================
+
+CORE CONTEXT
+------------
+
+Problem Statement:
+  - Denied claims are happening because prior authorization isn't confirmed
+    in advance
+  - Staff currently discover authorization issues AFTER appointments have
+    happened (too late)
+  - Visibility gap: no clear way to check authorization status during
+    referral/appointment planning
+
+Why It Matters (Business Impact):
+  - Revenue loss from denied claims
+  - Operational friction when claims are rejected post-visit
+  - Staff need real-time authorization status during scheduling workflow
+
+
+SOLUTION REQUIREMENTS
+---------------------
+
+The system must:
+
+1. DATA MODEL
+   - Associate insurance information with patient records
+   - Store insurance details (insurer, policy number, group number, etc.)
+
+2. AUTHORIZATION WORKFLOW
+   - Capture authorization requests (manual submission or automated)
+   - Track authorization decisions with status states:
+     * Not Required
+     * Pending
+     * Approved
+     * Denied
+
+3. VISIBILITY & INTEGRATION POINTS
+   - Display authorization status at key decision points:
+     * Referral creation screen (before booking specialist)
+     * Appointment scheduling
+     * Referral tracking/status view
+     * Patient details view
+
+
+INTEGRATION WITH CLINICCARE ARCHITECTURE
+-----------------------------------------
+
+Patient Service (8001):
+  - Store/retrieve patient insurance information
+  - Add insurance detail endpoints
+
+Referral Service (8003):
+  - Check authorization status before creating referral
+  - Link referrals to authorization records
+  - Display auth status in referral tracking
+
+Document Service (8004):
+  - Store authorization documentation (requests, approval letters, etc.)
+
+Frontend (Angular):
+  - Show authorization status badges on referral/appointment screens
+  - Display insurance information on patient details
+  - Authorization check workflow in referral creation form
+
+API Gateway (8000):
+  - Route authorization endpoints to appropriate service
+
+
+SCOPE CLARIFICATION NEEDED
+---------------------------
+- Is prior authorization checked against an external insurance API, or
+  manually entered by staff?
+- Should the system auto-request authorization, or only track staff-initiated
+  requests?
+- Which appointment types require prior authorization?
+- Should authorization status updates trigger notifications?
+================================================================================
