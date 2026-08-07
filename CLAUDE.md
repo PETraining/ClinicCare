@@ -19,9 +19,10 @@ Angular SPA (dist/app)             HTTP reverse-proxy                • Patient
 • Services in src/app/services                                       • Referral Service (8003)
 • Models/interfaces                  - /patients → patient-service   • Document Service (8004)
                                      - /doctors → doctors-service    • Notification Service (8005)
-                                     - /referrals → referral-service
+                                     - /referrals → referral-service • Prescription Service (8007)
                                      - /documents → document-service
                                      - /notifications → notification-service
+                                     - /prescriptions → prescription-service
 ```
 
 **Key architectural decisions:**
@@ -46,7 +47,7 @@ Angular SPA (dist/app)             HTTP reverse-proxy                • Patient
 ```
 
 This script:
-1. Builds and starts all 5 backend containers and the gateway with Docker Compose.
+1. Builds and starts all 6 backend containers and the gateway with Docker Compose.
 2. Waits for the gateway to become ready (polls `/api/doctors`).
 3. Starts the Angular dev server if not already running on :4200.
 4. Logs frontend output to `.run/frontend.log`.

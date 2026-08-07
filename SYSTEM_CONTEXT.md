@@ -49,23 +49,24 @@
 │    /api/referrals/*       → Referral Service (8003)                             │
 │    /api/documents/*       → Document Service (8004)                             │
 │    /api/notifications/*   → Notification Service (8005)                         │
-└─┬──────────┬──────────────┬────────────────┬──────────────────┬─────────────────┘
-  │          │              │                │                  │
-  │HTTP GET/POST/PATCH/PUT/DELETE requests (proxied)           │
-  │          │              │                │                  │
-  ▼          ▼              ▼                ▼                  ▼
- ┌──────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐ ┌──────────────────┐
- │      │ │          │ │          │ │            │ │                  │
- │8001  │ │  8002    │ │  8003    │ │  8004      │ │  8005            │
- │      │ │          │ │          │ │            │ │                  │
- └──────┘ └──────────┘ └──────────┘ └────────────┘ └──────────────────┘
-    │         │            │            │                 │
-    │         │            │            │                 │
-    ▼         ▼            ▼            ▼                 ▼
- ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐
- │Patient │ │Doctors │ │Referral│ │Document│ │Notif.  │
- │Service │ │Service │ │Service │ │Service │ │Service │
- └────────┘ └────────┘ └────────┘ └────────┘ └────────┘
+│    /api/prescriptions/*   → Prescription Service (8007)                         │
+└─┬──────────┬──────────────┬────────────────┬──────────────────┬──────────┬──────┘
+  │          │              │                │                  │          │
+  │HTTP GET/POST/PATCH/PUT/DELETE requests (proxied)           │          │
+  │          │              │                │                  │          │
+  ▼          ▼              ▼                ▼                  ▼          ▼
+ ┌──────┐ ┌──────────┐ ┌──────────┐ ┌────────────┐ ┌──────────────────┐ ┌──────────┐
+ │      │ │          │ │          │ │            │ │                  │ │          │
+ │8001  │ │  8002    │ │  8003    │ │  8004      │ │  8005            │ │  8007    │
+ │      │ │          │ │          │ │            │ │                  │ │          │
+ └──────┘ └──────────┘ └──────────┘ └────────────┘ └──────────────────┘ └──────────┘
+    │         │            │            │                 │                 │
+    │         │            │            │                 │                 │
+    ▼         ▼            ▼            ▼                 ▼                 ▼
+ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌──────────────┐
+ │Patient │ │Doctors │ │Referral│ │Document│ │Notif.  │ │Prescription  │
+ │Service │ │Service │ │Service │ │Service │ │Service │ │Service       │
+ └────────┘ └────────┘ └────────┘ └────────┘ └────────┘ └──────────────┘
 
 
 MICROSERVICES (FastAPI, SQLAlchemy, SQLite)
@@ -142,6 +143,14 @@ Each service implements the same pattern:
 - **Models:** Notification
 - **Seed Data:** Sample notifications
 - **No external dependencies**
+
+### Prescription Service (8007)
+- **Endpoints:** `GET /prescriptions`, `POST /prescriptions`, `GET /prescriptions/{id}`, `PATCH /prescriptions/{id}/status`
+- **Database:** `prescription.db`
+- **Models:** Prescription, PrescriptionLine, RefillRequest
+- **Seed Data:** Sample prescriptions with multiple medications
+- **Inter-service calls:** Calls Patient Service (8001), Doctor Service (8002), and Notification Service (8005)
+- **Key features:** Prescription lifecycle management, multi-line prescriptions, status transitions, pharmacy notifications
 
 ## Data Flow Examples
 

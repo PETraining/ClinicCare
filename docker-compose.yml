@@ -30,6 +30,19 @@ services:
     ports:
       - "8004:8004"
 
+  prescription-service:
+    build: ./services/prescription
+    ports:
+      - "8007:8007"
+    environment:
+      PATIENT_SERVICE_URL: http://patient-service:8001
+      DOCTOR_SERVICE_URL: http://doctors-service:8002
+      NOTIFICATION_SERVICE_URL: http://notification-service:8005
+    depends_on:
+      - patient-service
+      - doctors-service
+      - notification-service
+
   gateway:
     build: ./gateway
     ports:
@@ -40,9 +53,11 @@ services:
       REFERRAL_SERVICE_URL: http://referral-service:8003
       DOCUMENT_SERVICE_URL: http://document-service:8004
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
+      PRESCRIPTION_SERVICE_URL: http://prescription-service:8007
     depends_on:
       - patient-service
       - doctors-service
       - referral-service
       - document-service
       - notification-service
+      - prescription-service

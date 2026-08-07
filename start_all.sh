@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Starts the full ReferralIQ stack: all 6 backend containers (docker-compose)
+# Starts the full ReferralIQ stack: all backend services (docker-compose)
 # plus the Angular frontend (ng serve). Safe to re-run — skips the frontend
 # if it's already listening on :4200.
 set -euo pipefail
