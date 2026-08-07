@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReferralIQ System Architecture</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .diagram-wrapper {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow-x: auto;
+        }
+        .diagram-wrapper h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+        .info-box {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .info-box h3 {
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+        .info-box p {
+            color: #555;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .legend-item {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+        .legend-item strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .legend-item small {
+            color: #666;
+            line-height: 1.5;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            color: #c7254e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏥 ReferralIQ System Architecture</h1>
+
+        <!-- System Architecture Diagram -->
+        <div class="diagram-wrapper">
+            <h2>System Component Diagram</h2>
+            <div class="mermaid">
+                graph TB
+                    subgraph Client["🌐 Client Layer"]
+                        Browser["User Browser<br/>localhost:4200"]
+                    end
+
+                    subgraph Frontend["⚙️ Frontend Layer"]
+                        NG["Angular App v18.2<br/>TypeScript, RxJS<br/>Components | Services | Guards"]
+                    end
+
+                    subgraph Gateway["🚪 API Gateway"]
+                        GW["FastAPI Gateway<br/>localhost:8000<br/>Request Router | CORS | Proxying"]
+                    end
+
+                    subgraph Services["🔧 Microservices (FastAPI + SQLAlchemy)"]
+                        PS["Patient Service<br/>:8001<br/>Patients, Allergies<br/>Conditions, Meds"]
+                        DS["Doctors Service<br/>:8002<br/>Doctors, Specialties"]
+                        RS["Referral Service<br/>:8003<br/>Referrals, Status<br/>→ Calls Doctors & Notif"]
+                        DocS["Document Service<br/>:8004<br/>Documents, Files"]
+                        NS["Notification Service<br/>:8005<br/>Notifications, Alerts"]
+                    end
+
+                    subgraph Databases["💾 Data Layer (SQLite)"]
+                        PDB["patient.db"]
+                        DDB["doctor.db"]
+                        RDB["referral.db"]
+                        DocDB["document.db"]
+                        NDB["notification.db"]
+                    end
+
+                    Browser -->|HTTP REST| NG
+                    NG -->|GET/POST/PATCH<br/>/api/*| GW
+
+                    GW -->|/api/patients| PS
+                    GW -->|/api/doctors| DS
+                    GW -->|/api/referrals| RS
+                    GW -->|/api/documents| DocS
+                    GW -->|/api/notifications| NS
+
+                    PS --- PDB
+                    DS --- DDB
+                    RS --- RDB
+                    DocS --- DocDB
+                    NS --- NDB
+
+                    RS -.->|HTTP call| DS
+                    RS -.->|HTTP call| NS
+
+                    style Client fill:#e1f5fe
+                    style Frontend fill:#f3e5f5
+                    style Gateway fill:#fff3e0
+                    style Services fill:#e8f5e9
+                    style Databases fill:#fce4ec
+            </div>
+
+            <div class="info-box">
+                <h3>Key Flows</h3>
+                <p><strong>→</strong> Solid arrows = primary API requests</p>
+                <p><strong>⋯→</strong> Dotted arrows = inter-service HTTP calls</p>
+            </div>
+        </div>
+
+        <!-- Data Flow Diagram -->
+        <div class="diagram-wrapper">
+            <h2>Request Flow: Create a Referral</h2>
+            <div class="mermaid">
+                sequenceDiagram
+                    participant Browser as User<br/>Browser
+                    participant Front as Angular<br/>Frontend
+                    participant GW as API<br/>Gateway
+                    participant RefSvc as Referral<br/>Service
+                    participant DocSvc as Doctors<br/>Service
+                    participant NotifSvc as Notification<br/>Service
+                    participant DB as SQLite<br/>DB
+
+                    Browser->>Front: Fill form & submit
+                    Front->>GW: POST /api/referrals<br/>{data}
+                    GW->>RefSvc: Forward to :8003/referrals
+                    RefSvc->>RefSvc: Validate (Pydantic)
+                    RefSvc->>DocSvc: GET /doctors/{id}
+                    DocSvc->>DocSvc: Query doctors.db
+                    DocSvc-->>RefSvc: Return doctor details
+                    RefSvc->>DB: INSERT referral record
+                    DB-->>RefSvc: Confirm
+                    RefSvc->>NotifSvc: POST /send-notification
+                    NotifSvc->>DB: INSERT notification
+                    NotifSvc-->>RefSvc: OK
+                    RefSvc-->>GW: 201 Created + referral JSON
+                    GW-->>Front: Forward response
+                    Front-->>Browser: Show success message
+            </div>
+        </div>
+
+        <!-- Service Details -->
+        <div class="diagram-wrapper">
+            <h2>Service Dependency Graph</h2>
+            <div class="mermaid">
+                graph LR
+                    Front["Frontend<br/>(Angular)"]
+                    GW["API Gateway<br/>(:8000)"]
+
+                    PS["Patient Service<br/>(:8001)"]
+                    DS["Doctors Service<br/>(:8002)"]
+                    RS["Referral Service<br/>(:8003)"]
+                    DocS["Document Service<br/>(:8004)"]
+                    NS["Notification Service<br/>(:8005)"]
+
+                    Front -->|All API calls| GW
+                    GW -->|/patients| PS
+                    GW -->|/doctors| DS
+                    GW -->|/referrals| RS
+                    GW -->|/documents| DocS
+                    GW -->|/notifications| NS
+
+                    RS -->|Verify doctor| DS
+                    RS -->|Send alert| NS
+
+                    style Front fill:#f3e5f5,stroke:#667eea,stroke-width:2px
+                    style GW fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+                    style PS fill:#e8f5e9,stroke:#4caf50
+                    style DS fill:#e8f5e9,stroke:#4caf50
+                    style RS fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+                    style DocS fill:#e8f5e9,stroke:#4caf50
+                    style NS fill:#e8f5e9,stroke:#4caf50
+            </div>
+
+            <div class="info-box">
+                <h3>Independence Model</h3>
+                <p>Each service is <strong>independently deployable</strong>:</p>
+                <p>✓ Own database (SQLite file)</p>
+                <p>✓ Own port</p>
+                <p>✓ Own Docker container</p>
+                <p>⚠️ Referral Service has dependencies (calls Doctors + Notification)</p>
+            </div>
+        </div>
+
+        <!-- Technology Stack -->
+        <div class="diagram-wrapper">
+            <h2>Technology Stack</h2>
+            <div class="mermaid">
+                graph TB
+                    subgraph FrontEnd["Frontend"]
+                        NG["Angular 18.2"]
+                        TS["TypeScript 5.5"]
+                        RX["RxJS 7.8"]
+                        TEST1["Karma + Jasmine"]
+                    end
+
+                    subgraph Backend["Backend Services"]
+                        FP["FastAPI 0.115"]
+                        UV["Uvicorn 0.30.6"]
+                        SA["SQLAlchemy 2.0"]
+                        PY["Pydantic 2.9"]
+                    end
+
+                    subgraph Data["Data & Infra"]
+                        SQL["SQLite (bundled)"]
+                        DC["Docker & Compose"]
+                    end
+
+                    NG ---|Build| TS
+                    NG ---|State| RX
+                    NG ---|Testing| TEST1
+
+                    FP ---|Server| UV
+                    FP ---|ORM| SA
+                    FP ---|Validation| PY
+
+                    SA ---|Persists to| SQL
+                    DC ---|Orchestrates| Backend
+
+                    style FrontEnd fill:#f3e5f5,stroke:#667eea
+                    style Backend fill:#e8f5e9,stroke:#4caf50
+                    style Data fill:#fce4ec,stroke:#e91e63
+            </div>
+        </div>
+
+        <!-- Service Details Table -->
+        <div class="diagram-wrapper">
+            <h2>Service Details Reference</h2>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.95em;">
+                    <thead style="background: #667eea; color: white;">
+                        <tr>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Service</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Port</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Main Models</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Dependencies</th>
+                            <th style="padding: 12px; text-align: left; border: 1px solid #ddd;">Key Endpoints</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background: #f9f9f9; border: 1px solid #ddd;">
+                            <td style="padding: 12px; border: 1px solid #ddd;"><code>Patient</code></td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">8001</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Patient, Allergy, Condition, Medication</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">None</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">GET/POST /patients, GET /patients/{id}</td>
+                        </tr>
+                        <tr style="background: white; border: 1px solid #ddd;">
+                            <td style="padding: 12px; border: 1px solid #ddd;"><code>Doctors</code></td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">8002</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Doctor, Specialization</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">None</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">GET/POST /doctors, GET /doctors/{id}</td>
+                        </tr>
+                        <tr style="background: #f9f9f9; border: 1px solid #ddd;">
+                            <td style="padding: 12px; border: 1px solid #ddd;"><code>Referral</code></td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">8003</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Referral, ReferralStatus</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;"><strong>Doctors (8002)</strong>, <strong>Notification (8005)</strong></td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">GET/POST /referrals, GET /referrals/{id}</td>
+                        </tr>
+                        <tr style="background: white; border: 1px solid #ddd;">
+                            <td style="padding: 12px; border: 1px solid #ddd;"><code>Document</code></td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">8004</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Document</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">None</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">GET/POST /documents</td>
+                        </tr>
+                        <tr style="background: #f9f9f9; border: 1px solid #ddd;">
+                            <td style="padding: 12px; border: 1px solid #ddd;"><code>Notification</code></td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">8005</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">Notification</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">None</td>
+                            <td style="padding: 12px; border: 1px solid #ddd;">GET /notifications, POST /send-notification</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Startup Flow -->
+        <div class="diagram-wrapper">
+            <h2>Startup Sequence: ./start_all.sh</h2>
+            <div class="mermaid">
+                graph TD
+                    A["User runs<br/>./start_all.sh"] --> B["docker compose up -d --build"]
+                    B --> B1["Build all Dockerfiles"]
+                    B --> B2["Start all containers<br/>on internal network"]
+                    B1 --> C["Wait for API Gateway<br/>health check"]
+                    B2 --> C
+                    C --> D{Gateway<br/>ready?}
+                    D -->|No| E["Timeout after 60s<br/>Check logs"]
+                    D -->|Yes| F["Check if frontend<br/>already running :4200"]
+                    E --> END1["❌ Startup failed"]
+                    F --> G{Frontend<br/>running?}
+                    G -->|Yes| H["Keep it running"]
+                    G -->|No| I["Start ng serve<br/>nohup to .run/frontend.log"]
+                    H --> J["Wait for frontend<br/>health check"]
+                    I --> J
+                    J --> K{Frontend<br/>ready?}
+                    K -->|No| L["Timeout after 60s<br/>Check .run/frontend.log"]
+                    K -->|Yes| M["✅ All services up"]
+                    L --> END2["❌ Frontend startup failed"]
+                    M --> END3["Ready at http://localhost:4200"]
+
+                    style A fill:#667eea,color:#fff
+                    style M fill:#4caf50,color:#fff
+                    style END1 fill:#f44336,color:#fff
+                    style END2 fill:#f44336,color:#fff
+                    style END3 fill:#4caf50,color:#fff
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="diagram-wrapper">
+            <h2>Legend & Quick Reference</h2>
+            <div class="legend">
+                <div class="legend-item">
+                    <strong>Frontend</strong>
+                    <small>Angular single-page app on :4200. Auto-reloads on file changes. Communicates exclusively through API Gateway.</small>
+                </div>
+                <div class="legend-item">
+                    <strong>API Gateway</strong>
+                    <small>Reverse-proxy on :8000. Routes <code>/api/{service}/*</code> to internal services. Handles CORS for localhost:4200.</small>
+                </div>
+                <div class="legend-item">
+                    <strong>Microservices</strong>
+                    <small>Independent FastAPI apps (8001–8005). Each has own SQLite DB, models, schemas. Referral Service calls Doctors & Notification.</small>
+                </div>
+                <div class="legend-item">
+                    <strong>Docker Network</strong>
+                    <small>Internal docker-compose network. Services reach each other by hostname (e.g., <code>http://doctor-service:8002</code>).</small>
+                </div>
+                <div class="legend-item">
+                    <strong>Database</strong>
+                    <small>SQLite files (not in git). Auto-created per service. Seeded with test data on first run via <code>seed.py</code>.</small>
+                </div>
+                <div class="legend-item">
+                    <strong>Development</strong>
+                    <small>Start all: <code>./start_all.sh</code>. Stop: <code>./stop.sh</code>. Logs: <code>docker compose logs -f</code></small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical Paths -->
+        <div class="diagram-wrapper">
+            <h2>Critical Failure Points</h2>
+            <div class="mermaid">
+                graph TB
+                    FE["Frontend (port 4200)"]
+                    GW["Gateway (port 8000)"]
+                    PS["Patient Service (8001)"]
+                    RS["Referral Service (8003)"]
+                    DS["Doctors Service (8002)"]
+                    NS["Notification Service (8005)"]
+
+                    FE -->|Depends on| GW
+                    GW -->|Depends on| PS
+                    GW -->|Depends on| DS
+                    GW -->|Depends on| RS
+                    GW -->|Depends on| NS
+                    RS -->|Depends on| DS
+                    RS -->|Depends on| NS
+
+                    style FE fill:#fff9c4,stroke:#f57f17
+                    style GW fill:#ffe0b2,stroke:#ff6f00
+                    style PS fill:#c8e6c9,stroke:#2e7d32
+                    style RS fill:#ffccbc,stroke:#d84315
+                    style DS fill:#c8e6c9,stroke:#2e7d32
+                    style NS fill:#c8e6c9,stroke:#2e7d32
+            </div>
+
+            <div class="info-box">
+                <h3>⚠️ Failure Mode: Referral Service Down</h3>
+                <p>If <strong>Referral Service (8003)</strong> is down:</p>
+                <p>✗ Users cannot create/view referrals (404 on /api/referrals)</p>
+                <p>✗ Recovery: <code>docker compose restart referral-service</code></p>
+                <p style="margin-top: 10px;">Note: Referral Service requires Doctors (8002) and Notification (8005) to be healthy for new referrals to be created.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+    </script>
+</body>
+</html>
