@@ -2,8 +2,9 @@
   "agents": {
     "insurance-eligibility-validator": {
       "description": "Validates implementation of Insurance Eligibility & Prior Authorization feature",
-      "model": "claude-haiku-4-5-20251001",
-      "effort": "high"
+      "model": "Sonet",
+      "effort": "high",
+      "tools": "Read, Grep, Glob, Bash, PowerShell"
     }
   },
   "validation": {
