@@ -10,6 +10,7 @@ SERVICE_MAP = {
     "referrals": os.environ.get("REFERRAL_SERVICE_URL", "http://localhost:8003"),
     "documents": os.environ.get("DOCUMENT_SERVICE_URL", "http://localhost:8004"),
     "notifications": os.environ.get("NOTIFICATION_SERVICE_URL", "http://localhost:8005"),
+    "labs": os.environ.get("LAB_SERVICE_URL", "http://localhost:8006"),
 }
 
 app = FastAPI(title="API Gateway")

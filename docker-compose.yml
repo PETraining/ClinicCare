@@ -30,6 +30,11 @@ services:
     ports:
       - "8004:8004"
 
+  lab-service:
+    build: ./services/lab
+    ports:
+      - "8006:8006"
+
   gateway:
     build: ./gateway
     ports:
@@ -40,9 +45,11 @@ services:
       REFERRAL_SERVICE_URL: http://referral-service:8003
       DOCUMENT_SERVICE_URL: http://document-service:8004
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
+      LAB_SERVICE_URL: http://lab-service:8006
     depends_on:
       - patient-service
       - doctors-service
       - referral-service
       - document-service
       - notification-service
+      - lab-service
