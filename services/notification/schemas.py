@@ -9,6 +9,7 @@ class EventType(str, Enum):
     accepted = "Accepted"
     rejected = "Rejected"
     completed = "Completed"
+    authorization_updated = "AuthorizationUpdated"
 
 
 class NotificationBase(BaseModel):

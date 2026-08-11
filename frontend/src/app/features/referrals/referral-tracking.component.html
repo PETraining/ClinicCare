@@ -11,6 +11,17 @@
   }
 </div>
 
+<div class="filters">
+  @for (status of authStatusFilters; track status) {
+    <button
+      [class.active]="activeAuthFilter() === status"
+      (click)="setAuthFilter(status)"
+    >
+      {{ status === 'None' ? 'No Authorization' : status }}
+    </button>
+  }
+</div>
+
 @if (actionError()) {
   <p class="error">{{ actionError() }}</p>
 }
@@ -23,6 +34,7 @@
       <th>Specialist</th>
       <th>Priority</th>
       <th>Status</th>
+      <th>Authorization</th>
       <th>Reason</th>
       <th>Actions</th>
     </tr>
@@ -35,13 +47,30 @@
         <td>{{ doctorName(r.SpecialistId) }}</td>
         <td>{{ r.Priority }}</td>
         <td><span class="status status-{{ r.Status.toLowerCase() }}">{{ r.Status }}</span></td>
+        <td class="auth">
+          @if (r.authorization; as auth) {
+            <span class="auth-badge auth-{{ auth.Status.toLowerCase().replace(' ', '-') }}">{{ auth.Status }}</span>
+            @if (auth.Status === 'Pending') {
+              <div class="auth-actions">
+                <button (click)="setAuthorizationStatus(r, 'Approved')">Approve</button>
+                <button class="danger" (click)="setAuthorizationStatus(r, 'Denied')">Deny</button>
+              </div>
+            }
+          } @else {
+            <button (click)="requestAuthorization(r)">Request Authorization</button>
+          }
+        </td>
         <td class="reason">{{ r.Reason }}</td>
         <td class="actions">
           @if (r.Status === 'Draft') {
-            <button (click)="submit(r)">Submit</button>
+            <button [disabled]="!canSubmit(r)" [title]="canSubmit(r) ? '' : 'Authorization denied'" (click)="submit(r)">Submit</button>
           }
           @if (r.Status === 'Submitted') {
-            <button (click)="accept(r)">Accept</button>
+            <button
+              [disabled]="!canAccept(r)"
+              [title]="canAccept(r) ? '' : 'Authorization must be approved (or not required) before accepting'"
+              (click)="accept(r)"
+            >Accept</button>
             <button class="danger" (click)="reject(r)">Reject</button>
           }
           @if (r.Status === 'Accepted') {
@@ -52,7 +81,7 @@
       </tr>
     } @empty {
       <tr>
-        <td colspan="7">No referrals in this status.</td>
+        <td colspan="8">No referrals in this status.</td>
       </tr>
     }
   </tbody>

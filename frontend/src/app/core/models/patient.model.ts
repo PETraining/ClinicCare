@@ -20,6 +20,17 @@ export interface Medication {
   Active: boolean;
 }
 
+export interface Insurance {
+  InsuranceId: number;
+  PatientId: number;
+  InsurerName: string;
+  PolicyNumber: string;
+  GroupNumber: string | null;
+  MemberId: string;
+  EffectiveDate: string;
+  TerminationDate: string | null;
+}
+
 export interface Patient {
   PatientId: number;
   Name: string;
@@ -31,4 +42,5 @@ export interface PatientDetail extends Patient {
   allergies: Allergy[];
   conditions: ChronicCondition[];
   medications: Medication[];
+  insurance: Insurance[];
 }

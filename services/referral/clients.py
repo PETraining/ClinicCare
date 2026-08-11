@@ -30,5 +30,13 @@ async def record_notification(referral_id: int, event_type: str, message: str) -
         print(f"[referral] WARNING: failed to record notification for referral {referral_id}: {exc}")
 
 
+async def record_authorization_notification(referral_id: int, authorization_status: str) -> None:
+    await record_notification(
+        referral_id,
+        "AuthorizationUpdated",
+        f"Referral #{referral_id} authorization is now {authorization_status}.",
+    )
+
+
 class UpstreamUnavailable(Exception):
     pass

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -42,6 +42,17 @@ export class CreateReferralComponent implements OnInit {
   priorities: ReferralPriority[] = ['Routine', 'Urgent', 'Emergent'];
   errorMessage = signal<string | null>(null);
   submitting = signal(false);
+  selectedPatientId = signal(0);
+
+  deniedAuthorizations = computed(() => {
+    const patientId = this.selectedPatientId();
+    if (!patientId) {
+      return [];
+    }
+    return this.referralService
+      .referrals()
+      .filter((r) => r.PatientId === patientId && r.authorization?.Status === 'Denied');
+  });
 
   ngOnInit(): void {
     this.patientService.search();
@@ -49,6 +60,14 @@ export class CreateReferralComponent implements OnInit {
     const prefilled = this.prefilledPatientId();
     if (prefilled) {
       this.form.PatientId = prefilled;
+      this.onPatientChange(prefilled);
+    }
+  }
+
+  onPatientChange(patientId: number): void {
+    this.selectedPatientId.set(patientId);
+    if (patientId) {
+      this.referralService.loadByPatient(patientId);
     }
   }
 

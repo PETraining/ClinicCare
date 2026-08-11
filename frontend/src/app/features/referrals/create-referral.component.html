@@ -3,13 +3,20 @@
 <form (ngSubmit)="submit()" #f="ngForm">
   <label>
     Patient
-    <select name="patientId" [(ngModel)]="form.PatientId" required>
+    <select name="patientId" [(ngModel)]="form.PatientId" (ngModelChange)="onPatientChange($event)" required>
       <option [value]="0" disabled>Select a patient...</option>
       @for (p of patientService.patients(); track p.PatientId) {
         <option [value]="p.PatientId">{{ p.Name }}</option>
       }
     </select>
   </label>
+
+  @if (deniedAuthorizations().length) {
+    <p class="warning">
+      Warning: this patient has {{ deniedAuthorizations().length }} referral(s) with a <strong>Denied</strong>
+      prior authorization on record. Review authorization status before creating another referral.
+    </p>
+  }
 
   <label>
     Referring Doctor

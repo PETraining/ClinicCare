@@ -42,6 +42,24 @@
         <p class="empty">No medications on record.</p>
       }
     </section>
+
+    <section>
+      <h2>Insurance</h2>
+      @if (patient.insurance.length) {
+        <ul>
+          @for (i of patient.insurance; track i.InsuranceId) {
+            <li>
+              {{ i.InsurerName }} — Policy {{ i.PolicyNumber }} (Member {{ i.MemberId }})
+              <br />
+              Effective {{ i.EffectiveDate }}
+              @if (i.TerminationDate) { through {{ i.TerminationDate }} }
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="empty">No insurance on record.</p>
+      }
+    </section>
   </div>
 
   <section>
