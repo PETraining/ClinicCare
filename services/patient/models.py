@@ -15,6 +15,7 @@ class Patient(Base):
     allergies = relationship("Allergy", back_populates="patient", cascade="all, delete-orphan")
     conditions = relationship("ChronicCondition", back_populates="patient", cascade="all, delete-orphan")
     medications = relationship("Medication", back_populates="patient", cascade="all, delete-orphan")
+    insurance = relationship("Insurance", back_populates="patient", cascade="all, delete-orphan")
 
 
 class Allergy(Base):
@@ -49,3 +50,18 @@ class Medication(Base):
     Active = Column(Boolean, nullable=False, default=True)
 
     patient = relationship("Patient", back_populates="medications")
+
+
+class Insurance(Base):
+    __tablename__ = "insurance"
+
+    InsuranceId = Column(Integer, primary_key=True, index=True)
+    PatientId = Column(Integer, ForeignKey("patients.PatientId"), nullable=False)
+    InsurerName = Column(String, nullable=False)
+    PolicyNumber = Column(String, nullable=False)
+    GroupNumber = Column(String, nullable=True)
+    MemberId = Column(String, nullable=False)
+    EffectiveDate = Column(Date, nullable=False)
+    TerminationDate = Column(Date, nullable=True)
+
+    patient = relationship("Patient", back_populates="insurance")

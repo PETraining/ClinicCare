@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 import clients
 import models
@@ -46,7 +46,7 @@ def list_referrals(
     status: Optional[str] = None,
     db: Session = Depends(get_db),
 ):
-    query = db.query(models.Referral)
+    query = db.query(models.Referral).options(joinedload(models.Referral.authorization))
     if patientId is not None:
         query = query.filter(models.Referral.PatientId == patientId)
     if status is not None:
@@ -56,7 +56,15 @@ def list_referrals(
 
 @app.get("/referrals/{referral_id}", response_model=schemas.ReferralRead)
 def get_referral(referral_id: int, db: Session = Depends(get_db)):
-    return _get_referral_or_404(referral_id, db)
+    referral = (
+        db.query(models.Referral)
+        .options(joinedload(models.Referral.authorization))
+        .filter(models.Referral.ReferralId == referral_id)
+        .first()
+    )
+    if referral is None:
+        raise HTTPException(status_code=404, detail=f"Referral {referral_id} not found")
+    return referral
 
 
 @app.post("/referrals", response_model=schemas.ReferralRead, status_code=201)
@@ -130,3 +138,62 @@ async def reject_referral(referral_id: int, db: Session = Depends(get_db)):
 @app.patch("/referrals/{referral_id}/complete", response_model=schemas.ReferralRead)
 async def complete_referral(referral_id: int, db: Session = Depends(get_db)):
     return await _transition(referral_id, "complete", db)
+
+
+def _get_authorization_or_404(referral_id: int, db: Session) -> models.Authorization:
+    authorization = (
+        db.query(models.Authorization).filter(models.Authorization.ReferralId == referral_id).first()
+    )
+    if authorization is None:
+        raise HTTPException(status_code=404, detail=f"No authorization on record for referral {referral_id}")
+    return authorization
+
+
+@app.get("/referrals/{referral_id}/authorization", response_model=schemas.AuthorizationRead)
+def get_authorization(referral_id: int, db: Session = Depends(get_db)):
+    _get_referral_or_404(referral_id, db)
+    return _get_authorization_or_404(referral_id, db)
+
+
+@app.post("/referrals/{referral_id}/authorization", response_model=schemas.AuthorizationRead, status_code=201)
+async def create_authorization(
+    referral_id: int, payload: schemas.AuthorizationCreate, db: Session = Depends(get_db)
+):
+    _get_referral_or_404(referral_id, db)
+    existing = (
+        db.query(models.Authorization).filter(models.Authorization.ReferralId == referral_id).first()
+    )
+    if existing is not None:
+        raise HTTPException(status_code=400, detail=f"Referral {referral_id} already has an authorization")
+
+    now = datetime.utcnow()
+    authorization = models.Authorization(
+        ReferralId=referral_id,
+        Status=payload.Status.value,
+        RequestedDate=now,
+        DecisionDate=now if payload.Status != schemas.AuthorizationStatus.pending else None,
+        DecisionNotes=payload.DecisionNotes,
+        CreatedAt=now,
+        UpdatedAt=now,
+    )
+    db.add(authorization)
+    db.commit()
+    db.refresh(authorization)
+    await clients.record_authorization_notification(referral_id, authorization.Status)
+    return authorization
+
+
+@app.put("/referrals/{referral_id}/authorization", response_model=schemas.AuthorizationRead)
+async def update_authorization(
+    referral_id: int, payload: schemas.AuthorizationUpdate, db: Session = Depends(get_db)
+):
+    _get_referral_or_404(referral_id, db)
+    authorization = _get_authorization_or_404(referral_id, db)
+    authorization.Status = payload.Status.value
+    authorization.DecisionNotes = payload.DecisionNotes
+    authorization.DecisionDate = datetime.utcnow() if payload.Status != schemas.AuthorizationStatus.pending else None
+    authorization.UpdatedAt = datetime.utcnow()
+    db.commit()
+    db.refresh(authorization)
+    await clients.record_authorization_notification(referral_id, authorization.Status)
+    return authorization

@@ -4,9 +4,17 @@ import { RouterLink } from '@angular/router';
 import { DoctorService } from '../../core/services/doctor.service';
 import { PatientService } from '../../core/services/patient.service';
 import { ReferralService } from '../../core/services/referral.service';
-import { Referral, ReferralStatus } from '../../core/models/referral.model';
+import { AuthorizationStatus, Referral, ReferralStatus } from '../../core/models/referral.model';
 
 const STATUS_FILTERS: (ReferralStatus | 'All')[] = ['All', 'Draft', 'Submitted', 'Accepted', 'Rejected', 'Completed'];
+const AUTH_STATUS_FILTERS: (AuthorizationStatus | 'All' | 'None')[] = [
+  'All',
+  'None',
+  'Not Required',
+  'Pending',
+  'Approved',
+  'Denied',
+];
 
 @Component({
   selector: 'app-referral-tracking',
@@ -22,6 +30,8 @@ export class ReferralTrackingComponent implements OnInit {
 
   statusFilters = STATUS_FILTERS;
   activeFilter = signal<ReferralStatus | 'All'>('All');
+  authStatusFilters = AUTH_STATUS_FILTERS;
+  activeAuthFilter = signal<AuthorizationStatus | 'All' | 'None'>('All');
   actionError = signal<string | null>(null);
 
   private patientNames = computed(() => {
@@ -42,8 +52,17 @@ export class ReferralTrackingComponent implements OnInit {
 
   filteredReferrals = computed(() => {
     const filter = this.activeFilter();
-    const all = this.referralService.referrals();
-    return filter === 'All' ? all : all.filter((r) => r.Status === filter);
+    const authFilter = this.activeAuthFilter();
+    let list = this.referralService.referrals();
+    if (filter !== 'All') {
+      list = list.filter((r) => r.Status === filter);
+    }
+    if (authFilter !== 'All') {
+      list = list.filter((r) =>
+        authFilter === 'None' ? !r.authorization : r.authorization?.Status === authFilter,
+      );
+    }
+    return list;
   });
 
   ngOnInit(): void {
@@ -62,6 +81,33 @@ export class ReferralTrackingComponent implements OnInit {
 
   setFilter(status: ReferralStatus | 'All'): void {
     this.activeFilter.set(status);
+  }
+
+  setAuthFilter(status: AuthorizationStatus | 'All' | 'None'): void {
+    this.activeAuthFilter.set(status);
+  }
+
+  canSubmit(referral: Referral): boolean {
+    return referral.Status === 'Draft' && referral.authorization?.Status !== 'Denied';
+  }
+
+  canAccept(referral: Referral): boolean {
+    const authStatus = referral.authorization?.Status;
+    return authStatus !== 'Pending' && authStatus !== 'Denied';
+  }
+
+  requestAuthorization(referral: Referral): void {
+    this.actionError.set(null);
+    this.referralService.requestAuthorization(referral.ReferralId, { Status: 'Pending' }).subscribe({
+      error: (err) => this.actionError.set(err?.error?.detail ?? 'Failed to request authorization.'),
+    });
+  }
+
+  setAuthorizationStatus(referral: Referral, status: AuthorizationStatus): void {
+    this.actionError.set(null);
+    this.referralService.updateAuthorization(referral.ReferralId, { Status: status }).subscribe({
+      error: (err) => this.actionError.set(err?.error?.detail ?? 'Failed to update authorization.'),
+    });
   }
 
   private runAction(action: (id: number) => ReturnType<ReferralService['submit']>, referral: Referral): void {

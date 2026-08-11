@@ -74,3 +74,23 @@ Implement a system to track prior authorization status and display it at critica
 ## Dependencies & Blockers
 - None identified; can start Week 1 immediately
 - Week 2 depends on Week 1 completion
+
+## Defects Found & Fixed
+
+### Accept action available despite unresolved authorization
+- **Found**: In referral tracking, the "Accept" action was always shown for
+  referrals in `Submitted` status, regardless of the linked authorization's
+  status. Staff could accept (and proceed toward scheduling) a referral whose
+  insurance authorization was still `Pending` or had been `Denied`, defeating
+  the goal of catching authorization problems before the visit.
+- **File**: `frontend/src/app/features/referrals/referral-tracking.component.ts` / `.html`
+- **Fix**: Added `canAccept(referral)`, mirroring the existing `canSubmit`
+  guard — it returns `false` when `authorization.Status` is `Pending` or
+  `Denied`, and `true` for `Approved`, `Not Required`, or no authorization on
+  record. The Accept button is now disabled (with an explanatory tooltip)
+  whenever `canAccept` is false, matching how the Submit button already
+  handles the `Denied` case.
+- **Note**: Same as the existing Submit guard, this check is enforced
+  client-side only — the `/referrals/{id}/accept` endpoint does not itself
+  validate authorization status. Flagging as a follow-up if server-side
+  enforcement is required for the success criteria.

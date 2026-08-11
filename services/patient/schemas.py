@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -52,6 +53,30 @@ class MedicationRead(MedicationBase):
     PatientId: int
 
 
+class InsuranceBase(BaseModel):
+    InsurerName: str
+    PolicyNumber: str
+    GroupNumber: Optional[str] = None
+    MemberId: str
+    EffectiveDate: date
+    TerminationDate: Optional[date] = None
+
+
+class InsuranceCreate(InsuranceBase):
+    pass
+
+
+class InsuranceUpdate(InsuranceBase):
+    pass
+
+
+class InsuranceRead(InsuranceBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    InsuranceId: int
+    PatientId: int
+
+
 class PatientBase(BaseModel):
     Name: str
     DOB: date
@@ -62,6 +87,7 @@ class PatientCreate(PatientBase):
     allergies: list[AllergyCreate] = []
     conditions: list[ChronicConditionCreate] = []
     medications: list[MedicationCreate] = []
+    insurance: list[InsuranceCreate] = []
 
 
 class PatientRead(PatientBase):
@@ -74,3 +100,4 @@ class PatientDetail(PatientRead):
     allergies: list[AllergyRead] = []
     conditions: list[ChronicConditionRead] = []
     medications: list[MedicationRead] = []
+    insurance: list[InsuranceRead] = []
