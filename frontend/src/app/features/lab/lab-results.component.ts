@@ -53,7 +53,7 @@ export class LabResultsComponent implements OnInit {
         this.labService.loadOrder(id);
         this.labService.loadResults(id);
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   ngOnInit(): void {
