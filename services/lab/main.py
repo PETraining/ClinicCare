@@ -513,7 +513,7 @@ def get_order_history(order_id: int, db: Session = Depends(get_db)):
 # ============ TEST RESULTS ENDPOINTS ============
 
 @app.post("/orders/{order_id}/tests/{test_id}/result")
-def submit_test_result(
+async def submit_test_result(
     order_id: int,
     test_id: int,
     result_data: dict,
