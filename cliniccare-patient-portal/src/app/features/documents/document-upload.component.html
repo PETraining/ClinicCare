@@ -1,0 +1,14 @@
+<div class="document-upload">
+  <h2>Upload a document</h2>
+
+  <input type="file" (change)="onFileSelected($event)" />
+
+  <p class="error" *ngIf="error()">{{ error() }}</p>
+
+  <div class="actions">
+    <button type="button" [disabled]="!selectedFile() || uploading()" (click)="upload()">
+      {{ uploading() ? 'Uploading...' : 'Upload' }}
+    </button>
+    <a routerLink="/documents">Cancel</a>
+  </div>
+</div>

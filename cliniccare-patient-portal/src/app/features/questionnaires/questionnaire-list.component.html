@@ -1,0 +1,12 @@
+<div class="questionnaire-list">
+  <h2>My Questionnaires</h2>
+
+  <p *ngIf="questionnaires().length === 0">No questionnaires assigned yet.</p>
+
+  <ul *ngIf="questionnaires().length > 0">
+    <li *ngFor="let q of questionnaires()">
+      <a [routerLink]="['/questionnaires', q.QuestionnaireId]">{{ q.Title }}</a>
+      <span class="status" [class.completed]="q.Status === 'Completed'">{{ q.Status }}</span>
+    </li>
+  </ul>
+</div>

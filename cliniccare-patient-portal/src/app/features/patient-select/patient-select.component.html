@@ -1,0 +1,9 @@
+<div class="select-patient">
+  <h1>ClinicCare Patient Portal</h1>
+  <p>Choose a demo patient to continue (this stands in for real login for now).</p>
+  <ul>
+    <li *ngFor="let p of patients">
+      <button type="button" (click)="select(p.id)">{{ p.name }}</button>
+    </li>
+  </ul>
+</div>

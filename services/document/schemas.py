@@ -28,3 +28,9 @@ class DocumentRead(DocumentBase):
     model_config = ConfigDict(from_attributes=True)
 
     DocumentId: int
+    FilePath: Optional[str] = None
+
+
+class DocumentUploadResponse(BaseModel):
+    document_id: int
+    filename: str

@@ -12,3 +12,4 @@ class Document(Base):
     Type = Column(String, nullable=False)
     UploadedDate = Column(Date, nullable=False)
     FileName = Column(String, nullable=False)
+    FilePath = Column(String, nullable=True)  # relative path under UPLOAD_ROOT; NULL for metadata-only seed rows
