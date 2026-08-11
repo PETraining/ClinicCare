@@ -37,7 +37,6 @@ class LabOrder(Base):
 
     order_tests = relationship("OrderTest", back_populates="lab_order", cascade="all, delete-orphan")
     samples = relationship("LabSample", back_populates="lab_order", cascade="all, delete-orphan")
-    status_history = relationship("StatusHistory", back_populates="lab_order", cascade="all, delete-orphan")
 
 
 class OrderTest(Base):

@@ -9,6 +9,10 @@ import { PatientDetailsComponent } from './features/patients/patient-details.com
 import { CreateReferralComponent } from './features/referrals/create-referral.component';
 import { ReferralTrackingComponent } from './features/referrals/referral-tracking.component';
 import { DocumentsComponent } from './features/documents/documents.component';
+import { TechnicianDashboardComponent } from './features/lab-technician/technician-dashboard.component';
+import { SampleTrackerComponent } from './features/lab-technician/sample-tracker.component';
+import { TestProcessingComponent } from './features/lab-technician/test-processing.component';
+import { LabStatsComponent } from './features/lab-technician/lab-stats.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -24,6 +28,16 @@ export const routes: Routes = [
       { path: 'referrals', component: ReferralTrackingComponent },
       { path: 'referrals/new', component: CreateReferralComponent },
       { path: 'documents', component: DocumentsComponent },
+      {
+        path: 'lab-tech',
+        children: [
+          { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+          { path: 'dashboard', component: TechnicianDashboardComponent },
+          { path: 'samples', component: SampleTrackerComponent },
+          { path: 'process', component: TestProcessingComponent },
+          { path: 'stats', component: LabStatsComponent },
+        ],
+      },
     ],
   },
   { path: '**', redirectTo: 'login' },

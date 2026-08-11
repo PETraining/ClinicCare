@@ -1,4 +1,5 @@
 import logging
+import os
 from typing import Optional
 from datetime import datetime
 
@@ -23,10 +24,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-PATIENT_SERVICE_URL = "http://patient-service:8001"
-DOCTORS_SERVICE_URL = "http://doctors-service:8002"
-REFERRAL_SERVICE_URL = "http://referral-service:8003"
-NOTIFICATION_SERVICE_URL = "http://notification-service:8005"
+PATIENT_SERVICE_URL = os.environ.get("PATIENT_SERVICE_URL", "http://localhost:8001")
+DOCTORS_SERVICE_URL = os.environ.get("DOCTORS_SERVICE_URL", "http://localhost:8002")
+REFERRAL_SERVICE_URL = os.environ.get("REFERRAL_SERVICE_URL", "http://localhost:8003")
+NOTIFICATION_SERVICE_URL = os.environ.get("NOTIFICATION_SERVICE_URL", "http://localhost:8005")
 
 
 @app.on_event("startup")
@@ -513,7 +514,7 @@ def get_order_history(order_id: int, db: Session = Depends(get_db)):
 # ============ TEST RESULTS ENDPOINTS ============
 
 @app.post("/orders/{order_id}/tests/{test_id}/result")
-def submit_test_result(
+async def submit_test_result(
     order_id: int,
     test_id: int,
     result_data: dict,
