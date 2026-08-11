@@ -1,7 +1,7 @@
 ---
 name: Insurance Eligibility & Prior Authorization Validator
 description: Validates implementation of the Insurance Eligibility & Prior Authorization feature against requirements
-model: claude-haiku-4-5-20251001
+model: sonnet
 effort: high
 tools:
   - read
