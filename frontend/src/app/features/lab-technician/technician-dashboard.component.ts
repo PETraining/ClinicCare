@@ -38,7 +38,7 @@ export class TechnicianDashboardComponent implements OnInit {
   ngOnInit(): void {
     this.labTech.loadOrders();
     this.labTech.loadStats();
-    this.doctorService.search();
+    this.doctorService.search(undefined, 'lab_technician');
   }
 
   onStaffChange(value: string): void {

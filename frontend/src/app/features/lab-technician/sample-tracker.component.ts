@@ -43,7 +43,7 @@ export class SampleTrackerComponent implements OnInit {
 
   ngOnInit(): void {
     this.labTech.loadOrders();
-    this.doctorService.search();
+    this.doctorService.search(undefined, 'lab_technician');
     this.collectedBy.set(this.labTech.staffId());
   }
 
