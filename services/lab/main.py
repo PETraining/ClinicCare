@@ -91,6 +91,10 @@ def create_test(test: schemas.TestCreate, db: Session = Depends(get_db)):
         logger.warning(f"Attempt to create duplicate test code: {test.test_code}")
         raise HTTPException(status_code=400, detail=f"Test with code {test.test_code} already exists")
 
+    # Validate processing time is positive
+    if test.processing_time_days <= 0:
+        raise HTTPException(status_code=400, detail="processing_time_days must be greater than 0")
+
     # Validate range if provided
     if test.normal_range_min is not None and test.normal_range_max is not None:
         if test.normal_range_min > test.normal_range_max:
@@ -113,6 +117,10 @@ def update_test(test_id: int, test_update: schemas.TestCreate, db: Session = Dep
         raise HTTPException(status_code=404, detail=f"Test {test_id} not found")
 
     update_data = test_update.model_dump(exclude_unset=True)
+
+    # Validate processing time is positive if provided
+    if "processing_time_days" in update_data and update_data["processing_time_days"] <= 0:
+        raise HTTPException(status_code=400, detail="processing_time_days must be greater than 0")
 
     # Validate range if both provided
     if "normal_range_min" in update_data and "normal_range_max" in update_data:
@@ -367,6 +375,19 @@ def collect_sample(
     sample = db.query(models.LabSample).filter(models.LabSample.order_id == order_id).first()
     if sample is None:
         raise HTTPException(status_code=400, detail=f"No sample found for order {order_id}")
+
+    # Prevent duplicate collection - if already collected, return existing sample
+    if sample.status == "collected":
+        logger.info(f"Sample already collected for Order#{order_id}, returning existing sample")
+        return {
+            "sample_id": sample.sample_id,
+            "order_id": order_id,
+            "sample_type": sample.sample_type,
+            "collection_date": sample.collection_date,
+            "collected_by": sample.collected_by,
+            "sample_label": sample.sample_label,
+            "status": sample.status
+        }
 
     # Update sample with collection info
     sample.collection_date = datetime.utcnow()
