@@ -110,22 +110,33 @@ def create_test(test: schemas.TestCreate, db: Session = Depends(get_db)):
 
 
 @app.patch("/tests/{test_id}", response_model=schemas.TestRead)
-def update_test(test_id: int, test_update: schemas.TestCreate, db: Session = Depends(get_db)):
-    """Update an existing test definition."""
+def update_test(test_id: int, test_update: schemas.TestUpdate, db: Session = Depends(get_db)):
+    """Update an existing test definition. All fields are optional (partial update)."""
     db_test = db.query(models.Test).filter(models.Test.test_id == test_id).first()
     if db_test is None:
         raise HTTPException(status_code=404, detail=f"Test {test_id} not found")
 
     update_data = test_update.model_dump(exclude_unset=True)
 
+    # Validate test code stays unique if it's being changed
+    if "test_code" in update_data and update_data["test_code"] != db_test.test_code:
+        existing = (
+            db.query(models.Test)
+            .filter(models.Test.test_code == update_data["test_code"], models.Test.test_id != test_id)
+            .first()
+        )
+        if existing:
+            raise HTTPException(status_code=400, detail=f"Test with code {update_data['test_code']} already exists")
+
     # Validate processing time is positive if provided
     if "processing_time_days" in update_data and update_data["processing_time_days"] <= 0:
         raise HTTPException(status_code=400, detail="processing_time_days must be greater than 0")
 
-    # Validate range if both provided
-    if "normal_range_min" in update_data and "normal_range_max" in update_data:
-        if update_data["normal_range_min"] > update_data["normal_range_max"]:
-            raise HTTPException(status_code=400, detail="normal_range_min must be <= normal_range_max")
+    # Validate range if both provided (post-merge, so a single-sided update can't invert the range)
+    effective_min = update_data.get("normal_range_min", db_test.normal_range_min)
+    effective_max = update_data.get("normal_range_max", db_test.normal_range_max)
+    if effective_min is not None and effective_max is not None and effective_min > effective_max:
+        raise HTTPException(status_code=400, detail="normal_range_min must be <= normal_range_max")
 
     for key, value in update_data.items():
         setattr(db_test, key, value)
@@ -179,6 +190,23 @@ async def verify_patient_exists(patient_id: int) -> bool:
         raise HTTPException(status_code=500, detail="Error verifying patient")
 
 
+async def verify_doctor_exists(doctor_id: int) -> bool:
+    """Verify doctor exists by calling Doctors Service."""
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.get(f"{DOCTORS_SERVICE_URL}/doctors/{doctor_id}/exists")
+            if response.status_code == 200:
+                return bool(response.json().get("exists"))
+            logger.warning(f"Unexpected response from Doctors Service: {response.status_code}")
+            return False
+    except httpx.ConnectError as e:
+        logger.error(f"Cannot connect to Doctors Service: {e}")
+        raise HTTPException(status_code=503, detail="Doctors Service unavailable")
+    except Exception as e:
+        logger.error(f"Error verifying doctor {doctor_id}: {e}")
+        raise HTTPException(status_code=500, detail="Error verifying doctor")
+
+
 async def verify_referral_exists(referral_id: int) -> bool:
     """Verify referral exists by calling Referral Service."""
     try:
@@ -201,26 +229,34 @@ async def verify_referral_exists(referral_id: int) -> bool:
         raise HTTPException(status_code=500, detail="Error verifying referral")
 
 
-async def notify_lab_event(event_type: str, data: dict) -> bool:
-    """Send notification to Notification Service."""
+LAB_EVENT_TYPE_MAP = {
+    "lab_order_created": "LabOrderCreated",
+    "lab_result_critical": "LabResultCritical",
+    "lab_result_completed": "LabResultCompleted",
+}
+
+
+async def notify_lab_event(event_type: str, referral_id: Optional[int], message: str) -> bool:
+    """Send notification to Notification Service using its {ReferralId, EventType, Message} contract."""
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
             response = await client.post(
                 f"{NOTIFICATION_SERVICE_URL}/notifications",
                 json={
-                    "event_type": event_type,
-                    "source": "lab-service",
-                    "data": data
+                    "ReferralId": referral_id,
+                    "EventType": LAB_EVENT_TYPE_MAP.get(event_type, event_type),
+                    "Message": message,
+                    "Source": "lab-service",
                 }
             )
             if response.status_code in [200, 201]:
                 logger.debug(f"Notification sent: {event_type}")
                 return True
             else:
-                logger.warning(f"Notification service returned {response.status_code}")
+                logger.error(f"Notification service rejected {event_type} notification: {response.status_code} {response.text}")
                 return False
     except Exception as e:
-        logger.warning(f"Could not send notification ({event_type}): {e}")
+        logger.error(f"Could not send notification ({event_type}): {e}")
         return False
 
 
@@ -272,11 +308,21 @@ async def create_order(order_data: schemas.LabOrderCreate, db: Session = Depends
     if order_data.priority not in ["routine", "stat"]:
         raise HTTPException(status_code=400, detail="Priority must be 'routine' or 'stat'")
 
+    # Reject duplicate test IDs up front so the error message reflects the real problem
+    if len(set(order_data.test_ids)) != len(order_data.test_ids):
+        raise HTTPException(status_code=400, detail="Duplicate test_ids in request; each test may only be ordered once per order")
+
     # Verify patient exists
     patient_exists = await verify_patient_exists(order_data.patient_id)
     if not patient_exists:
         logger.warning(f"Order creation failed: Patient {order_data.patient_id} not found")
         raise HTTPException(status_code=400, detail=f"Patient {order_data.patient_id} not found")
+
+    # Verify ordering doctor exists
+    doctor_exists = await verify_doctor_exists(order_data.ordered_by)
+    if not doctor_exists:
+        logger.warning(f"Order creation failed: Doctor {order_data.ordered_by} not found")
+        raise HTTPException(status_code=400, detail=f"Doctor {order_data.ordered_by} not found")
 
     # Verify referral exists if provided
     if order_data.referral_id:
@@ -331,16 +377,15 @@ async def create_order(order_data: schemas.LabOrderCreate, db: Session = Depends
     # Send notification (async, fire-and-forget)
     await notify_lab_event(
         "lab_order_created",
-        {
-            "order_id": db_order.order_id,
-            "patient_id": order_data.patient_id,
-            "referral_id": order_data.referral_id,
-            "test_count": len(test_ids),
-            "priority": order_data.priority
-        }
+        db_order.referral_id,
+        f"Lab order #{db_order.order_id} placed for patient #{order_data.patient_id} "
+        f"({len(test_ids)} test(s), priority={order_data.priority})."
     )
 
     return db_order
+
+
+VALID_ORDER_STATUSES = ["draft", "placed", "collected", "processing", "completed"]
 
 
 @app.patch("/orders/{order_id}", response_model=schemas.LabOrderDetail)
@@ -349,9 +394,11 @@ def update_order(order_id: int, order_update: schemas.LabOrderUpdate, db: Sessio
     if db_order is None:
         raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
 
-    if order_update.status:
+    if order_update.status is not None:
+        if order_update.status not in VALID_ORDER_STATUSES:
+            raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {VALID_ORDER_STATUSES}")
         db_order.status = order_update.status
-    if order_update.clinical_indication:
+    if order_update.clinical_indication is not None:
         db_order.clinical_indication = order_update.clinical_indication
 
     db.commit()
@@ -359,12 +406,23 @@ def update_order(order_id: int, order_update: schemas.LabOrderUpdate, db: Sessio
     return db_order
 
 
+# ============ ORDER TESTS ENDPOINTS ============
+
+@app.get("/orders/{order_id}/tests", response_model=list[schemas.OrderTestRead])
+def get_order_tests(order_id: int, db: Session = Depends(get_db)):
+    """Get all tests in an order."""
+    order = db.query(models.LabOrder).filter(models.LabOrder.order_id == order_id).first()
+    if order is None:
+        raise HTTPException(status_code=404, detail=f"Order {order_id} not found")
+    return order.order_tests
+
+
 # ============ SAMPLE COLLECTION ENDPOINTS ============
 
-@app.post("/orders/{order_id}/collect")
+@app.post("/orders/{order_id}/collect", response_model=schemas.LabSampleRead)
 def collect_sample(
     order_id: int,
-    collection_data: dict,
+    collection_data: schemas.SampleCollectRequest,
     db: Session = Depends(get_db)
 ):
     """Mark a sample as collected with collection details."""
@@ -379,19 +437,11 @@ def collect_sample(
     # Prevent duplicate collection - if already collected, return existing sample
     if sample.status == "collected":
         logger.info(f"Sample already collected for Order#{order_id}, returning existing sample")
-        return {
-            "sample_id": sample.sample_id,
-            "order_id": order_id,
-            "sample_type": sample.sample_type,
-            "collection_date": sample.collection_date,
-            "collected_by": sample.collected_by,
-            "sample_label": sample.sample_label,
-            "status": sample.status
-        }
+        return sample
 
     # Update sample with collection info
     sample.collection_date = datetime.utcnow()
-    sample.collected_by = collection_data.get("collected_by")
+    sample.collected_by = collection_data.collected_by
     sample.sample_label = f"LAB-{datetime.utcnow().strftime('%Y-%m-%d')}-{order_id:03d}"
     sample.status = "collected"
 
@@ -405,33 +455,50 @@ def collect_sample(
             old_status=order_test.order_status,
             new_status="sample_collected",
             changed_at=datetime.utcnow(),
-            changed_by=collection_data.get("collected_by")
+            changed_by=collection_data.collected_by
         )
         order_test.order_status = "sample_collected"
         db.add(history)
 
     db.commit()
+    db.refresh(sample)
 
     logger.info(f"Sample collected for Order#{order_id}: {sample.sample_label}")
 
-    return {
-        "sample_id": sample.sample_id,
-        "order_id": order_id,
-        "sample_type": sample.sample_type,
-        "collection_date": sample.collection_date,
-        "collected_by": sample.collected_by,
-        "sample_label": sample.sample_label,
-        "status": sample.status
-    }
+    return sample
 
 
 # ============ STATUS TRACKING ENDPOINTS ============
 
-@app.patch("/orders/{order_id}/tests/{test_id}/status")
+VALID_ORDER_TEST_STATUSES = ["ordered", "sample_collected", "in_progress", "completed"]
+
+ORDER_TEST_STATUS_TRANSITIONS = {
+    "ordered": ["sample_collected"],
+    "sample_collected": ["in_progress"],
+    "in_progress": ["completed"],
+    "completed": []
+}
+
+
+def _recompute_order_status(order: models.LabOrder) -> None:
+    """Recompute the parent LabOrder's aggregate status from its OrderTests.
+
+    Must be called (and the caller must db.commit()) any time an OrderTest's
+    order_status changes, so order-level status never drifts out of sync with
+    its constituent tests.
+    """
+    statuses = [ot.order_status for ot in order.order_tests]
+    if statuses and all(s == "completed" for s in statuses):
+        order.status = "completed"
+    elif any(s == "in_progress" for s in statuses):
+        order.status = "processing"
+
+
+@app.patch("/orders/{order_id}/tests/{test_id}/status", response_model=schemas.OrderTestStatusRead)
 def update_test_status(
     order_id: int,
     test_id: int,
-    status_update: dict,
+    status_update: schemas.OrderTestStatusUpdate,
     db: Session = Depends(get_db)
 ):
     """Update the status of a specific test in an order."""
@@ -450,22 +517,15 @@ def update_test_status(
     if order_test is None:
         raise HTTPException(status_code=404, detail=f"Test {test_id} not found in order {order_id}")
 
-    new_status = status_update.get("new_status")
-    valid_statuses = ["ordered", "sample_collected", "in_progress", "completed"]
+    new_status = status_update.new_status
 
-    if new_status not in valid_statuses:
-        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    if new_status not in VALID_ORDER_TEST_STATUSES:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {VALID_ORDER_TEST_STATUSES}")
 
     # Validate state transition
     old_status = order_test.order_status
-    status_transitions = {
-        "ordered": ["sample_collected"],
-        "sample_collected": ["in_progress"],
-        "in_progress": ["completed"],
-        "completed": []
-    }
 
-    if new_status not in status_transitions.get(old_status, []):
+    if new_status not in ORDER_TEST_STATUS_TRANSITIONS.get(old_status, []):
         raise HTTPException(
             status_code=400,
             detail=f"Cannot transition from {old_status} to {new_status}"
@@ -480,16 +540,12 @@ def update_test_status(
         old_status=old_status,
         new_status=new_status,
         changed_at=datetime.utcnow(),
-        changed_by=status_update.get("changed_by")
+        changed_by=status_update.changed_by
     )
     db.add(history)
 
     # Update order status based on all tests
-    all_completed = all(ot.order_status == "completed" for ot in order.order_tests)
-    if all_completed:
-        order.status = "completed"
-    elif any(ot.order_status == "in_progress" for ot in order.order_tests):
-        order.status = "processing"
+    _recompute_order_status(order)
 
     db.commit()
 
@@ -534,11 +590,11 @@ def get_order_history(order_id: int, db: Session = Depends(get_db)):
 
 # ============ TEST RESULTS ENDPOINTS ============
 
-@app.post("/orders/{order_id}/tests/{test_id}/result")
+@app.post("/orders/{order_id}/tests/{test_id}/result", response_model=schemas.TestResultRead)
 async def submit_test_result(
     order_id: int,
     test_id: int,
-    result_data: dict,
+    result_data: schemas.TestResultSubmit,
     db: Session = Depends(get_db)
 ):
     """Submit a test result with automatic abnormal flagging."""
@@ -561,9 +617,18 @@ async def submit_test_result(
     if test is None:
         raise HTTPException(status_code=404, detail=f"Test definition {test_id} not found")
 
-    result_value = result_data.get("result_value")
-    if not result_value:
+    result_value = result_data.result_value
+    if not result_value or not result_value.strip():
         raise HTTPException(status_code=400, detail="result_value is required")
+
+    # A result can only be recorded once the sample has been collected, and not
+    # a second time after the test is already completed (no silent overwrite).
+    old_status = order_test.order_status
+    if old_status not in ("sample_collected", "in_progress"):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Cannot submit a result: test is in '{old_status}' state; sample must be collected first"
+        )
 
     # Determine if result is abnormal/critical
     is_abnormal = False
@@ -581,8 +646,8 @@ async def submit_test_result(
                 is_critical = True
     except ValueError:
         # Non-numeric result, use provided flags or defaults
-        is_abnormal = result_data.get("is_abnormal", False)
-        is_critical = result_data.get("is_critical", False)
+        is_abnormal = bool(result_data.is_abnormal)
+        is_critical = bool(result_data.is_critical)
 
     # Create result
     result = models.TestResult(
@@ -591,12 +656,11 @@ async def submit_test_result(
         result_date=datetime.utcnow(),
         is_abnormal=is_abnormal,
         is_critical=is_critical,
-        notes=result_data.get("notes")
+        notes=result_data.notes
     )
     db.add(result)
 
     # Update test status to completed
-    old_status = order_test.order_status
     order_test.order_status = "completed"
 
     # Record status change
@@ -605,9 +669,12 @@ async def submit_test_result(
         old_status=old_status,
         new_status="completed",
         changed_at=datetime.utcnow(),
-        changed_by=result_data.get("submitted_by")
+        changed_by=result_data.submitted_by
     )
     db.add(history)
+
+    # Keep the parent order's aggregate status in sync with its OrderTests
+    _recompute_order_status(order)
 
     db.commit()
     db.refresh(result)
@@ -621,34 +688,19 @@ async def submit_test_result(
     if is_critical:
         await notify_lab_event(
             "lab_result_critical",
-            {
-                "order_id": order_id,
-                "test_id": test_id,
-                "result_value": result_value,
-                "normal_range_min": test.normal_range_min,
-                "normal_range_max": test.normal_range_max,
-                "unit": test.unit
-            }
+            order.referral_id,
+            f"CRITICAL result for order #{order_id}, test {test.test_code}: {result_value}"
+            f"{f' {test.unit}' if test.unit else ''} "
+            f"(normal range {test.normal_range_min}-{test.normal_range_max})."
         )
     else:
         await notify_lab_event(
             "lab_result_completed",
-            {
-                "order_id": order_id,
-                "test_id": test_id,
-                "is_abnormal": is_abnormal
-            }
+            order.referral_id,
+            f"Result completed for order #{order_id}, test {test.test_code} (abnormal={is_abnormal})."
         )
 
-    return {
-        "result_id": result.result_id,
-        "order_test_id": order_test.order_test_id,
-        "result_value": result.result_value,
-        "result_date": result.result_date,
-        "is_abnormal": result.is_abnormal,
-        "is_critical": result.is_critical,
-        "notes": result.notes
-    }
+    return result
 
 
 @app.get("/orders/{order_id}/results")
@@ -682,30 +734,22 @@ def get_order_results(order_id: int, db: Session = Depends(get_db)):
     ]
 
 
-@app.patch("/results/{result_id}/review")
-def review_result(result_id: int, review_data: dict, db: Session = Depends(get_db)):
+@app.patch("/results/{result_id}/review", response_model=schemas.TestResultRead)
+def review_result(result_id: int, review_data: schemas.TestResultReview, db: Session = Depends(get_db)):
     """Mark a result as reviewed by a clinician."""
     result = db.query(models.TestResult).filter(models.TestResult.result_id == result_id).first()
     if result is None:
         raise HTTPException(status_code=404, detail=f"Result {result_id} not found")
 
     result.reviewed_date = datetime.utcnow()
-    result.reviewed_by = review_data.get("reviewed_by")
+    result.reviewed_by = review_data.reviewed_by
 
     db.commit()
     db.refresh(result)
 
     logger.info(f"Result reviewed: Result#{result_id} by Doctor#{result.reviewed_by}")
 
-    return {
-        "result_id": result.result_id,
-        "order_test_id": result.order_test_id,
-        "result_value": result.result_value,
-        "reviewed_date": result.reviewed_date,
-        "reviewed_by": result.reviewed_by,
-        "is_abnormal": result.is_abnormal,
-        "is_critical": result.is_critical
-    }
+    return result
 
 
 # ============ STATISTICS & DASHBOARD ============

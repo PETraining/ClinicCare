@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, Boolean, Text
+from sqlalchemy import Column, Date, DateTime, Float, ForeignKey, Integer, String, Boolean, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 
 from db import Base
@@ -41,6 +41,7 @@ class LabOrder(Base):
 
 class OrderTest(Base):
     __tablename__ = "order_tests"
+    __table_args__ = (UniqueConstraint("order_id", "test_id", name="uq_order_tests_order_id_test_id"),)
 
     order_test_id = Column(Integer, primary_key=True, index=True)
     order_id = Column(Integer, ForeignKey("lab_orders.order_id"), nullable=False, index=True)

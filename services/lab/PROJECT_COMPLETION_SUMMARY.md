@@ -6,6 +6,13 @@
 **Team:** Backend Lead (Member 1)  
 **Date Completed:** 2026-08-20
 
+> **2026-08-12 validation update:** An automated end-to-end validation (see
+> `.claude/workflows/VALIDATION_REPORT.md`) found 3 critical defects behind this
+> "production-ready" claim — an order/test status desync, a broken Lab↔Notification
+> Service contract, and a broken `PATCH /tests` partial update. All three (plus
+> several medium/low findings) have been fixed; see `ENDPOINTS.md`'s changelog
+> (v1.1) for details. Re-validate before treating this document's claims as current.
+
 ---
 
 ## Project Overview
