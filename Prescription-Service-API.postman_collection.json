@@ -1,0 +1,938 @@
+{
+  "info": {
+    "_postman_id": "prescription-service-api",
+    "name": "Prescription Service API",
+    "description": "Complete test collection for ReferralIQ Prescription Service (Port 8007)\nGateway URL: http://localhost:8000/api/prescriptions\nDirect Service: http://localhost:8007/prescriptions",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. CREATE PRESCRIPTIONS",
+      "item": [
+        {
+          "name": "1.1 Create Single-Line Prescription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referral_id\": \"ref-postman-001\",\n  \"doctor_id\": 1,\n  \"patient_id\": 1,\n  \"lines\": [\n    {\n      \"medication_name\": \"Paracetamol\",\n      \"quantity\": 20,\n      \"unit\": \"tablets\",\n      \"dosage\": \"500mg\",\n      \"frequency\": \"3x daily\",\n      \"duration_days\": 7,\n      \"refill_count\": 1,\n      \"notes\": \"For fever and pain\"\n    }\n  ],\n  \"notes\": \"Single medication prescription\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 Create Multi-Line Prescription (3 medications)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referral_id\": \"ref-postman-multi\",\n  \"doctor_id\": 2,\n  \"patient_id\": 2,\n  \"lines\": [\n    {\n      \"medication_name\": \"Metformin\",\n      \"quantity\": 90,\n      \"unit\": \"tablets\",\n      \"dosage\": \"500mg\",\n      \"frequency\": \"3x daily\",\n      \"duration_days\": 30,\n      \"refill_count\": 3\n    },\n    {\n      \"medication_name\": \"Enalapril\",\n      \"quantity\": 30,\n      \"unit\": \"tablets\",\n      \"dosage\": \"5mg\",\n      \"frequency\": \"2x daily\",\n      \"duration_days\": 30,\n      \"refill_count\": 2,\n      \"notes\": \"Blood pressure medication\"\n    },\n    {\n      \"medication_name\": \"Aspirin\",\n      \"quantity\": 30,\n      \"unit\": \"tablets\",\n      \"dosage\": \"75mg\",\n      \"frequency\": \"1x daily\",\n      \"duration_days\": 30,\n      \"refill_count\": 6,\n      \"notes\": \"For cardiovascular health\"\n    }\n  ],\n  \"notes\": \"Chronic disease management - 3 medications\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 Create High-Dosage Prescription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referral_id\": \"ref-postman-highdose\",\n  \"doctor_id\": 1,\n  \"patient_id\": 3,\n  \"lines\": [\n    {\n      \"medication_name\": \"Amoxicillin\",\n      \"quantity\": 30,\n      \"unit\": \"tablets\",\n      \"dosage\": \"500mg\",\n      \"frequency\": \"3x daily\",\n      \"duration_days\": 10,\n      \"refill_count\": 0,\n      \"notes\": \"Antibiotic - take with water\"\n    }\n  ],\n  \"notes\": \"Infection treatment\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "2. LIST PRESCRIPTIONS",
+      "item": [
+        {
+          "name": "2.1 List All Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.2 List by Patient ID = 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions?patient_id=1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ],
+              "query": [
+                {
+                  "key": "patient_id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.3 List by Patient ID = 2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions?patient_id=2",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ],
+              "query": [
+                {
+                  "key": "patient_id",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.4 List by Doctor ID = 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions?doctor_id=1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ],
+              "query": [
+                {
+                  "key": "doctor_id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.5 List by Doctor ID = 2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions?doctor_id=2",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ],
+              "query": [
+                {
+                  "key": "doctor_id",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.6 List by Status = draft",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions?status=draft",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "draft"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.7 List by Status = issued",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions?status=issued",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "issued"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.8 List by Status = fulfilled",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions?status=fulfilled",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "fulfilled"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.9 Combined Filter - Patient=1 & Status=issued",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions?patient_id=1&status=issued",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ],
+              "query": [
+                {
+                  "key": "patient_id",
+                  "value": "1"
+                },
+                {
+                  "key": "status",
+                  "value": "issued"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "3. GET SINGLE PRESCRIPTION",
+      "item": [
+        {
+          "name": "3.1 Get Prescription ID = 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.2 Get Prescription ID = 2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/2",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.3 Get Prescription ID = 3 (multi-line)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/3",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "3"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.4 Get Non-Existent Prescription (expect 404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/99999",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "4. STATUS TRANSITIONS - VALID",
+      "item": [
+        {
+          "name": "4.1 VALID: Draft → Issued",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"issued\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/2/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "2",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.2 VALID: Issued → Fulfilled",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"fulfilled\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/1/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "1",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.3 VALID: Issued → Partial Fulfilled",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"partial_fulfilled\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/3/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "3",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.4 VALID: Partial Fulfilled → Fulfilled",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"fulfilled\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/3/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "3",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.5 VALID: Draft → Cancelled",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"cancelled\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/4/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "4",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.6 VALID: Issued → Cancelled",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"cancelled\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/5/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "5",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "5. STATUS TRANSITIONS - INVALID (expect 400)",
+      "item": [
+        {
+          "name": "5.1 INVALID: Fulfilled → Draft",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"draft\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/1/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "1",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.2 INVALID: Cancelled → Issued",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"issued\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/4/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "4",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.3 INVALID: Draft → Fulfilled",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"fulfilled\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/2/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "2",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "6. ERROR CASES",
+      "item": [
+        {
+          "name": "6.1 ERROR: Invalid Doctor ID (expect validation error)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referral_id\": \"ref-bad-doctor\",\n  \"doctor_id\": 99999,\n  \"patient_id\": 1,\n  \"lines\": [\n    {\n      \"medication_name\": \"Test Drug\",\n      \"quantity\": 10,\n      \"unit\": \"tablets\",\n      \"dosage\": \"100mg\",\n      \"frequency\": \"1x daily\",\n      \"duration_days\": 5\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.2 ERROR: Invalid Patient ID (expect validation error)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referral_id\": \"ref-bad-patient\",\n  \"doctor_id\": 1,\n  \"patient_id\": 99999,\n  \"lines\": [\n    {\n      \"medication_name\": \"Test Drug\",\n      \"quantity\": 10,\n      \"unit\": \"tablets\",\n      \"dosage\": \"100mg\",\n      \"frequency\": \"1x daily\",\n      \"duration_days\": 5\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.3 ERROR: Update Non-Existent (expect 404)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"issued\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions/99999/status",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions",
+                "99999",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.4 ERROR: Empty Medication Lines (expect 422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referral_id\": \"ref-no-meds\",\n  \"doctor_id\": 1,\n  \"patient_id\": 1,\n  \"lines\": []\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.5 ERROR: Missing Required Field (expect 422)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referral_id\": \"ref-missing-field\",\n  \"doctor_id\": 1,\n  \"patient_id\": 1,\n  \"lines\": [\n    {\n      \"quantity\": 10,\n      \"unit\": \"tablets\",\n      \"dosage\": \"100mg\",\n      \"frequency\": \"1x daily\",\n      \"duration_days\": 5\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8000/api/prescriptions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8000",
+              "path": [
+                "api",
+                "prescriptions"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "7. DIRECT SERVICE ACCESS (Port 8007)",
+      "item": [
+        {
+          "name": "7.1 Direct: List All Prescriptions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8007/prescriptions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8007",
+              "path": [
+                "prescriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "7.2 Direct: Create Prescription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referral_id\": \"ref-direct-service\",\n  \"doctor_id\": 1,\n  \"patient_id\": 1,\n  \"lines\": [\n    {\n      \"medication_name\": \"Direct Test\",\n      \"quantity\": 20,\n      \"unit\": \"tablets\",\n      \"dosage\": \"50mg\",\n      \"frequency\": \"2x daily\",\n      \"duration_days\": 10\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8007/prescriptions",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8007",
+              "path": [
+                "prescriptions"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    },
+    {
+      "key": "gateway_port",
+      "value": "8000",
+      "type": "string"
+    },
+    {
+      "key": "service_port",
+      "value": "8007",
+      "type": "string"
+    }
+  ]
+}
