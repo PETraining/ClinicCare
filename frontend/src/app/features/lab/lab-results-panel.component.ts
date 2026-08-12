@@ -26,6 +26,6 @@ export class LabResultsPanelComponent {
       } else if (patientId !== undefined) {
         this.labService.loadOrders({ patient_id: patientId });
       }
-    });
+    }, { allowSignalWrites: true });
   }
 }

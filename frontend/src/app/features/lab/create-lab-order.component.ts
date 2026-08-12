@@ -86,7 +86,7 @@ export class CreateLabOrderComponent implements OnInit {
       if (patientId) {
         this.referralService.loadByPatient(patientId);
       }
-    });
+    }, { allowSignalWrites: true });
   }
 
   ngOnInit(): void {
