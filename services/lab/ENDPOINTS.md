@@ -210,6 +210,14 @@ Update an existing test definition.
 }
 ```
 
+**Error Responses:**
+- **400 Bad Request:** New test_code already used by another test
+```json
+{
+  "detail": "Test with code CBC already exists"
+}
+```
+
 **Example Request:**
 ```bash
 curl -X PATCH http://localhost:8006/tests/1 \
@@ -297,10 +305,22 @@ Create a new laboratory order for a patient.
 ```
 
 **Error Responses:**
+- **400 Bad Request:** Duplicate test_ids in the request
+```json
+{
+  "detail": "Duplicate test_ids in request; each test may only be ordered once per order"
+}
+```
 - **400 Bad Request:** Patient not found
 ```json
 {
   "detail": "Patient 999 not found"
+}
+```
+- **400 Bad Request:** Ordering doctor not found
+```json
+{
+  "detail": "Doctor 999 not found"
 }
 ```
 - **400 Bad Request:** Referral not found
@@ -312,7 +332,7 @@ Create a new laboratory order for a patient.
 - **400 Bad Request:** One or more tests not found
 ```json
 {
-  "detail": "One or more tests not found"
+  "detail": "Tests not found: {999}"
 }
 ```
 
@@ -459,7 +479,7 @@ Get all tests in an order.
 ]
 ```
 
-**Status:** ⏳ *To be implemented in Week 2*
+**Status:** ✅ Implemented
 
 ---
 
@@ -493,7 +513,7 @@ Mark a sample as collected.
 }
 ```
 
-**Status:** ⏳ *To be implemented in Week 2, Day 6*
+**Status:** ✅ Implemented
 
 ---
 
@@ -514,7 +534,7 @@ Submit a test result.
 }
 ```
 
-**Response:** 201 Created
+**Response:** 200 OK
 ```json
 {
   "result_id": 1,
@@ -533,8 +553,10 @@ Submit a test result.
 - If test has `normal_range_min/max`, numeric results outside range → `is_abnormal: true`
 - If result > 1.5x `normal_range_max` → `is_critical: true` (auto-flagged)
 - Result value is validated as number if range exists
+- The order test must have status `sample_collected` or `in_progress` (i.e. the sample has already been collected); submitting before collection or a second time after completion returns `400`
+- Submitting a result recomputes the parent order's aggregate `status` from all of its order tests
 
-**Status:** ⏳ *To be implemented in Week 2, Day 8*
+**Status:** ✅ Implemented
 
 ---
 
@@ -561,7 +583,7 @@ Get all results for an order.
 ]
 ```
 
-**Status:** ⏳ *To be implemented in Week 2, Day 8*
+**Status:** ✅ Implemented
 
 ---
 
@@ -593,7 +615,7 @@ Mark a result as reviewed by a clinician.
 }
 ```
 
-**Status:** ⏳ *To be implemented in Week 2, Day 9*
+**Status:** ✅ Implemented
 
 ---
 
@@ -624,7 +646,7 @@ Update the status of a specific test in an order.
 }
 ```
 
-**Status:** ⏳ *To be implemented in Week 2, Day 7*
+**Status:** ✅ Implemented
 
 ---
 
@@ -656,7 +678,7 @@ Get full status history for an order.
 ]
 ```
 
-**Status:** ⏳ *To be implemented in Week 2, Day 7*
+**Status:** ✅ Implemented
 
 ---
 
@@ -786,7 +808,7 @@ pending → collected → processed
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-08-09 | Initial version with Test Catalog and Lab Order endpoints |
-| (Future) | TBD | Add Sample Collection, Results, Status Tracking endpoints |
+| 1.1 | 2026-08-12 | Fixed order/test status desync, Notification Service contract mismatch, and `PATCH /tests` partial-update bug found during validation; implemented `GET /orders/{order_id}/tests`; documented all Sample Collection/Results/Status Tracking endpoints as implemented (see `VALIDATION_REPORT.md`) |
 
 ---
 

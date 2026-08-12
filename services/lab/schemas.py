@@ -21,6 +21,18 @@ class TestCreate(TestBase):
     pass
 
 
+class TestUpdate(BaseModel):
+    test_code: Optional[str] = None
+    test_name: Optional[str] = None
+    description: Optional[str] = None
+    sample_type: Optional[str] = None
+    processing_time_days: Optional[int] = None
+    normal_range_min: Optional[float] = None
+    normal_range_max: Optional[float] = None
+    unit: Optional[str] = None
+    specialty: Optional[str] = None
+
+
 class TestRead(TestBase):
     model_config = ConfigDict(from_attributes=True)
     test_id: int
@@ -84,6 +96,24 @@ class LabSampleRead(LabSampleBase):
     status: str
 
 
+class SampleCollectRequest(BaseModel):
+    collected_by: Optional[int] = None
+
+
+# Order Test Status Schemas
+class OrderTestStatusUpdate(BaseModel):
+    new_status: str
+    changed_by: Optional[int] = None
+
+
+class OrderTestStatusRead(BaseModel):
+    order_test_id: int
+    order_id: int
+    test_id: int
+    old_status: str
+    new_status: str
+
+
 # Test Result Schemas
 class TestResultBase(BaseModel):
     result_value: str
@@ -94,6 +124,14 @@ class TestResultBase(BaseModel):
 
 class TestResultCreate(TestResultBase):
     pass
+
+
+class TestResultSubmit(BaseModel):
+    result_value: str
+    is_abnormal: Optional[bool] = None
+    is_critical: Optional[bool] = None
+    notes: Optional[str] = None
+    submitted_by: Optional[int] = None
 
 
 class TestResultReview(BaseModel):
