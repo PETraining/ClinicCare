@@ -1,0 +1,354 @@
+.prescription-detail-container {
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.button-secondary {
+  padding: 10px 20px;
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-block;
+}
+
+.button-secondary:hover {
+  background-color: #e8e8e8;
+}
+
+/* Loading & Error */
+.loading,
+.no-data {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+
+.alert {
+  padding: 16px;
+  margin-bottom: 24px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.alert-error {
+  background-color: #fee;
+  color: #c33;
+  border-left: 4px solid #c33;
+}
+
+.alert-success {
+  background-color: #efe;
+  color: #2a7;
+  border-left: 4px solid #2a7;
+}
+
+/* Content */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header */
+.prescription-header {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header-info h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.status-badge {
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.status-active {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-badge.status-completed {
+  background-color: #e0e0e0;
+  color: #424242;
+}
+
+.status-badge.status-voided {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+/* Info Grid */
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.info-card {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.info-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.info-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+/* Sections */
+.section {
+  background: white;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.section h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 20px 0;
+}
+
+/* Medications List */
+.medications-list {
+  display: grid;
+  gap: 12px;
+}
+
+.medication-item {
+  padding: 16px;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.med-details {
+  flex-grow: 1;
+}
+
+.med-id {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.med-quantity,
+.med-frequency,
+.med-instructions {
+  font-size: 14px;
+  color: #1a1a1a;
+  margin: 4px 0;
+}
+
+.med-quantity strong,
+.med-frequency strong,
+.med-instructions strong {
+  color: #2196f3;
+}
+
+/* Dispense Section */
+.dispense-section {
+  background-color: #f0f7ff;
+  border: 2px solid #2196f3;
+}
+
+.dispense-section h2 {
+  color: #1976d2;
+}
+
+/* Form */
+.dispense-form {
+  display: grid;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.form-input:disabled {
+  background-color: #f5f5f5;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Buttons */
+.button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.button-primary {
+  background-color: #2196f3;
+  color: white;
+}
+
+.button-primary:hover:not(:disabled) {
+  background-color: #1976d2;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* History Table */
+.history-table {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table thead {
+  background-color: #f5f5f5;
+  border-bottom: 2px solid #eee;
+}
+
+.table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #666;
+}
+
+.table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.table tbody tr:hover {
+  background-color: #f9f9f9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .prescription-detail-container {
+    padding: 16px;
+  }
+
+  .prescription-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .header-info h1 {
+    font-size: 24px;
+  }
+
+  .status-badge {
+    align-self: flex-start;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section {
+    padding: 16px;
+  }
+
+  .medication-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dispense-form {
+    gap: 12px;
+  }
+
+  .button {
+    width: 100%;
+    text-align: center;
+  }
+
+  .table {
+    font-size: 12px;
+  }
+
+  .table th,
+  .table td {
+    padding: 8px;
+  }
+}

@@ -1,0 +1,167 @@
+<div class="prescription-detail-container">
+  <div class="page-header">
+    <a routerLink="/pharmacy/prescriptions" class="button-secondary">← Back to Prescriptions</a>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading">
+    <p>Loading prescription details...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error()" class="alert alert-error">
+    {{ error() }}
+  </div>
+
+  <!-- Prescription Details -->
+  <div *ngIf="!loading() && selectedPrescription(); else noData" class="content">
+    <!-- Header Card -->
+    <div class="prescription-header">
+      <div class="header-info">
+        <h1>Prescription #{{ selectedPrescription()!.PrescriptionId }}</h1>
+        <p class="subtitle">Referral #{{ selectedPrescription()!.ReferralId }}</p>
+      </div>
+      <div [ngClass]="'status-badge ' + getStatusClass(selectedPrescription()!.Status)">
+        {{ selectedPrescription()!.Status }}
+      </div>
+    </div>
+
+    <!-- Prescription Info Grid -->
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">Patient</div>
+        <div class="info-value">#{{ selectedPrescription()!.PatientId }}</div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-label">Prescribing Doctor</div>
+        <div class="info-value">#{{ selectedPrescription()!.PrescribingDoctorId }}</div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-label">Created</div>
+        <div class="info-value">{{ selectedPrescription()!.CreatedAt | date: 'short' }}</div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-label">Last Updated</div>
+        <div class="info-value">{{ selectedPrescription()!.UpdatedAt | date: 'short' }}</div>
+      </div>
+    </div>
+
+    <!-- Medications Section -->
+    <section class="section">
+      <h2>Medications in Prescription</h2>
+
+      <div *ngIf="selectedPrescription()!.Medications.length > 0; else noMedications" class="medications-list">
+        <div *ngFor="let med of selectedPrescription()!.Medications" class="medication-item">
+          <div class="med-details">
+            <div class="med-id">Medication ID: {{ med.medication_id }}</div>
+            <div class="med-quantity">Quantity: <strong>{{ med.quantity }}</strong> units</div>
+            <div class="med-frequency">Frequency: <strong>{{ med.frequency }}</strong></div>
+            <div *ngIf="med.instructions" class="med-instructions">
+              Instructions: <strong>{{ med.instructions }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noMedications>
+        <p class="no-data">No medications in this prescription</p>
+      </ng-template>
+    </section>
+
+    <!-- Dispensing Form (only if Active) -->
+    <section *ngIf="selectedPrescription()!.Status === 'Active'" class="section dispense-section">
+      <h2>Dispense Medication</h2>
+
+      <!-- Success Message -->
+      <div *ngIf="dispenseSuccess()" class="alert alert-success">
+        ✅ Medication dispensed successfully!
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="dispenseError()" class="alert alert-error">
+        ❌ {{ dispenseError() }}
+      </div>
+
+      <form (ngSubmit)="dispenseMedication()" class="dispense-form">
+        <div class="form-group">
+          <label for="medication-select">Select Medication to Dispense</label>
+          <select
+            id="medication-select"
+            [(ngModel)]="selectedMedicationId"
+            name="medication"
+            class="form-input"
+            required
+          >
+            <option [value]="null">-- Select medication --</option>
+            <option *ngFor="let med of availableMedicationsToDispense" [value]="med.medication_id">
+              Medication #{{ med.medication_id }} ({{ med.quantity }} units)
+            </option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="quantity-input">Quantity to Dispense</label>
+          <input
+            id="quantity-input"
+            type="number"
+            [(ngModel)]="dispenseQuantity"
+            name="quantity"
+            class="form-input"
+            min="1"
+            required
+          />
+        </div>
+
+        <button
+          type="submit"
+          class="button button-primary"
+          [disabled]="dispensing() || selectedPrescription()!.Status !== 'Active'"
+        >
+          {{ dispensing() ? 'Dispensing...' : 'Dispense Medication' }}
+        </button>
+      </form>
+    </section>
+
+    <!-- Dispensing History -->
+    <section class="section">
+      <h2>Dispensing History</h2>
+
+      <div
+        *ngIf="selectedPrescription()!.DispensingRecords && selectedPrescription()!.DispensingRecords!.length > 0; else noHistory"
+        class="history-table"
+      >
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Medication</th>
+              <th>Quantity</th>
+              <th>Dispensed At</th>
+              <th>Dispensed By</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let record of selectedPrescription()!.DispensingRecords">
+              <td>#{{ record.DispensingId }}</td>
+              <td>#{{ record.MedicationId }}</td>
+              <td>{{ record.QuantityDispensed }} units</td>
+              <td>{{ record.DispensedAt | date: 'short' }}</td>
+              <td>{{ record.DispensedBy }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noHistory>
+        <p class="no-data">No medications have been dispensed yet</p>
+      </ng-template>
+    </section>
+  </div>
+
+  <ng-template #noData>
+    <p class="no-data">Prescription not found</p>
+  </ng-template>
+</div>

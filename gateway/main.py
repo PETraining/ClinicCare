@@ -10,6 +10,7 @@ SERVICE_MAP = {
     "referrals": os.environ.get("REFERRAL_SERVICE_URL", "http://localhost:8003"),
     "documents": os.environ.get("DOCUMENT_SERVICE_URL", "http://localhost:8004"),
     "notifications": os.environ.get("NOTIFICATION_SERVICE_URL", "http://localhost:8005"),
+    "pharmacy": os.environ.get("PHARMACY_SERVICE_URL", "http://localhost:8006"),
 }
 
 app = FastAPI(title="API Gateway")
@@ -36,10 +37,13 @@ async def proxy(full_path: str, request: Request):
     body = await request.body()
     headers = {k: v for k, v in request.headers.items() if k.lower() not in HOP_BY_HOP_HEADERS}
 
+    # Remove service name from path: /api/pharmacy/prescriptions → /prescriptions
+    remaining_path = full_path.split("/", 1)[1] if "/" in full_path else ""
+
     try:
         upstream = await client.request(
             request.method,
-            f"{base_url}/{full_path}",
+            f"{base_url}/{remaining_path}",
             params=request.query_params,
             content=body,
             headers=headers,
