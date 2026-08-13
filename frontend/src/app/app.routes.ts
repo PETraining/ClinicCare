@@ -15,21 +15,7 @@ import { PatientLoginComponent } from './features/patient-portal/login/patient-l
 import { PatientDashboardComponent } from './features/patient-portal/dashboard/patient-dashboard.component';
 
 export const routes: Routes = [
-  { path: 'login', component: LoginComponent },
-  {
-    path: '',
-    component: ShellComponent,
-    canActivate: [authGuard],
-    children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'patients', component: PatientsListComponent },
-      { path: 'patients/:id', component: PatientDetailsComponent },
-      { path: 'referrals', component: ReferralTrackingComponent },
-      { path: 'referrals/new', component: CreateReferralComponent },
-      { path: 'documents', component: DocumentsComponent },
-    ],
-  },
+  
   // Patient-facing portal: entirely separate identity model, shell, and
   // guard from the clinician routes above (see teamupdates/features/patient-portal).
   { path: 'patient-portal/login', component: PatientLoginComponent },
@@ -43,5 +29,5 @@ export const routes: Routes = [
       // 'documents' and 'tracking' children added by Sub-Features 2 and 3.
     ],
   },
-  { path: '**', redirectTo: 'login' },
+  { path: '**', redirectTo: 'patient-portal/login' },
 ];
