@@ -1,0 +1,18 @@
+<div class="login-card">
+  <h1>ReferralIQ Patient Portal</h1>
+  <p>View your referrals and upcoming appointments.</p>
+  <p class="hint">Demo login — no password required. Pick who you are.</p>
+
+  <select (change)="onSelect($any($event.target).value)">
+    <option value="">Select a patient…</option>
+    @for (patient of patientService.patients(); track patient.PatientId) {
+      <option [value]="patient.PatientId">{{ patient.Name }}</option>
+    }
+  </select>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  <button (click)="login()">Continue</button>
+</div>

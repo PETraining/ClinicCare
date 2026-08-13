@@ -1,0 +1,77 @@
+.subtitle {
+  color: #64748b;
+  margin-top: -0.5rem;
+}
+
+section {
+  margin: 1.5rem 0;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.reason {
+  margin: 0.25rem 0 0.75rem;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.25rem 0.75rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+dt {
+  font-weight: 600;
+}
+
+dd {
+  margin: 0;
+}
+
+.location,
+.instructions,
+.referral-link {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.instructions {
+  color: #475569;
+}
+
+.referral-link {
+  color: #64748b;
+  font-size: 0.8rem;
+}
+
+.empty {
+  color: #64748b;
+}
+
+.status {
+  font-size: 0.75rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+}

@@ -1,256 +1,99 @@
-# Patient Portal — Team Assignment & Timeline
+# Patient Portal — Feature Decomposition Plan
 
-**Date Created**: 2026-08-12  
-**Feature**: Patient Portal  
-**Total Team**: 3 members  
-**Total Duration**: 1–2 weeks
+**Date**: 2026-08-13
+**Team Size**: 3 members
+**Status**: Rewritten against actual repo structure (see revision note)
 
-## Team Breakdown
+> **Revision note**: an earlier version of this document (and the linked context-maps) assumed backend paths and gateway conventions that don't exist in this repo (`services/api-gateway/`, an `/api/patient-portal/*` gateway prefix, an `Appointment` model already present on the Patient Service). This version — and the context-maps it links to — were re-derived by reading the actual services (`services/patient`, `services/referral`, `services/document`, `services/notification`, `gateway/main.py`) and the actual Angular frontend (`frontend/src/app`). Use this version; treat the old `referral-tracking/context-map.md` file as stale (it has not been deleted, only superseded by `referral-progress-tracking/context-map.md`).
 
-### Team Member 1: Referral & Appointment View (Foundational)
-**Name**: [To be assigned]  
-**Role**: Backend + Frontend for patient portal shell and referral/appointment dashboard  
-**Timeline**: Week 1 (Days 1–5)  
-**Focus**: Build the foundation that all other sub-features depend on
+## Overview
 
-**Responsibilities**:
-- Design and implement the Patient Portal shell component (reusable layout)
-- Build Referral and Appointment backend APIs (endpoints, models, schemas)
-- Create referral and appointment card components
-- Implement auth guard for patient-only access
-- Create patient-portal.service.ts for HTTP calls
-- Seed test data for referrals and appointments
-- Register patient-portal route in app.routes.ts
+The existing app ("ReferralIQ") is a clinician-facing staff tool (FastAPI microservices + Angular 18 frontend). The Patient Portal adds a brand-new, patient-facing area (`/patient-portal/*`) with its own auth, split into 3 independently buildable sub-features: (1) a referral/appointment dashboard, (2) document upload/download plus questionnaires, and (3) referral status timelines with notifications. Two of the three data dependencies a typical decomposition would create are already satisfied by existing code — `GET /api/referrals?patientId=` already works today — which keeps Sub-Features 2 and 3 largely unblocked from Sub-Feature 1's pace.
 
-**Deliverables**:
-- ✓ Backend: Referral GET endpoints, Appointment GET endpoints
-- ✓ Frontend: Patient Portal shell, dashboard, card components, service
-- ✓ API Gateway: Proxy routes for `/api/patient-portal/referrals` and `/api/patient-portal/appointments`
-- ✓ Seed data: 2+ referrals and appointments for demo patient
-- ✓ Auth guard: Patient-only access to /patient-portal routes
+## Sub-Feature Breakdown
 
-**Context**: See `teamupdates/features/patient-portal/referral-appointment-view/context-map.md`
+### Sub-Feature 1: Referral & Appointment View
+**Team Member**: Engineer A
+**Timeline**: Week 1, Days 1–5 (foundational — build first)
+**Key Deliverables**:
+- Patient auth (`PatientAuthService`, `patientAuthGuard` — new, password-less demo picker; no PII/credentials stored)
+- `PatientPortalShellComponent` + `/patient-portal` route skeleton
+- New `Appointment` model/endpoints added to the Referral Service (8003) — additive, since no appointment concept exists in the repo today
+- Dashboard rendering referrals (existing endpoint) + appointments (new endpoint), scoped to the logged-in patient
 
-**Success Criteria**:
-- Patient can view their referrals and appointments on a dashboard
-- Each referral shows specialty, provider, status, appointment date
-- Each appointment shows date, time, provider, location
-- API enforces patient data isolation
+**Spec**: `teamupdates/features/patient-portal/referral-appointment-view/context-map.md`
 
-**Blockers**: None (foundational)
+### Sub-Feature 2: Document & Form Management
+**Team Member**: Engineer B
+**Timeline**: Week 1–2, Days 1–7/10 (heaviest sub-feature — real file storage + a new Questionnaire subsystem, both from scratch)
+**Key Deliverables**:
+- Real file upload/download added to the Document Service (8004) — today it only stores metadata, no bytes
+- New `Questionnaire`/`QuestionnaireResponse` models + endpoints, in the same service (no new microservice/port)
+- Patient-facing document list, upload form (referral dropdown backed by the already-live `GET /api/referrals?patientId=`), questionnaire fill-and-submit flow
 
-**Supported by**: Tech lead or architect for code review and integration guidance
+**Spec**: `teamupdates/features/patient-portal/document-form-management/context-map.md`
 
----
+### Sub-Feature 3: Referral Progress Tracking
+**Team Member**: Engineer C
+**Timeline**: Week 1, Days 1–5 (start after Sub-Feature 1's referral-service changes land — see Critical Path)
+**Key Deliverables**:
+- New `ReferralStatusHistory` table, hooked into the existing `_transition()` function in the Referral Service (8003)
+- `PatientId`/`Read` columns added to the Notification Service (8005); `PatientId` threaded through from the referral service's existing notification call
+- Patient-facing status timeline (`/patient-portal/tracking/:referralId`) and notification inbox (`/patient-portal/notifications`) — named/routed to avoid collision with the existing clinician `ReferralTrackingComponent` at `/referrals`
 
-### Team Member 2: Document & Form Management
-**Name**: [To be assigned]  
-**Role**: Backend + Frontend for document upload/download and form handling  
-**Timeline**: Week 1–2 (Days 2–7, overlapping with Team 1)  
-**Focus**: Enable patients to share pre-visit documents and forms
+**Spec**: `teamupdates/features/patient-portal/referral-progress-tracking/context-map.md`
 
-**Responsibilities**:
-- Design PatientDocument model in Document Service
-- Build document upload, download, and list APIs
-- Create upload form component with referral selector
-- Create document list and card components
-- Implement document.service.ts for HTTP calls
-- Handle file persistence and retrieval
-- Seed sample forms/documents
-- Integrate with patient portal navigation
+## Team Assignment at a Glance
 
-**Deliverables**:
-- ✓ Backend: Document upload, download, list endpoints
-- ✓ Model: PatientDocument with patient_id, referral_id, status
-- ✓ Frontend: Upload form, document list, document card components
-- ✓ API Gateway: Proxy routes for `/api/patient-portal/documents/*`
-- ✓ Seed data: Sample forms/documents for demo patient
-- ✓ File handling: Store and serve files persistently
+| Engineer | Sub-Feature | Primary Services Touched | Timeline | Starts |
+| --- | --- | --- | --- | --- |
+| A | Referral & Appointment View | Referral Service (8003, new `Appointment`), Gateway (1-line `SERVICE_MAP` add), Frontend (new shell/auth) | Week 1, Days 1–5 | Day 1 (foundational) |
+| B | Document & Form Management | Document Service (8004, file storage + Questionnaire subsystem) | Week 1–2, Days 1–7/10 | Day 1 (no blocking dependency) |
+| C | Referral Progress Tracking | Referral Service (8003, `ReferralStatusHistory`), Notification Service (8005, `PatientId`/`Read`) | Week 1, Days 1–5 | Day 3, after rebasing onto A's referral-service changes |
 
-**Context**: See `teamupdates/features/patient-portal/document-form-management/context-map.md`
+## Critical Path / Key Cross-Feature Dependency
 
-**Success Criteria**:
-- Patient can navigate to Documents section
-- Patient can upload a file with optional referral association
-- Patient can download their uploaded documents
-- API enforces patient data isolation
+**This is a file-collision dependency, not a data dependency.** Engineer A and Engineer C both add models/endpoints to the same two files: `services/referral/models.py` and `services/referral/main.py` (A adds `Appointment`, C adds `ReferralStatusHistory` + a hook inside the existing `_transition()` function). Engineer B has zero file overlap with either (all of Sub-Feature 2 lives in the Document Service) and is **not** blocked on anything — the referral data it needs (`GET /api/referrals?patientId=`) already exists in the codebase today.
 
-**Blockers**: 
-- Depends on Sub-Feature 1 for referral list (for dropdown in upload form)
-  - **Unblock**: Use seed referral data until Sub-Feature 1 APIs are ready
-
-**Supported by**: Team Member 1 for integration, Tech lead for file handling guidance
-
----
-
-### Team Member 3: Referral Progress Tracking
-**Name**: [To be assigned]  
-**Role**: Backend + Frontend for referral status history, timeline, and notifications  
-**Timeline**: Week 1–2 (Days 3–7, overlapping with Teams 1 & 2)  
-**Focus**: Give patients visibility into referral progress and status changes
-
-**Responsibilities**:
-- Design ReferralStatusHistory model in Referral Service
-- Build referral tracking and status history endpoints
-- Create timeline event component
-- Create referral tracking detail component
-- Create next-steps messaging component
-- Implement referral-tracking.service.ts
-- Wire up notifications when referral status changes
-- Call NotificationService 8005 for email/push notifications
-- Seed status history for demo referrals
-
-**Deliverables**:
-- ✓ Backend: Referral tracking endpoint, status history retrieval
-- ✓ Model: ReferralStatusHistory with status changes, timestamps, reasons
-- ✓ Frontend: Timeline, tracking detail, next-steps components
-- ✓ API Gateway: Proxy route for `/api/patient-portal/referral-tracking/{refId}`
-- ✓ Notifications: Emit when referral status changes (integration with Notification Service)
-- ✓ Seed data: Status history for 2+ demo referrals
-
-**Context**: See `teamupdates/features/patient-portal/referral-tracking/context-map.md`
-
-**Success Criteria**:
-- Patient can view referral status timeline
-- Timeline shows status changes with dates and reasons
-- Patient receives notifications when status changes
-- API enforces patient data isolation
-- Next-steps messaging guides patient on actions (e.g., "Upload insurance")
-
-**Blockers**:
-- Depends on Sub-Feature 1 for referral data
-  - **Unblock**: Use seed referral data until Sub-Feature 1 APIs are ready
-- Depends on NotificationService 8005 (should already exist)
-  - **Unblock**: If NotificationService endpoints are unclear, coordinate with platform team
-
-**Supported by**: Team Member 1 for referral data, Tech lead for notification integration
-
----
+Sequencing to avoid merge pain:
+1. **Days 1–2**: Engineer A lands the `Appointment` model + endpoints + gateway `SERVICE_MAP` entry in the Referral Service, and pushes to the shared integration branch.
+2. **Day 3**: Engineer C rebases onto that before starting the `ReferralStatusHistory` work in the same files.
+3. **Days 1–5 (parallel, unblocked)**: Engineer B builds the entire Document & Form Management sub-feature independently.
+4. **Days 3–5**: All three build their frontend components against the shared `PatientPortalShellComponent`/`patientAuthGuard` from Engineer A (available by end of Day 2).
 
 ## Parallel Work Timeline
 
 ```
-Week 1 (Days 1–5)
-  Team 1 (Sub-Feature 1) ██████████████████░░░░░░░░░░░░░░░░░░░░ Days 1–5
-  Team 2 (Sub-Feature 2) ░░░░░░░░░░░░░░░░░░░░████████████░░░░░░░░░░░░ Days 2–7
-  Team 3 (Sub-Feature 3) ░░░░░░░░░░░░░░░░░░░░░░░░░░██████████░░░░░░░░ Days 3–7
+Days 1–2   Engineer A: patient auth + shell + Appointment model/endpoints  ████████░░░░░░░░░░░░░░░░
+           Engineer B: Document Service file storage + Questionnaire models ████████░░░░░░░░░░░░░░░░
+           Engineer C: reading spec, prepping Notification schema changes   ████░░░░░░░░░░░░░░░░░░░░
 
-Week 2 (Days 6–7)
-  Integration Phase      ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░████████ Days 6–7
-  - Wire up navigation
-  - Align seed data
-  - End-to-end testing
-  - Validator checks
+Days 3–5   Engineer A: dashboard UI, routing, integration polish            ░░░░░░░░████████░░░░░░░░
+           Engineer B: upload/download + questionnaire UI                   ░░░░░░░░████████░░░░░░░░
+           Engineer C: rebase onto A's referral changes, build history +    ░░░░░░░░████████░░░░░░░░
+                        notification patch + timeline/inbox UI
+
+Days 6–10  Engineer B: remaining Document & Form Management polish (heaviest scope, may run 1 extra week)
+           Integration phase: nav wiring, seed data consistency, end-to-end walkthrough, clinician regression check
 ```
 
 ## Coordination & Dependencies
 
-### Kick-off (Day 1, Before Implementation)
-1. All team members read this TEAM_ASSIGNMENT.md
-2. Each team member reads their assigned sub-feature context-map
-3. Team lead reviews INTEGRATION_PLAN.md with the group
-4. Clarify any ambiguities in the shared data contracts
-5. Define communication protocol (daily standup, Slack channel, etc.)
+### Kick-off
+1. All three engineers read this file and `INTEGRATION_PLAN.md`.
+2. Each engineer reads their own context-map — and reads the actual source files it references (`services/referral/main.py`, `services/document/models.py`, `services/notification/models.py`, `gateway/main.py`, `frontend/src/app/app.routes.ts`) before writing code, since the specs are grounded in exact current file contents that will keep changing as the feature is built.
+3. Engineer A and Engineer C explicitly agree on the Day 2→Day 3 handoff for `services/referral/*`.
 
-### Daily Standup (Days 2–7, 15 min)
-- **Team Member 1**: What's done, what's next, blockers?
-- **Team Member 2**: What's done, what's next, blockers? (likely: waiting for Sub-Feature 1 APIs)
-- **Team Member 3**: What's done, what's next, blockers? (likely: waiting for Sub-Feature 1 APIs)
-- **Tech Lead**: Address blockers, provide guidance
-
-### Mid-Week Sync (Day 4, 30 min)
-- Review Team 1's completed backend APIs
-- Ensure Teams 2 & 3 have everything they need to continue
-- Discuss any design issues or scope changes
-
-### Integration Week (Days 6–7)
-- All teams merge code to main branch (or integration branch)
-- Run validator agents: `/validate-patient-portal <sub-feature>`
-- Manual end-to-end testing as a group
-- Fix any integration issues
-- Deploy to staging or production
-
-## Unblocking Strategy
-
-### For Team 2 & 3: Waiting for Team 1's APIs
-
-**Option A: Use Seed Data (Recommended for fast parallel progress)**
-```python
-# In Team 2's seed.py and Team 3's seed.py, hardcode test referrals
-# Use these for testing while Team 1's APIs are being built
-
-TEST_REFERRALS = [
-    {"id": "ref-1", "patientId": 1, "specialty": "Cardiology", "status": "pending"},
-    {"id": "ref-2", "patientId": 1, "specialty": "Dermatology", "status": "scheduled"},
-]
-```
-
-**Option B: Mock Endpoints**
-```python
-# In Team 2's/Team 3's main.py, add temporary mock endpoints
-# that return seed data until Team 1's real APIs are ready
-
-@app.get("/api/patient-portal/referrals")
-def get_referrals_mock(patient_id: int):
-    return TEST_REFERRALS  # Return mock data
-```
-
-Once Team 1's APIs are ready, swap these mocks for actual HTTP calls to the Referral Service.
-
-### For Team 1: Coordinating Frontend with Backend
-
-Team 1 should:
-1. Build backend first (models, APIs, seed data) — Days 1–3
-2. Write simple backend validation (e.g., `curl` tests) — Day 3
-3. Build frontend against real APIs — Days 3–5
-4. This ensures Teams 2 & 3 have a solid API to build against
-
-## Code Review & Validation Gates
-
-After each team completes their sub-feature:
-
-1. **Run Validator Agent**:
-   ```bash
-   /validate-patient-portal <sub-feature-name>
-   ```
-   This checks implementation against context-map requirements.
-
-2. **Manual Testing**:
-   Follow the "Manual Verification Steps" in the sub-feature's context-map.
-
-3. **Peer Code Review**:
-   - Other team member or tech lead reviews code
-   - Check style, security, adherence to CLAUDE.md conventions
-   - Check database migrations and seed data
-
-4. **Sign-Off**:
-   Team member confirms PASS from validator before moving to integration.
+### Validation Gates
+After each sub-feature: run `/validate-patient-portal <sub-feature-name>`, complete the "Manual Verification Steps" in that context-map, and confirm the existing clinician-facing routes/components (`/dashboard`, `/patients`, `/referrals`, `/documents`) still work unchanged — every backend change in this plan is additive (new tables/columns/endpoints), so a regression there indicates a mistake, not an expected tradeoff.
 
 ## Success Metrics
 
-- [ ] All 3 sub-features are 100% complete per context-maps
-- [ ] All 3 sub-features pass validator agent (0 FAIL findings, <3 PARTIAL)
-- [ ] All 3 sub-features pass manual testing (all success criteria met)
-- [ ] No critical bugs found during integration testing
-- [ ] Delivered on time (Week 1–2 estimate)
-- [ ] Code is clean, follows CLAUDE.md, and is production-ready
-
-## Escalation & Support
-
-**Tech Lead / Architect**:
-- Available for design questions, architectural decisions
-- Helps unblock Team 2 & 3 if APIs aren't ready
-- Reviews code for quality and standards compliance
-- Oversees integration phase
-
-**Product Manager (if applicable)**:
-- Clarifies requirements if ambiguities come up
-- Prioritizes scope changes
-- Signs off on feature completeness
-
-**Platform Team**:
-- Ensures NotificationService 8005 is ready for Team 3
-- Provides any infrastructure or DevOps support
+- [ ] All 3 sub-features complete per their context-maps
+- [ ] All 3 pass validator agent checks
+- [ ] End-to-end walkthrough in `INTEGRATION_PLAN.md` passes (patient views referral → views progress timeline → uploads document → clinician sees it in the existing `DocumentsPanelComponent` → clinician transitions referral status → patient sees new timeline entry + unread notification)
+- [ ] No regression in the existing clinician-facing app
+- [ ] No sensitive identifiers (SSN, government ID, insurance policy numbers, etc.) introduced anywhere in schemas, seed data, or sample questionnaire content
 
 ---
-_Team assignment created during planning phase; to be finalized with actual team member names_
+_Generated by patient-portal-planner agent, 2026-08-13, grounded against the actual `d:\training\ClinicCare` repository contents rather than assumed conventions._

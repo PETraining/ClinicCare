@@ -130,3 +130,22 @@ async def reject_referral(referral_id: int, db: Session = Depends(get_db)):
 @app.patch("/referrals/{referral_id}/complete", response_model=schemas.ReferralRead)
 async def complete_referral(referral_id: int, db: Session = Depends(get_db)):
     return await _transition(referral_id, "complete", db)
+
+
+@app.get("/appointments", response_model=list[schemas.AppointmentRead])
+def list_appointments(
+    patientId: Optional[int] = None,
+    db: Session = Depends(get_db),
+):
+    query = db.query(models.Appointment)
+    if patientId is not None:
+        query = query.filter(models.Appointment.PatientId == patientId)
+    return query.order_by(models.Appointment.ScheduledAt).all()
+
+
+@app.get("/appointments/{appointment_id}", response_model=schemas.AppointmentRead)
+def get_appointment(appointment_id: int, db: Session = Depends(get_db)):
+    appointment = db.get(models.Appointment, appointment_id)
+    if appointment is None:
+        raise HTTPException(status_code=404, detail=f"Appointment {appointment_id} not found")
+    return appointment

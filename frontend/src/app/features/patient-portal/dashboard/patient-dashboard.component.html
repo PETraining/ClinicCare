@@ -1,0 +1,47 @@
+<h1>Welcome, {{ currentPatient()?.patientName }}</h1>
+<p class="subtitle">Your referrals and upcoming appointments.</p>
+
+<section>
+  <h2>Referrals</h2>
+  <div class="cards">
+    @for (referral of referrals(); track referral.ReferralId) {
+      <div class="card">
+        <div class="card-header">
+          <span class="specialty">{{ specialistName(referral.SpecialistId) }}</span>
+          <span class="status status-{{ referral.Status.toLowerCase() }}">{{ referral.Status }}</span>
+        </div>
+        <p class="reason">{{ referral.Reason }}</p>
+        <dl>
+          <dt>Priority</dt>
+          <dd>{{ referral.Priority }}</dd>
+          <dt>Created</dt>
+          <dd>{{ referral.CreatedAt | date: 'medium' }}</dd>
+          <dt>Updated</dt>
+          <dd>{{ referral.UpdatedAt | date: 'medium' }}</dd>
+        </dl>
+      </div>
+    } @empty {
+      <p class="empty">No referrals on file yet.</p>
+    }
+  </div>
+</section>
+
+<section>
+  <h2>Upcoming &amp; Past Appointments</h2>
+  <div class="cards">
+    @for (appointment of appointments(); track appointment.AppointmentId) {
+      <div class="card">
+        <div class="card-header">
+          <span class="scheduled-at">{{ appointment.ScheduledAt | date: 'medium' }}</span>
+        </div>
+        <p class="location">{{ appointment.Location }}</p>
+        @if (appointment.CheckInInstructions) {
+          <p class="instructions">{{ appointment.CheckInInstructions }}</p>
+        }
+        <p class="referral-link">For referral: {{ referralReason(appointment.ReferralId) }}</p>
+      </div>
+    } @empty {
+      <p class="empty">No appointments scheduled.</p>
+    }
+  </div>
+</section>
