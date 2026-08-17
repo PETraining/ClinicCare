@@ -1,0 +1,44 @@
+<div class="page-header">
+  <a routerLink="/patient-portal/questionnaires" class="btn-back">← Back to Questionnaires</a>
+</div>
+
+@if (!questionnaire()) {
+  <p class="loading">Loading questionnaire…</p>
+} @else {
+  <div class="form-card">
+    <h2>{{ questionnaire()!.Title }}</h2>
+    <p class="status-line">
+      Status: <span [class]="questionnaire()!.Status === 'Completed' ? 'completed' : 'pending'">
+        {{ questionnaire()!.Status }}
+      </span>
+    </p>
+
+    <div class="questions">
+      @for (q of questionnaire()!.questions; track q.QuestionId) {
+        <div class="question-block">
+          <label class="question-text">{{ q.QuestionText }}</label>
+
+          @if (q.Type === 'text') {
+            <textarea
+              [(ngModel)]="answers[q.QuestionId]"
+              [name]="'q' + q.QuestionId"
+              rows="3"
+              placeholder="Your answer…"
+            ></textarea>
+          } @else {
+            <select [(ngModel)]="answers[q.QuestionId]" [name]="'q' + q.QuestionId">
+              <option value="">— Select —</option>
+              @for (choice of q.Choices ?? []; track choice) {
+                <option [value]="choice">{{ choice }}</option>
+              }
+            </select>
+          }
+        </div>
+      }
+    </div>
+
+    <button class="btn-submit" [disabled]="submitting()" (click)="submit()">
+      {{ submitting() ? 'Submitting…' : 'Submit Answers' }}
+    </button>
+  </div>
+}

@@ -1,0 +1,29 @@
+<div class="page-header">
+  <h2>My Documents</h2>
+  <a routerLink="/patient-portal/documents/upload" class="btn-primary">Upload Document</a>
+</div>
+
+@if (docService.documents().length === 0) {
+  <div class="empty-state">
+    <p>No documents yet. Upload your first document using the button above.</p>
+  </div>
+} @else {
+  <div class="doc-list">
+    @for (doc of docService.documents(); track doc.DocumentId) {
+      <div class="doc-row">
+        <div class="doc-info">
+          <span class="doc-name">{{ doc.FileName }}</span>
+          <span class="doc-meta">{{ doc.Type }} &middot; {{ doc.UploadedDate | date: 'mediumDate' }}</span>
+        </div>
+        <button
+          class="btn-download"
+          [disabled]="!doc.FilePath"
+          [title]="doc.FilePath ? 'Download' : 'No file available'"
+          (click)="download(doc.DocumentId, doc.FileName)"
+        >
+          Download
+        </button>
+      </div>
+    }
+  </div>
+}

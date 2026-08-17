@@ -7,4 +7,10 @@ export interface ClinicalDocument {
   Type: DocumentType;
   UploadedDate: string;
   FileName: string;
+  FilePath: string | null;
+}
+
+export interface DocumentUploadResponse {
+  document_id: number;
+  filename: string;
 }

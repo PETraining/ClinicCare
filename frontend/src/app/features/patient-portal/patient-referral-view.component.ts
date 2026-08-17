@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
 
@@ -251,6 +251,7 @@ import { PatientReferralScreenData } from '../../core/services/referral-validati
 })
 export class PatientReferralViewComponent implements OnInit {
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private patientAuth = inject(PatientAuthService);
   private referralService = inject(ReferralService);
   private validationService = inject(ReferralValidationService);
@@ -288,16 +289,15 @@ export class PatientReferralViewComponent implements OnInit {
   }
 
   private loadReferral(id: number): void {
-    this.referralService.loadAll();
-    // In real app, would filter by ID and validate patient access
+    const patientId = this.patientAuth.currentPatientId();
+    if (patientId) {
+      this.referralService.loadByPatient(patientId);
+    }
     setTimeout(() => {
-      const patientId = this.patientAuth.currentPatientId();
-      if (patientId) {
-        const ref = this.referralService.referrals().find((r) => r.ReferralId === id);
-        if (ref && ref.PatientId === patientId) {
-          this.referral.set(ref);
-          this.validateReferral(ref);
-        }
+      const ref = this.referralService.referrals().find((r) => r.ReferralId === id);
+      if (ref) {
+        this.referral.set(ref);
+        this.validateReferral(ref);
       }
       this.loading.set(false);
     }, 500);
@@ -347,7 +347,6 @@ export class PatientReferralViewComponent implements OnInit {
   }
 
   startQuestionnaire(): void {
-    // Navigate to questionnaire component
-    console.log('Start questionnaire');
+    this.router.navigate(['/patient-portal/questionnaires']);
   }
 }

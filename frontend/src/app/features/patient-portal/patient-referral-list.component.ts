@@ -59,7 +59,7 @@ import { Referral } from '../../core/models/referral.model';
               </div>
 
               <div class="card-footer">
-                <a [routerLink]="['/referrals', referral.ReferralId]" class="btn-primary">
+                <a [routerLink]="['/patient-portal/referrals', referral.ReferralId]" class="btn-primary">
                   View Details
                 </a>
               </div>
@@ -252,12 +252,9 @@ export class PatientReferralListComponent implements OnInit {
   private loadReferrals(): void {
     const patientId = this.patientAuth.currentPatientId();
     if (patientId) {
-      this.referralService.loadAll();
-      // In real app, would filter by patientId and patient own referrals
+      this.referralService.loadByPatient(patientId);
       setTimeout(() => {
-        const allReferrals = this.referralService.referrals();
-        const patientReferrals = allReferrals.filter((r) => r.PatientId === patientId);
-        this.referrals.set(patientReferrals);
+        this.referrals.set(this.referralService.referrals());
         this.loading.set(false);
       }, 500);
     } else {

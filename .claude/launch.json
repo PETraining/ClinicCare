@@ -2,10 +2,10 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "patient-portal",
+      "name": "frontend",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["start", "--prefix", "cliniccare-patient-portal"],
-      "port": 4200
+      "runtimeArgs": ["run", "start", "--prefix", "frontend", "--", "--port", "4202"],
+      "port": 4202
     }
   ]
 }

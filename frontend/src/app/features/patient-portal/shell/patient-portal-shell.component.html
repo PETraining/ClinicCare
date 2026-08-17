@@ -1,0 +1,18 @@
+<header class="shell-header">
+  <h1>ClinicCare Patient Portal</h1>
+  <div class="shell-header-right">
+    <span class="patient-name">{{ auth.currentPatientName() }}</span>
+    <button type="button" (click)="logout()">Logout</button>
+  </div>
+</header>
+
+<div class="shell-body">
+  <nav class="shell-nav">
+    <a routerLink="/patient-portal/referrals" routerLinkActive="active">Referrals</a>
+    <a routerLink="/patient-portal/documents" routerLinkActive="active">Documents</a>
+    <a routerLink="/patient-portal/questionnaires" routerLinkActive="active">Questionnaires</a>
+  </nav>
+  <main class="shell-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

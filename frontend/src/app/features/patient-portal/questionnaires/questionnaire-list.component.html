@@ -1,0 +1,25 @@
+<div class="page-header">
+  <h2>My Questionnaires</h2>
+</div>
+
+@if (qService.questionnaires().length === 0) {
+  <div class="empty-state">
+    <p>No questionnaires assigned yet. They will appear here when your clinician sends one.</p>
+  </div>
+} @else {
+  <div class="q-list">
+    @for (q of qService.questionnaires(); track q.QuestionnaireId) {
+      <a [routerLink]="['/patient-portal/questionnaires', q.QuestionnaireId]" class="q-row">
+        <div class="q-info">
+          <span class="q-title">{{ q.Title }}</span>
+          @if (q.ReferralId) {
+            <span class="q-meta">Referral #{{ q.ReferralId }}</span>
+          }
+        </div>
+        <span [class]="'status-badge ' + (q.Status === 'Completed' ? 'completed' : 'pending')">
+          {{ q.Status }}
+        </span>
+      </a>
+    }
+  </div>
+}

@@ -1,0 +1,27 @@
+<div class="page-header">
+  <h2>Upload Document</h2>
+  <a routerLink="/patient-portal/documents" class="btn-back">Back to Documents</a>
+</div>
+
+<div class="upload-card">
+  <label class="file-label">
+    Choose file (max 1 MB)
+    <input type="file" (change)="onFileSelected($event)" />
+  </label>
+
+  @if (selectedFile()) {
+    <p class="file-selected">Selected: {{ selectedFile()!.name }}</p>
+  }
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  <button
+    class="btn-upload"
+    [disabled]="!selectedFile() || uploading()"
+    (click)="upload()"
+  >
+    {{ uploading() ? 'Uploading…' : 'Upload' }}
+  </button>
+</div>
