@@ -46,3 +46,10 @@ services:
       - referral-service
       - document-service
       - notification-service
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:4200"
+    depends_on:
+      - gateway

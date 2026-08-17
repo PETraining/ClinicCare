@@ -1,0 +1,50 @@
+{
+  "agents": {
+    "insurance-eligibility-validator": {
+      "description": "Validates implementation of Insurance Eligibility & Prior Authorization feature",
+      "model": "Sonet",
+      "effort": "high",
+      "tools": "Read, Grep, Glob, Bash, PowerShell"
+    }
+  },
+  "validation": {
+    "feature": "Insurance Eligibility & Prior Authorization",
+    "requirements_files": [
+      "Assignemtnrequirement.txt",
+      "Intent.txt",
+      "teamupdates/context-map.md",
+      "teamupdates/plan.md",
+      "teamupdates/context.txt",
+      "VALIDATION_CHECKLIST.md"
+    ],
+    "implementation_files": {
+      "patient_service": [
+        "services/patient/models.py",
+        "services/patient/main.py",
+        "services/patient/schemas.py",
+        "services/patient/seed.py"
+      ],
+      "referral_service": [
+        "services/referral/models.py",
+        "services/referral/main.py",
+        "services/referral/schemas.py"
+      ],
+      "api_gateway": [
+        "services/api-gateway/main.py"
+      ],
+      "frontend": [
+        "frontend/src/app/features/patients/patient-details.component.ts",
+        "frontend/src/app/features/patients/patient-details.component.html",
+        "frontend/src/app/features/referrals/referral-creation.component.ts",
+        "frontend/src/app/features/referrals/referral-creation.component.html",
+        "frontend/src/app/features/referrals/referral-list.component.ts",
+        "frontend/src/app/features/referrals/referral-list.component.html",
+        "frontend/src/app/features/referrals/referral-tracking.component.ts",
+        "frontend/src/app/features/referrals/referral-tracking.component.html"
+      ],
+      "notification_service": [
+        "services/notification/main.py"
+      ]
+    }
+  }
+}
