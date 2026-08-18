@@ -1,0 +1,123 @@
+<div class="pharmacy-dashboard">
+  <h1>Pharmacy Dashboard</h1>
+
+  <!-- Error Message -->
+  <div *ngIf="error()" class="alert alert-error">
+    {{ error() }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading">
+    <p>Loading pharmacy data...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading()" class="dashboard-content">
+    <!-- Stats Row -->
+    <div class="stats-row">
+      <div class="stat-card stat-primary">
+        <div class="stat-value">{{ pendingCount() }}</div>
+        <div class="stat-label">Pending Prescriptions</div>
+        <a routerLink="/pharmacy/prescriptions" class="stat-link">View All →</a>
+      </div>
+
+      <div class="stat-card stat-warning">
+        <div class="stat-value">{{ lowStockCount() }}</div>
+        <div class="stat-label">Low Stock Items</div>
+        <a routerLink="/pharmacy/inventory" class="stat-link">Manage Inventory →</a>
+      </div>
+
+      <div class="stat-card stat-secondary">
+        <div class="stat-value">{{ medications().length }}</div>
+        <div class="stat-label">Total Medications</div>
+      </div>
+    </div>
+
+    <!-- Recent Prescriptions Section -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Recent Prescriptions</h2>
+        <a routerLink="/pharmacy/prescriptions" class="button-secondary">View All</a>
+      </div>
+
+      <div *ngIf="recentPrescriptions.length > 0; else noPrescriptions" class="table-container">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Patient</th>
+              <th>Referral</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let prescription of recentPrescriptions">
+              <td>#{{ prescription.PrescriptionId }}</td>
+              <td>Patient #{{ prescription.PatientId }}</td>
+              <td>Referral #{{ prescription.ReferralId }}</td>
+              <td>
+                <span [ngClass]="'status-' + prescription.Status.toLowerCase()">
+                  {{ prescription.Status }}
+                </span>
+              </td>
+              <td>{{ prescription.CreatedAt | date: 'short' }}</td>
+              <td>
+                <a
+                  [routerLink]="['/pharmacy/prescriptions', prescription.PrescriptionId]"
+                  class="button-small"
+                >
+                  Details
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noPrescriptions>
+        <p class="no-data">No prescriptions yet</p>
+      </ng-template>
+    </section>
+
+    <!-- Low Stock Items Section -->
+    <section class="section">
+      <div class="section-header">
+        <h2>Low Stock Alerts</h2>
+      </div>
+
+      <div *ngIf="lowStockItems().length > 0; else noLowStock" class="alerts-container">
+        <div *ngFor="let item of lowStockItems()" class="alert-item">
+          <div class="alert-icon">⚠️</div>
+          <div class="alert-details">
+            <div class="alert-title">{{ item.Name }} ({{ item.Dosage }})</div>
+            <div class="alert-stock">
+              Stock: <strong>{{ item.StockLevel }}</strong> / Minimum: <strong>{{ item.MinStockLevel }}</strong>
+            </div>
+          </div>
+          <div class="alert-severity" [ngClass]="item.StockLevel < (item.MinStockLevel * 0.5) ? 'critical' : 'warning'">
+            {{ item.StockLevel < (item.MinStockLevel * 0.5) ? 'CRITICAL' : 'LOW' }}
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noLowStock>
+        <p class="no-data">✅ All medications are well-stocked</p>
+      </ng-template>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="section">
+      <h2>Quick Actions</h2>
+      <div class="actions-row">
+        <a routerLink="/pharmacy/prescriptions" class="button button-primary">
+          View All Prescriptions
+        </a>
+        <a routerLink="/pharmacy/inventory" class="button button-secondary">
+          Manage Inventory
+        </a>
+      </div>
+    </section>
+  </div>
+</div>

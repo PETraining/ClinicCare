@@ -9,6 +9,10 @@ import { PatientDetailsComponent } from './features/patients/patient-details.com
 import { CreateReferralComponent } from './features/referrals/create-referral.component';
 import { ReferralTrackingComponent } from './features/referrals/referral-tracking.component';
 import { DocumentsComponent } from './features/documents/documents.component';
+import { PharmacyDashboardComponent } from './features/pharmacy/pharmacy-dashboard.component';
+import { PrescriptionListComponent } from './features/pharmacy/prescription-list.component';
+import { PrescriptionDetailComponent } from './features/pharmacy/prescription-detail.component';
+import { InventoryManagementComponent } from './features/pharmacy/inventory-management.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -24,6 +28,10 @@ export const routes: Routes = [
       { path: 'referrals', component: ReferralTrackingComponent },
       { path: 'referrals/new', component: CreateReferralComponent },
       { path: 'documents', component: DocumentsComponent },
+      { path: 'pharmacy/dashboard', component: PharmacyDashboardComponent },
+      { path: 'pharmacy/prescriptions', component: PrescriptionListComponent },
+      { path: 'pharmacy/prescriptions/:id', component: PrescriptionDetailComponent },
+      { path: 'pharmacy/inventory', component: InventoryManagementComponent },
     ],
   },
   { path: '**', redirectTo: 'login' },

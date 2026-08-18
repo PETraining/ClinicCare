@@ -21,14 +21,25 @@ services:
     environment:
       DOCTORS_SERVICE_URL: http://doctors-service:8002
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
+      PHARMACY_SERVICE_URL: http://pharmacy-service:8006
     depends_on:
       - doctors-service
       - notification-service
+      - pharmacy-service
 
   document-service:
     build: ./services/document
     ports:
       - "8004:8004"
+
+  pharmacy-service:
+    build: ./services/pharmacy
+    ports:
+      - "8006:8006"
+    environment:
+      PATIENT_SERVICE_URL: http://patient-service:8001
+    depends_on:
+      - patient-service
 
   gateway:
     build: ./gateway
@@ -40,9 +51,11 @@ services:
       REFERRAL_SERVICE_URL: http://referral-service:8003
       DOCUMENT_SERVICE_URL: http://document-service:8004
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
+      PHARMACY_SERVICE_URL: http://pharmacy-service:8006
     depends_on:
       - patient-service
       - doctors-service
       - referral-service
       - document-service
       - notification-service
+      - pharmacy-service
