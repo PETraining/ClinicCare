@@ -66,15 +66,19 @@ export class CreateLabOrderComponent implements OnInit {
     { initialValue: undefined },
   );
 
-  patientName = computed(() => {
+  // Plain methods, not computed(): form.patientId/orderedBy are mutated
+  // directly by ngModel and aren't signals, so a computed() here would never
+  // re-evaluate after the first read. Methods re-run on every change
+  // detection pass, same as any other template-bound method call.
+  patientName(): string {
     const p = this.patientService.patients().find((x) => x.PatientId === this.form.patientId);
     return p?.Name ?? '';
-  });
+  }
 
-  doctorName = computed(() => {
+  doctorName(): string {
     const d = this.doctorService.doctors().find((x) => x.DoctorId === this.form.orderedBy);
     return d ? `${d.Name} (${d.Specialty})` : '';
-  });
+  }
 
   selectedTests = computed(() =>
     this.labService.tests().filter((t) => this.selectedTestIds().has(t.test_id)),
