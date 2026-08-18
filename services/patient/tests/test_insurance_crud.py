@@ -122,3 +122,48 @@ def test_delete_insurance_404_when_already_gone(client, make_patient):
     patient = make_patient()
     resp = client.delete(f"/patients/{patient.PatientId}/insurance/999999")
     assert resp.status_code == 404
+
+
+def test_create_multiple_insurance_per_patient_allowed_backend(client, make_patient, make_insurance):
+    """The insurance-crud-ui feature enforces ONE insurance per patient at the frontend
+    level (Add button hidden when insurance exists, etc.). However, the backend CRUD
+    endpoints allow multiple insurances per patient — this is intentional.
+
+    This test verifies the backend does not prevent multiple insurances. If the
+    backend behavior changes to enforce uniqueness, this test will fail and alert
+    us to update the frontend constraint documentation and enforcement logic.
+    """
+    patient = make_patient()
+    insurance_1 = make_insurance(patient.PatientId, PolicyNumber="POLICY-1")
+
+    # Create a second insurance for the same patient — backend allows it
+    resp = client.post(
+        f"/patients/{patient.PatientId}/insurance",
+        json={**VALID_PAYLOAD, "PolicyNumber": "POLICY-2"}
+    )
+    assert resp.status_code == 201
+    insurance_2_body = resp.json()
+    assert insurance_2_body["InsuranceId"] != insurance_1.InsuranceId
+
+    # Verify both exist in the backend
+    list_resp = client.get(f"/patients/{patient.PatientId}/insurance")
+    assert len(list_resp.json()) == 2
+    policies = [p["PolicyNumber"] for p in list_resp.json()]
+    assert "POLICY-1" in policies
+    assert "POLICY-2" in policies
+
+
+def test_patient_detail_returns_all_insurance_records(client, make_patient, make_insurance):
+    """Verify that GET /patients/{id} returns ALL insurance records if multiple exist.
+    The frontend will only display the first one (per one-insurance-per-patient UI
+    constraint), but the backend returns all of them — this is correct behavior.
+    """
+    patient = make_patient()
+    make_insurance(patient.PatientId, PolicyNumber="POLICY-1")
+    make_insurance(patient.PatientId, PolicyNumber="POLICY-2")
+
+    resp = client.get(f"/patients/{patient.PatientId}")
+
+    assert resp.status_code == 200
+    insurances = resp.json()["insurance"]
+    assert len(insurances) == 2

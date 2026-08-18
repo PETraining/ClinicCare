@@ -102,7 +102,7 @@ export class PatientDetailsComponent {
 
   deleteInsuranceRecord(record: Insurance): void {
     const patientId = this.patientId();
-    if (!patientId || !confirm(`Delete insurance record from ${record.InsurerName}?`)) {
+    if (!patientId || !confirm('Are you sure? This patient will have no insurance on file.')) {
       return;
     }
     this.patientService.deleteInsurance(patientId, record.InsuranceId).subscribe({
