@@ -73,6 +73,10 @@ export class CreateReferralComponent implements OnInit {
 
   submit(): void {
     this.errorMessage.set(null);
+    if (this.deniedAuthorizations().length) {
+      this.errorMessage.set('Cannot create a referral: this patient has a Denied prior authorization on record.');
+      return;
+    }
     this.submitting.set(true);
     this.referralService.create(this.form).subscribe({
       next: (referral) => {
