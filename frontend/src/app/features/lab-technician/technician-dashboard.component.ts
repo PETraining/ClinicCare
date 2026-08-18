@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 
 import { DoctorService } from '../../core/services/doctor.service';
 import { LabTechService } from '../../core/services/lab-tech.service';
+import { PatientService } from '../../core/services/patient.service';
 
 @Component({
   selector: 'app-technician-dashboard',
@@ -16,6 +17,19 @@ import { LabTechService } from '../../core/services/lab-tech.service';
 export class TechnicianDashboardComponent implements OnInit {
   labTech = inject(LabTechService);
   doctorService = inject(DoctorService);
+  private patientService = inject(PatientService);
+
+  private patientNames = computed(() => {
+    const map = new Map<number, string>();
+    for (const p of this.patientService.patients()) {
+      map.set(p.PatientId, p.Name);
+    }
+    return map;
+  });
+
+  patientName(id: number): string {
+    return this.patientNames().get(id) ?? `Patient #${id}`;
+  }
 
   pendingCollection = computed(() => this.labTech.orders().filter((o) => o.status === 'placed'));
 
@@ -39,6 +53,7 @@ export class TechnicianDashboardComponent implements OnInit {
     this.labTech.loadOrders();
     this.labTech.loadStats();
     this.doctorService.search(undefined, 'lab_technician');
+    this.patientService.search();
   }
 
   onStaffChange(value: string): void {

@@ -22,6 +22,7 @@
         />
       </th>
       <th>Order #</th>
+      <th>Patient</th>
       <th>Test</th>
       <th>Specialty</th>
       <th>Progress</th>
@@ -39,6 +40,7 @@
           />
         </td>
         <td>#{{ entry.order.order_id }}</td>
+        <td>{{ patientName(entry.order.patient_id) }}</td>
         <td>{{ entry.orderTest.test.test_name }}</td>
         <td>{{ entry.orderTest.test.specialty }}</td>
         <td class="muted">{{ orderProgress(entry.order) }}</td>
@@ -48,7 +50,7 @@
       </tr>
     } @empty {
       <tr>
-        <td colspan="6">No tests ready for processing.</td>
+        <td colspan="7">No tests ready for processing.</td>
       </tr>
     }
   </tbody>
@@ -59,6 +61,7 @@
   <thead>
     <tr>
       <th>Order #</th>
+      <th>Patient</th>
       <th>Test</th>
       <th>Specialty</th>
       <th>Progress</th>
@@ -69,6 +72,7 @@
     @for (entry of inProgress(); track entry.orderTest.order_test_id) {
       <tr>
         <td>#{{ entry.order.order_id }}</td>
+        <td>{{ patientName(entry.order.patient_id) }}</td>
         <td>{{ entry.orderTest.test.test_name }}</td>
         <td>{{ entry.orderTest.test.specialty }}</td>
         <td class="muted">{{ orderProgress(entry.order) }}</td>
@@ -78,7 +82,7 @@
       </tr>
     } @empty {
       <tr>
-        <td colspan="5">No tests currently in progress.</td>
+        <td colspan="6">No tests currently in progress.</td>
       </tr>
     }
   </tbody>
@@ -88,6 +92,7 @@
   <app-result-entry
     [order]="target.order"
     [orderTest]="target.orderTest"
+    [patientName]="patientName(target.order.patient_id)"
     (closed)="closeResultEntry()"
     (submitted)="onResultSubmitted()"
   />

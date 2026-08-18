@@ -35,7 +35,7 @@
       <tr>
         <td><input type="checkbox" [checked]="isSelected(order.order_id)" (change)="toggleSelected(order.order_id)" /></td>
         <td>#{{ order.order_id }}</td>
-        <td>Patient #{{ order.patient_id }}</td>
+        <td>{{ patientName(order.patient_id) }}</td>
         <td><span class="priority priority-{{ order.priority }}">{{ order.priority }}</span></td>
         <td>{{ order.order_tests.length }}</td>
         <td>{{ order.ordered_date | date: 'short' }}</td>
@@ -53,7 +53,7 @@
   <h2>Just Collected</h2>
   <div class="label-grid">
     @for (entry of sessionCollectedEntries(); track entry.sample.sample_id) {
-      <app-sample-label [order]="entry.order" [sample]="entry.sample" />
+      <app-sample-label [order]="entry.order" [sample]="entry.sample" [patientName]="patientName(entry.order.patient_id)" />
     }
   </div>
 }
@@ -72,7 +72,7 @@
     @for (order of alreadyCollectedOrders(); track order.order_id) {
       <tr>
         <td>#{{ order.order_id }}</td>
-        <td>Patient #{{ order.patient_id }}</td>
+        <td>{{ patientName(order.patient_id) }}</td>
         <td><span class="status status-{{ order.status }}">{{ order.status }}</span></td>
         <td>{{ order.order_tests.length }}</td>
       </tr>

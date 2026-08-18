@@ -16,6 +16,7 @@ type ResultPreview = 'normal' | 'abnormal' | 'critical' | 'unknown';
 export class ResultEntryComponent {
   @Input({ required: true }) order!: LabOrder;
   @Input({ required: true }) orderTest!: OrderTest;
+  @Input() patientName?: string;
   @Output() closed = new EventEmitter<void>();
   @Output() submitted = new EventEmitter<void>();
 

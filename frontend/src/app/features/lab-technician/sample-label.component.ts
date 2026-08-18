@@ -13,6 +13,7 @@ import { LabOrder, LabSample } from '../../core/models/lab.model';
 export class SampleLabelComponent {
   @Input({ required: true }) order!: LabOrder;
   @Input({ required: true }) sample!: LabSample;
+  @Input() patientName?: string;
 
   print(): void {
     const win = window.open('', '_blank', 'width=420,height=320');

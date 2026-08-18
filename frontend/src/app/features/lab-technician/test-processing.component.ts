@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { forkJoin } from 'rxjs';
 
 import { LabTechService } from '../../core/services/lab-tech.service';
+import { PatientService } from '../../core/services/patient.service';
 import { LabOrder, OrderTest } from '../../core/models/lab.model';
 import { ResultEntryComponent } from './result-entry.component';
 
@@ -19,6 +20,19 @@ interface OrderTestEntry {
 })
 export class TestProcessingComponent implements OnInit {
   labTech = inject(LabTechService);
+  private patientService = inject(PatientService);
+
+  private patientNames = computed(() => {
+    const map = new Map<number, string>();
+    for (const p of this.patientService.patients()) {
+      map.set(p.PatientId, p.Name);
+    }
+    return map;
+  });
+
+  patientName(id: number): string {
+    return this.patientNames().get(id) ?? `Patient #${id}`;
+  }
 
   selectedTestIds = signal<Set<number>>(new Set());
   resultEntryTarget = signal<OrderTestEntry | null>(null);
@@ -41,6 +55,7 @@ export class TestProcessingComponent implements OnInit {
 
   ngOnInit(): void {
     this.labTech.loadOrders();
+    this.patientService.search();
   }
 
   orderProgress(order: LabOrder): string {

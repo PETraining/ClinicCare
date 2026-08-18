@@ -64,7 +64,7 @@
     @for (order of pendingCollection(); track order.order_id) {
       <tr>
         <td>#{{ order.order_id }}</td>
-        <td>Patient #{{ order.patient_id }}</td>
+        <td>{{ patientName(order.patient_id) }}</td>
         <td><span class="priority priority-{{ order.priority }}">{{ order.priority }}</span></td>
         <td>{{ order.order_tests.length }}</td>
         <td>{{ order.ordered_date | date: 'short' }}</td>

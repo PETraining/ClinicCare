@@ -1,7 +1,9 @@
 <div class="modal-backdrop" (click)="close()">
   <div class="modal" (click)="$event.stopPropagation()">
     <h2>Enter Result — {{ orderTest.test.test_name }}</h2>
-    <p class="subtitle">Order #{{ order.order_id }} · {{ orderTest.test.test_code }}</p>
+    <p class="subtitle">
+      Order #{{ order.order_id }} · {{ patientName ?? ('Patient #' + order.patient_id) }} · {{ orderTest.test.test_code }}
+    </p>
 
     @if (orderTest.test.normal_range_min !== null && orderTest.test.normal_range_max !== null) {
       <p class="range">

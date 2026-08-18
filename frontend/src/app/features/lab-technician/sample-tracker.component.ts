@@ -5,6 +5,7 @@ import { forkJoin } from 'rxjs';
 
 import { DoctorService } from '../../core/services/doctor.service';
 import { LabTechService } from '../../core/services/lab-tech.service';
+import { PatientService } from '../../core/services/patient.service';
 import { LabOrder, LabSample } from '../../core/models/lab.model';
 import { SampleLabelComponent } from './sample-label.component';
 
@@ -25,6 +26,19 @@ function nowForDateTimeLocal(): string {
 export class SampleTrackerComponent implements OnInit {
   labTech = inject(LabTechService);
   doctorService = inject(DoctorService);
+  private patientService = inject(PatientService);
+
+  private patientNames = computed(() => {
+    const map = new Map<number, string>();
+    for (const p of this.patientService.patients()) {
+      map.set(p.PatientId, p.Name);
+    }
+    return map;
+  });
+
+  patientName(id: number): string {
+    return this.patientNames().get(id) ?? `Patient #${id}`;
+  }
 
   selectedOrderIds = signal<Set<number>>(new Set());
   modalOrderIds = signal<number[] | null>(null);
@@ -44,6 +58,7 @@ export class SampleTrackerComponent implements OnInit {
   ngOnInit(): void {
     this.labTech.loadOrders();
     this.doctorService.search(undefined, 'lab_technician');
+    this.patientService.search();
     this.collectedBy.set(this.labTech.staffId());
   }
 
