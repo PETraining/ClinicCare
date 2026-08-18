@@ -28,6 +28,16 @@ export class PrescriptionDetailComponent implements OnInit {
   dispenseSuccess = signal<boolean>(false);
   dispenseError = signal<string | null>(null);
 
+  // Add medication form state
+  showAddMedicationForm = signal<boolean>(false);
+  addMedicationId = signal<number | null>(null);
+  addMedicationQuantity = signal<number>(1);
+  addMedicationFrequency = signal<string>('Once daily');
+  addMedicationInstructions = signal<string>('');
+  addingMedication = signal<boolean>(false);
+  addMedicationSuccess = signal<boolean>(false);
+  addMedicationError = signal<string | null>(null);
+
   ngOnInit(): void {
     // Get prescription ID from route params
     this.route.paramMap.subscribe((params) => {
@@ -107,8 +117,11 @@ export class PrescriptionDetailComponent implements OnInit {
           this.dispenseQuantity.set(1);
 
           // Reload prescription to show updated dispensing history
+          // Also refresh pharmacy data (medications, low-stock) to reflect inventory changes
           setTimeout(() => {
             this.loadPrescription(prescription.PrescriptionId);
+            this.pharmacyService.loadMedications();
+            this.pharmacyService.loadLowStockItems();
             this.dispenseSuccess.set(false);
           }, 2000);
         },
@@ -125,5 +138,99 @@ export class PrescriptionDetailComponent implements OnInit {
    */
   getStatusClass(status: string): string {
     return `status-${status.toLowerCase()}`;
+  }
+
+  /**
+   * Toggle add medication form
+   */
+  toggleAddMedicationForm(): void {
+    this.showAddMedicationForm.update(val => !val);
+    if (!this.showAddMedicationForm()) {
+      this.resetAddMedicationForm();
+    }
+  }
+
+  /**
+   * Reset add medication form
+   */
+  private resetAddMedicationForm(): void {
+    this.addMedicationId.set(null);
+    this.addMedicationQuantity.set(1);
+    this.addMedicationFrequency.set('Once daily');
+    this.addMedicationInstructions.set('');
+    this.addMedicationError.set(null);
+  }
+
+  /**
+   * Add medication to prescription
+   */
+  addMedicationToPrescription(): void {
+    const prescription = this.selectedPrescription();
+    if (!prescription || this.addMedicationId() === null) {
+      this.addMedicationError.set('Please select a medication');
+      return;
+    }
+
+    const quantityRequested = this.addMedicationQuantity();
+    if (quantityRequested <= 0) {
+      this.addMedicationError.set('Quantity must be greater than 0');
+      return;
+    }
+
+    // Check if medication already in prescription
+    const alreadyExists = prescription.Medications.some(
+      m => m.medication_id === this.addMedicationId()
+    );
+    if (alreadyExists) {
+      this.addMedicationError.set('This medication is already in the prescription');
+      return;
+    }
+
+    // Check available stock before proceeding
+    const medicationId = this.addMedicationId();
+    const medications = this.pharmacyService.medications();
+    const medication = medications.find(m => m.MedicationId === medicationId);
+
+    if (!medication) {
+      this.addMedicationError.set('Medication not found in inventory');
+      return;
+    }
+
+    if (medication.StockLevel < quantityRequested) {
+      this.addMedicationError.set(
+        `Insufficient stock. Available: ${medication.StockLevel} units, Requested: ${quantityRequested} units`
+      );
+      return;
+    }
+
+    this.addingMedication.set(true);
+    this.addMedicationError.set(null);
+    this.addMedicationSuccess.set(false);
+
+    // Reserve stock for the prescribed medication
+    this.pharmacyService
+      .reserveStockForPrescription(medicationId || 0, quantityRequested)
+      .subscribe({
+        next: () => {
+          // Stock reserved successfully, now update prescription
+          this.addMedicationSuccess.set(true);
+          this.addingMedication.set(false);
+
+          setTimeout(() => {
+            // Reload prescription and refresh inventory
+            this.loadPrescription(prescription.PrescriptionId);
+            this.pharmacyService.loadMedications();
+            this.pharmacyService.loadLowStockItems();
+            this.showAddMedicationForm.set(false);
+            this.resetAddMedicationForm();
+            this.addMedicationSuccess.set(false);
+          }, 1500);
+        },
+        error: (err) => {
+          const errorMsg = err.error?.detail || 'Failed to add medication';
+          this.addMedicationError.set(errorMsg);
+          this.addingMedication.set(false);
+        },
+      });
   }
 }

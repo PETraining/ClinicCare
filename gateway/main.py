@@ -37,13 +37,29 @@ async def proxy(full_path: str, request: Request):
     body = await request.body()
     headers = {k: v for k, v in request.headers.items() if k.lower() not in HOP_BY_HOP_HEADERS}
 
-    # Remove service name from path: /api/pharmacy/prescriptions → /prescriptions
-    remaining_path = full_path.split("/", 1)[1] if "/" in full_path else ""
+    # Route construction logic:
+    # /api/patients → /patients
+    # /api/patients/1 → /patients/1
+    # /api/pharmacy/medications → /medications
+    # /api/pharmacy/medications/1 → /medications/1
+    #
+    # Services without explicit service keyword (patients, doctors, etc.) use service name as endpoint prefix
+    # Services with explicit service keyword (pharmacy) strip the service name
+    services_with_prefix = {"patients", "doctors", "referrals", "documents", "notifications"}
+
+    if segment in services_with_prefix:
+        # For these services, include the service name in the path
+        # /api/patients → /patients, /api/patients/1 → /patients/1
+        upstream_path = f"/{full_path}"
+    else:
+        # For other services (pharmacy), strip the service name
+        # /api/pharmacy/medications → /medications
+        upstream_path = f"/{full_path.split('/', 1)[1]}" if "/" in full_path else "/"
 
     try:
         upstream = await client.request(
             request.method,
-            f"{base_url}/{remaining_path}",
+            f"{base_url}{upstream_path}",
             params=request.query_params,
             content=body,
             headers=headers,

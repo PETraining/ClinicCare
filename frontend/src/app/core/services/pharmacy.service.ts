@@ -1,5 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { switchMap } from 'rxjs';
 import { API_BASE_URL } from '../config';
 import {
   Medication,
@@ -215,6 +216,21 @@ export class PharmacyService {
         this.loading.set(false);
       },
     });
+  }
+
+  /**
+   * Reserve stock when medication is prescribed
+   * Gets current stock, deducts quantity, and updates
+   */
+  reserveStockForPrescription(medicationId: number, quantityToReserve: number) {
+    return this.getMedicationById(medicationId).pipe(
+      switchMap((medication: Medication) => {
+        const newStockLevel = Math.max(0, medication.StockLevel - quantityToReserve);
+        return this.updateMedication(medicationId, {
+          StockLevel: newStockLevel,
+        });
+      })
+    );
   }
 
   // ============ UTILITY METHODS ============
