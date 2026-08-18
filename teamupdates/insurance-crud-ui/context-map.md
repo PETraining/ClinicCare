@@ -175,3 +175,5 @@ direct API calls).
    action anywhere in the current frontend prompts for confirmation (no delete buttons exist yet
    elsewhere in `frontend/src/app/features`). Whether to use a native `confirm()` dialog or an
    inline "are you sure" state is left open.
+
+<!-- Implemented by: claude-haiku on 2026-08-18 -->

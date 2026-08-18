@@ -31,6 +31,15 @@ export interface Insurance {
   TerminationDate: string | null;
 }
 
+export interface InsuranceCreate {
+  InsurerName: string;
+  PolicyNumber: string;
+  GroupNumber: string | null;
+  MemberId: string;
+  EffectiveDate: string;
+  TerminationDate: string | null;
+}
+
 export interface Patient {
   PatientId: number;
   Name: string;
