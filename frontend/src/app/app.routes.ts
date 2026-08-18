@@ -22,20 +22,12 @@ import { QuestionnaireFormComponent } from './features/patient-portal/questionna
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'patient-portal/login', component: PatientLoginComponent },
-  {
-    path: 'patient-portal',
-    component: PatientPortalShellComponent,
-    canActivate: [patientAuthGuard],
-    children: [
-      { path: '', redirectTo: 'referrals', pathMatch: 'full' },
-      { path: 'referrals', component: PatientReferralListComponent },
-      { path: 'referrals/:id', component: PatientReferralViewComponent },
-      { path: 'documents', component: PatientDocumentsComponent },
-      { path: 'documents/upload', component: DocumentUploadComponent },
-      { path: 'questionnaires', component: QuestionnaireListComponent },
-      { path: 'questionnaires/:id', component: QuestionnaireFormComponent },
-    ],
-  },
+  { path: 'patient-portal/referrals', component: PatientReferralListComponent, canActivate: [patientAuthGuard] },
+  { path: 'patient-portal/referrals/:id', component: PatientReferralViewComponent, canActivate: [patientAuthGuard] },
+  { path: 'patient-portal/documents', component: PatientDocumentsComponent, canActivate: [patientAuthGuard] },
+  { path: 'patient-portal/documents/upload', component: DocumentUploadComponent, canActivate: [patientAuthGuard] },
+  { path: 'patient-portal/questionnaires', component: QuestionnaireListComponent, canActivate: [patientAuthGuard] },
+  { path: 'patient-portal/questionnaires/:id', component: QuestionnaireFormComponent, canActivate: [patientAuthGuard] },
   {
     path: '',
     component: ShellComponent,
