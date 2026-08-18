@@ -4,7 +4,13 @@ import { RouterLink } from '@angular/router';
 import { ReferralService } from '../../core/services/referral.service';
 import { ReferralStatus } from '../../core/models/referral.model';
 
-const STATUSES: ReferralStatus[] = ['Draft', 'Submitted', 'Accepted', 'Rejected', 'Completed'];
+const STATUSES: ReferralStatus[] = [
+  'Draft',
+  'Submitted',
+  'Accepted',
+  'Rejected',
+  'Completed',
+];
 
 @Component({
   selector: 'app-dashboard',
@@ -30,6 +36,7 @@ export class DashboardComponent implements OnInit {
   total = computed(() => this.referralService.referrals().length);
 
   ngOnInit(): void {
+    console.log('DashboardComponent initialized');
     this.referralService.loadAll();
   }
 }
