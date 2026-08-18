@@ -7,6 +7,7 @@ import { map } from 'rxjs';
 import { Referral } from '../../core/models/referral.model';
 import { PatientAuthService } from '../../core/services/patient-auth.service';
 import { ReferralService } from '../../core/services/referral.service';
+import { AppointmentService } from '../../core/services/appointment.service';
 import { ReferralValidationService } from '../../core/services/referral-validation.service';
 import { PatientReferralScreenData } from '../../core/services/referral-validation.service';
 
@@ -37,9 +38,11 @@ import { PatientReferralScreenData } from '../../core/services/referral-validati
 
           <!-- Appointment Info -->
           <div class="appointment-section">
-            @if (appointmentDate()) {
+            @if (appointment()) {
               <h3>Appointment Scheduled</h3>
-              <p>{{ appointmentDate() | date: 'fullDate' }} at {{ appointmentTime() }}</p>
+              <p>{{ appointment()!.ScheduledDate | date: 'fullDate' }}</p>
+              <p class="location">📍 {{ appointment()!.Location }}</p>
+              <p class="status">Status: <strong>{{ appointment()!.Status }}</strong></p>
             } @else {
               <h3>Appointment</h3>
               <p class="no-appointment">Appointment being scheduled. Check back soon.</p>
@@ -163,6 +166,18 @@ import { PatientReferralScreenData } from '../../core/services/referral-validati
         font-style: italic;
       }
 
+      .location {
+        color: #666;
+        font-size: 14px;
+        margin: 5px 0;
+      }
+
+      .status {
+        color: #666;
+        font-size: 14px;
+        margin: 5px 0;
+      }
+
       .document-list {
         list-style: none;
         padding: 0;
@@ -254,6 +269,7 @@ export class PatientReferralViewComponent implements OnInit {
   private router = inject(Router);
   private patientAuth = inject(PatientAuthService);
   private referralService = inject(ReferralService);
+  private appointmentService = inject(AppointmentService);
   private validationService = inject(ReferralValidationService);
 
   private referralId = toSignal(
@@ -264,13 +280,12 @@ export class PatientReferralViewComponent implements OnInit {
   loading = signal(true);
   validationResult = signal<any>(null);
 
-  // Computed values
-  appointmentDate = computed(() => {
-    const ref = this.referral();
-    return ref?.UpdatedAt ? new Date(ref.UpdatedAt).toLocaleDateString() : null;
+  appointment = computed(() => {
+    return this.appointmentService
+      .appointments()
+      .find((a) => a.ReferralId === this.referral()?.ReferralId);
   });
 
-  appointmentTime = signal('2:00 PM');
   specialistName = signal<string | null>(null);
   requiredDocuments = signal<string[]>([
     'Insurance Card',
@@ -292,6 +307,7 @@ export class PatientReferralViewComponent implements OnInit {
     const patientId = this.patientAuth.currentPatientId();
     if (patientId) {
       this.referralService.loadByPatient(patientId);
+      this.appointmentService.loadMyAppointments();
     }
     setTimeout(() => {
       const ref = this.referralService.referrals().find((r) => r.ReferralId === id);
@@ -304,13 +320,14 @@ export class PatientReferralViewComponent implements OnInit {
   }
 
   private validateReferral(referral: Referral): void {
+    const appt = this.appointment();
     const screenData: PatientReferralScreenData = {
       referral,
       patientId: this.patientAuth.currentPatientId() || 0,
       documentsUploaded: false,
       questionnairesCompleted: this.questionnaireCompleted(),
-      appointmentScheduled: !!this.appointmentDate(),
-      appointmentDate: this.appointmentDate() || undefined,
+      appointmentScheduled: !!appt,
+      appointmentDate: appt?.ScheduledDate,
       allRequiredDocuments: this.requiredDocuments(),
       uploadedDocuments: [],
     };

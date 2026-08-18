@@ -32,6 +32,11 @@ services:
     volumes:
       - document-uploads:/app/uploads
 
+  appointment-service:
+    build: ./services/appointments
+    ports:
+      - "8007:8007"
+
   questionnaire-service:
     build: ./services/questionnaire
     ports:
@@ -47,6 +52,7 @@ services:
       REFERRAL_SERVICE_URL: http://referral-service:8003
       DOCUMENT_SERVICE_URL: http://document-service:8004
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
+      APPOINTMENT_SERVICE_URL: http://appointment-service:8007
       QUESTIONNAIRE_SERVICE_URL: http://questionnaire-service:8008
     depends_on:
       - patient-service
@@ -54,6 +60,7 @@ services:
       - referral-service
       - document-service
       - notification-service
+      - appointment-service
       - questionnaire-service
 
 volumes:
