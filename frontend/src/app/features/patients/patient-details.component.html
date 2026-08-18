@@ -46,22 +46,23 @@
     <section>
       <div class="insurance-header">
         <h2>Insurance</h2>
-        <button type="button" class="insurance-add" (click)="startAddInsurance()">+ Add Insurance</button>
+        @if (patient.insurance.length === 0) {
+          <button type="button" class="insurance-add" (click)="startAddInsurance()">+ Add Insurance</button>
+        }
       </div>
-      @if (patient.insurance.length) {
+      @if (patient.insurance.length > 0) {
+        @let i = patient.insurance[0];
         <ul>
-          @for (i of patient.insurance; track i.InsuranceId) {
-            <li>
-              {{ i.InsurerName }} — Policy {{ i.PolicyNumber }} (Member {{ i.MemberId }})
-              <br />
-              Effective {{ i.EffectiveDate }}
-              @if (i.TerminationDate) { through {{ i.TerminationDate }} }
-              <div class="insurance-actions">
-                <button type="button" (click)="startEditInsurance(i)">Edit</button>
-                <button type="button" (click)="deleteInsuranceRecord(i)">Delete</button>
-              </div>
-            </li>
-          }
+          <li>
+            {{ i.InsurerName }} — Policy {{ i.PolicyNumber }} (Member {{ i.MemberId }})
+            <br />
+            Effective {{ i.EffectiveDate }}
+            @if (i.TerminationDate) { through {{ i.TerminationDate }} }
+            <div class="insurance-actions">
+              <button type="button" (click)="startEditInsurance(i)">Edit</button>
+              <button type="button" (click)="deleteInsuranceRecord(i)">Delete</button>
+            </div>
+          </li>
         </ul>
       } @else {
         <p class="empty">No insurance on record.</p>

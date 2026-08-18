@@ -134,7 +134,17 @@ direct API calls).
 
 ## Risk Areas / Unknowns
 
-1. **No DB migration needed, confirmed** — the `Insurance` table
+1. **One insurance record per patient enforced frontend-only** — the backend `Insurance` model
+   allows multiple records per patient (scoped by `PatientId`), but this feature enforces a
+   business rule that each patient has at most one active insurance record. This is a UI/UX
+   constraint, not a database constraint — the "Add Insurance" button is hidden when one exists,
+   and delete operations warn the user. If the backend is called directly (e.g., via API or other
+   clients), the database can still contain multiple records per patient. This is intentional per
+   the feature scope (UI-only, no backend changes), but it means the constraint is not enforced
+   at the data layer. Any future multi-insurance features would need to relax this UI rule and
+   update the component logic accordingly.
+
+2. **No DB migration needed, confirmed** — the `Insurance` table
    (`services/patient/models.py:55-67`) and all four CRUD endpoints already exist and are already
    exercised by seed data. This is *not* a risk, but it is worth stating explicitly since the raw
    ask ("CRUD UI (and any needed backend support)") left open whether backend work was needed —
