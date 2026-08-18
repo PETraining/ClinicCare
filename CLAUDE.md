@@ -2,116 +2,144 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What this is
+## Architecture Overview
 
-ReferralIQ: a microservices-based clinical referral tracking platform. An Angular SPA talks to an API
-gateway, which proxies to five independent FastAPI services, each with its own SQLite database.
+**ClinicCare** is a microservices-based healthcare platform called ReferralIQ. It follows a classic microservices pattern with a separate API Gateway that routes requests to independent backend services.
 
-## Running the stack
+### Tech Stack
 
-```bash
-./start_all.sh   # docker compose up -d --build (all 5 services + gateway), then ng serve on :4200
-./stop.sh        # tears down the frontend dev server and docker compose
+- **Frontend**: Angular 18 (TypeScript), runs on port 4200
+- **API Gateway**: FastAPI (Python), runs on port 8000, routes requests to backend services
+- **Backend Services**: 5 independent FastAPI (Python) services with SQLAlchemy ORM:
+  - Patient Service (8001) — manages patient records, allergies, conditions, medications
+  - Doctors Service (8002) — manages doctor information
+  - Referral Service (8003) — manages patient referrals between doctors
+  - Document Service (8004) — manages healthcare documents
+  - Notification Service (8005) — handles notifications
+- **Orchestration**: Docker Compose with individual Dockerfiles for each service
+- **Database**: SQLAlchemy with seed scripts for initialization
+
+### Microservices Interaction
+
+```
+Frontend (Angular, :4200)
+    ↓ (HTTP via localhost:4200 CORS)
+API Gateway (FastAPI, :8000)
+    ↓ (Internal routing via SERVICE_MAP)
+Five Backend Services (FastAPI, :8001-8005)
+    ↓ (SQLAlchemy ORM)
+Databases (one per service)
 ```
 
-- Frontend: http://localhost:4200
-- API Gateway: http://localhost:8000 (routes `/api/*` to backend services)
-- Backend logs: `docker compose logs -f` (or `docker compose logs -f <service-name>`)
-- Frontend logs: `.run/frontend.log`
+The **API Gateway** (`gateway/main.py`) is the single entry point. It:
+- Proxies HTTP requests to backend services based on path segments (`/api/{service}/...`)
+- Forwards all HTTP methods (GET, POST, PATCH, PUT, DELETE)
+- Handles CORS for the Angular frontend
+- Uses asyncio with httpx for non-blocking upstream calls
+- Filters hop-by-hop headers before forwarding
 
-To run a single backend service outside Docker (useful for iterating quickly):
+### Backend Service Pattern
+
+Each backend service (`services/{service}/main.py`) follows the same pattern:
+- **Startup event** — seeds database with initial data if empty
+- **CRUD endpoints** — RESTful endpoints for resource management
+- **ORM models** (`models.py`) — SQLAlchemy table definitions
+- **Schemas** (`schemas.py`) — Pydantic request/response validation
+- **Database** (`db.py`) — SQLAlchemy engine and session factory
+- **Seed data** (`seed.py`) — initial data population
+
+## Development Commands
+
+### Full Stack (Frontend + All Backend Services)
 
 ```bash
-cd services/<name>
+# Start everything (backends via docker-compose, frontend via ng serve)
+./start_all.sh
+
+# Stop everything (backends + frontend)
+./stop.sh
+
+# View backend logs
+docker compose logs -f
+
+# View frontend logs
+tail -f .run/frontend.log
+```
+
+### Frontend Only
+
+```bash
+cd frontend
+
+# Start dev server (auto-reload on file changes)
+npm start
+# or
+ng serve
+
+# Build for production
+npm run build
+ng build
+
+# Run unit tests
+npm test
+```
+
+### Individual Backend Service (for debugging/manual testing)
+
+```bash
+# Start just the gateway and all dependencies
+docker compose up
+
+# Start only specific services (e.g., patient + gateway)
+docker compose up patient-service gateway
+
+# Rebuild after code changes
+docker compose up --build
+
+# View logs for a specific service
+docker compose logs -f patient-service
+
+# Enter a service container shell
+docker compose exec patient-service bash
+```
+
+### Testing Backend Services Locally (Without Docker)
+
+Backend services can run without Docker if dependencies are installed, but Docker is the standard flow. If needed:
+
+```bash
+cd services/patient
 pip install -r requirements.txt
-uvicorn main:app --reload --port <its-port>   # doctors=8002, patient=8001, referral=8003, document=8004, notification=8005
+python main.py  # Runs on :8001
 ```
 
-Each service creates/uses its own SQLite file (`*.db`) in its own directory on startup and seeds it via
-`seed_if_empty()` in `seed.py` if empty — delete the `.db` file to reset a service's data.
+## Key Files and Patterns
 
-## Frontend commands (run from `frontend/`)
+### Frontend
+- `frontend/src/app/` — Angular components, services, guards, pipes
+- `frontend/angular.json` — Angular CLI configuration
+- Test configuration: `frontend/tsconfig.spec.json`, Karma runner in package.json
 
-```bash
-npm start           # ng serve, http://localhost:4200
-npm run build       # ng build -> dist/frontend
-npm test            # ng test (Karma/Jasmine)
-```
+### Gateway
+- `gateway/main.py` — Reverse proxy with request routing
+- `gateway/requirements.txt` — Dependencies (FastAPI, uvicorn, httpx)
+- Service URLs configured via environment variables (see `docker-compose.yml`)
 
-There is essentially no test coverage yet beyond the generated `app.component.spec.ts` — don't assume
-existing specs when adding features.
+### Backend Services
+- `services/{service}/main.py` — API endpoints (GET, POST, PATCH, PUT, DELETE)
+- `services/{service}/models.py` — SQLAlchemy ORM models
+- `services/{service}/schemas.py` — Pydantic schemas for request/response validation
+- `services/{service}/db.py` — Database session setup
+- `services/{service}/seed.py` — Initialization logic
 
-## Architecture
+### Docker & Orchestration
+- `docker-compose.yml` — Service definitions, port mappings, environment variables, dependencies
+- Each service has its own `Dockerfile` (Alpine Python base, standard FastAPI setup)
 
-### Services and ports
+## Important Notes
 
-| Service | Port | Responsibility |
-|---|---|---|
-| `gateway` | 8000 | Reverse proxy only — no business logic |
-| `services/patient` | 8001 | Patients + nested allergies/conditions/medications |
-| `services/doctors` | 8002 | Doctor directory |
-| `services/referral` | 8003 | Referral lifecycle (calls doctors + notification services) |
-| `services/document` | 8004 | Documents linked to patients/referrals |
-| `services/notification` | 8005 | Append-only notification log |
-
-### Gateway routing (`gateway/main.py`)
-
-A single catch-all route (`/api/{full_path}`) forwards requests based on the first path segment
-(`patients`, `doctors`, `referrals`, `documents`, `notifications` — see `SERVICE_MAP`) to the
-corresponding service, stripping hop-by-hop headers. Adding a new backend route requires no gateway
-change unless it's a new top-level segment — then add an entry to `SERVICE_MAP` and a
-`*_SERVICE_URL` env var in `docker-compose.yml`.
-
-### Backend service structure
-
-Every service under `services/<name>/` follows the same layout — when adding one, mirror the existing
-services rather than inventing a new pattern:
-
-- `db.py` — SQLAlchemy engine/session pointing at a local `sqlite:///./<name>.db` file, plus `get_db()` dependency
-- `models.py` — SQLAlchemy ORM models. Column names are PascalCase (e.g. `PatientId`, `CreatedAt`) to
-  match the frontend's TypeScript models directly — keep this consistent when adding fields
-- `schemas.py` — Pydantic request/response schemas, using `ConfigDict(from_attributes=True)` for reads
-- `main.py` — FastAPI app; calls `Base.metadata.create_all()` and `seed_if_empty()` on startup
-- `seed.py` — seeds demo data only if the table is empty
-- `Dockerfile` — `python:3.11-slim`, installs `requirements.txt`, runs uvicorn on the service's fixed port
-
-Cross-service calls happen over plain HTTP via `httpx.AsyncClient`, configured through env vars (see
-`services/referral/clients.py` for the pattern: a `*_SERVICE_URL` env var defaulting to `localhost` for
-local dev, `UpstreamUnavailable` exception mapped to a 502).
-
-### Referral state machine
-
-`services/referral/main.py` encodes valid transitions in a single `TRANSITIONS` dict:
-
-```
-submit:   Draft -> Submitted
-accept:   Submitted -> Accepted
-reject:   Submitted -> Rejected
-complete: Accepted -> Completed
-```
-
-Each transition is a `PATCH /referrals/{id}/{action}` endpoint that validates the current status,
-updates it, then fires a best-effort notification via `clients.record_notification()` — a notification
-failure is logged, not raised, so it never rolls back an already-committed status change. Follow this
-same "commit first, notify best-effort" pattern for any new side effects on referral transitions.
-
-On referral creation, the referral service calls the doctors service (`GET /doctors/{id}/exists`) to
-validate both `ReferringDoctorId` and `SpecialistId` concurrently via `asyncio.gather` before writing.
-
-### Frontend structure (`frontend/src/app/`)
-
-- `core/config.ts` — single `API_BASE_URL` constant (`http://localhost:8000/api`); all services build
-  off this
-- `core/models/` — TypeScript interfaces mirroring backend Pydantic schemas (PascalCase fields)
-- `core/services/` — one Angular service per backend resource, each holding an Angular `signal` as its
-  local cache and exposing `load*()`/`create()`/mutation methods (see `referral.service.ts` for the
-  standard shape: load into a signal, mutate via HTTP, then patch the signal in a `tap`)
-- `core/guards/auth.guard.ts` — gates the `ShellComponent` route tree; auth is a **demo-only** fake
-  (`auth.service.ts` just stores a hardcoded name in `localStorage`, no real backend auth exists)
-- `features/<domain>/` — one folder per route (dashboard, patients, referrals, documents, login), each
-  a standalone component with its own `.ts`/`.html`/`.css`
-- `shell/` — the authenticated app chrome (nav) wrapping the routed `features/*` pages
-- Routing (`app.routes.ts`) is flat, no lazy loading — all feature components are eagerly imported
-
-There is no real authentication/authorization anywhere in this system (frontend or backend) — every
-backend service trusts all requests. Do not treat `AuthService`/`authGuard` as a security boundary.
+- **Environment Variables**: Service URLs are configured in `docker-compose.yml`. When running locally without Docker, update `gateway/main.py` to point to `http://localhost:{port}` instead of service names.
+- **Database Seeding**: Each service seeds its database on startup (`on_event("startup")`). Seed logic is in `seed.py` for each service.
+- **CORS**: Frontend CORS is hardcoded to `http://localhost:4200` in the gateway. Update for production deployments.
+- **Frontend Port Conflict**: `start_all.sh` checks if port 4200 is already in use before starting ng serve; it skips if already running.
+- **Database**: Each backend service manages its own SQLAlchemy database (likely SQLite in development).

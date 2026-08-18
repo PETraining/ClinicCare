@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from models import Referral
+from models import Appointment, Referral
 
 # PatientId refs: 1=Anjali Verma, 2=Rajesh Kumar, 3=Divya Menon, 4=Suresh Iyengar, 5=Neha Bhatt
 # DoctorId refs: 1=Krishnan/Cardiology, 2=Reddy/Ortho, 3=Nair/Derm, 4=Malhotra/Neuro, 5=Iyer/Endo,
@@ -10,6 +10,14 @@ from models import Referral
 #
 # Statuses/timestamps are hand-kept in sync with the Notification Service's
 # seed data (services don't share a DB, even at seed time).
+# Appointments are linked to Accepted referrals (ReferralIds 5, 6)
+SEED_APPOINTMENTS = [
+    dict(ReferralId=5, PatientId=3, SpecialistId=3, ScheduledDate=datetime(2026, 8, 15, 10, 0),
+         Location="Dermatology Clinic, Building A, Room 201", Status="Scheduled", CreatedAt=datetime(2026, 7, 25, 11, 0), UpdatedAt=datetime(2026, 7, 25, 11, 0)),
+    dict(ReferralId=6, PatientId=2, SpecialistId=2, ScheduledDate=datetime(2026, 8, 20, 14, 30),
+         Location="Orthopedic Center, Suite 300", Status="Scheduled", CreatedAt=datetime(2026, 7, 26, 9, 30), UpdatedAt=datetime(2026, 7, 26, 9, 30)),
+]
+
 SEED_REFERRALS = [
     dict(PatientId=1, ReferringDoctorId=6, SpecialistId=1, Reason="Evaluate new-onset chest pain and possible cardiac workup",
          Priority="Urgent", Status="Draft", CreatedAt=datetime(2026, 7, 25, 9, 0), UpdatedAt=datetime(2026, 7, 25, 9, 0)),
@@ -38,3 +46,8 @@ def seed_if_empty(db: Session) -> None:
     for row in SEED_REFERRALS:
         db.add(Referral(**row))
     db.commit()
+
+    if db.query(Appointment).count() == 0:
+        for row in SEED_APPOINTMENTS:
+            db.add(Appointment(**row))
+        db.commit()

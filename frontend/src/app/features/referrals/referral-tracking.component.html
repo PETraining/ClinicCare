@@ -45,6 +45,9 @@
             <button class="danger" (click)="reject(r)">Reject</button>
           }
           @if (r.Status === 'Accepted') {
+            @if (showScheduleForm() !== r.ReferralId) {
+              <button (click)="openScheduleForm(r)">Schedule Appt</button>
+            }
             <button (click)="complete(r)">Complete</button>
           }
           <a [routerLink]="['/documents']" [queryParams]="{ referralId: r.ReferralId }">Docs</a>
@@ -57,3 +60,15 @@
     }
   </tbody>
 </table>
+
+@if (showScheduleForm() !== null) {
+  <app-schedule-appointment
+    [referralId]="showScheduleForm()!"
+    (onSuccess)="onAppointmentSuccess(showScheduleForm()!)"
+    (onCancel)="onAppointmentCancel()"
+  ></app-schedule-appointment>
+}
+
+@if (showScheduleForm() !== null) {
+  <app-appointment-list [referralId]="showScheduleForm()!"></app-appointment-list>
+}

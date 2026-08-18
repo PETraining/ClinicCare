@@ -37,3 +37,30 @@ class ReferralRead(ReferralBase):
     Status: Status
     CreatedAt: datetime
     UpdatedAt: datetime
+
+
+class AppointmentStatus(str, Enum):
+    scheduled = "Scheduled"
+    completed = "Completed"
+    cancelled = "Cancelled"
+    no_show = "No Show"
+
+
+class AppointmentCreate(BaseModel):
+    ScheduledDate: datetime
+    Location: str
+    SpecialistId: int
+
+
+class AppointmentRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    AppointmentId: int
+    ReferralId: int
+    PatientId: int
+    SpecialistId: int
+    ScheduledDate: datetime
+    Location: str
+    Status: AppointmentStatus
+    CreatedAt: datetime
+    UpdatedAt: datetime
