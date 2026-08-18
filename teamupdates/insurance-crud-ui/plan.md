@@ -5,8 +5,10 @@
 The Patient Service already fully implements insurance CRUD (model, schemas, four endpoints,
 seed data — see `context-map.md` "Dependencies & Contracts"). This plan is frontend-only: wire
 the existing `/api/patients/{patient_id}/insurance` endpoints into the patient details screen so
-staff can add, edit, and delete insurance records without leaving that page. No backend, seed
-data, or API Gateway changes are in scope.
+staff can add, edit, and delete insurance records without leaving that page. **Each patient is
+allowed only ONE active insurance record** — the "Add Insurance" button is hidden when a record
+exists, and delete operations warn that the patient will have no insurance on file if they
+proceed. No backend, seed data, or API Gateway changes are in scope.
 
 ## Phase 1: Frontend Data Layer
 
@@ -72,18 +74,22 @@ data, or API Gateway changes are in scope.
     `patientService.updateInsurance(...)` depending on whether `editingInsurance()` is set;
     handles success (hide form, clear state) and error (`err?.error?.detail`, same pattern as
     `create-referral.component.ts:82-85`) via the `insuranceError`/`insuranceSubmitting` signals.
-  - `deleteInsuranceRecord(record: Insurance)` — confirms (native `confirm()`, no existing
-    dialog-component precedent in this codebase per `context-map.md` risk #7), then calls
-    `patientService.deleteInsurance(patientId, record.InsuranceId)`, surfacing any error via
-    `insuranceError`.
+  - `deleteInsuranceRecord(record: Insurance)` — confirms with a message warning that the patient
+    will have no insurance on file (native `confirm()`, no existing dialog-component precedent in
+    this codebase per `context-map.md` risk #7; message: "Are you sure? This patient will have no
+    insurance on file"), then calls `patientService.deleteInsurance(patientId,
+    record.InsuranceId)`, surfacing any error via `insuranceError`.
 - Import `Insurance`, `InsuranceCreate` from `../../core/models/patient.model`.
 
 ### 2.2 Template — insurance section controls and inline form
 - **File**: `frontend/src/app/features/patients/patient-details.component.html`
 - In the existing `<section><h2>Insurance</h2>...</section>` block (lines 46-62):
-  - Add an "Add Insurance" button next to the `<h2>` that calls `startAddInsurance()`.
-  - Add "Edit" / "Delete" buttons to each `@for (i of patient.insurance; ...)` list item
-    (currently lines 50-57), calling `startEditInsurance(i)` and `deleteInsuranceRecord(i)`
+  - Add an "Add Insurance" button next to the `<h2>` that calls `startAddInsurance()` — **this
+    button is hidden (`@if (patient.insurance.length === 0)`) when a record already exists**, since
+    only one insurance record per patient is allowed.
+  - Add "Edit" / "Delete" buttons to the insurance record (since only one exists, use `@if
+    (patient.insurance.length > 0)` to conditionally render a single row with Edit/Delete), calling
+    `startEditInsurance(patient.insurance[0])` and `deleteInsuranceRecord(patient.insurance[0])`
     respectively.
   - Below the list (or replacing it while active), add the inline form guarded by
     `@if (showInsuranceForm())`, using `(ngSubmit)="submitInsurance()"` and `#insF="ngForm"`,
@@ -109,13 +115,16 @@ data, or API Gateway changes are in scope.
 
 ## Success Criteria
 
-- Staff can click "Add Insurance" on `/patients/:id`, fill the form, submit, and see the new
-  record appear in the insurance list without a page navigation.
-- Staff can click "Edit" on an existing insurance record, see the form pre-filled with that
+- Each patient has at most **ONE active insurance record** — the "Add Insurance" button is hidden
+  when a record exists and visible only when the insurance list is empty.
+- Staff can click "Add Insurance" on `/patients/:id` (when no insurance exists), fill the form,
+  submit, and see the new record appear without a page navigation.
+- Staff can click "Edit" on the existing insurance record, see the form pre-filled with that
   record's current values, change a field, submit, and see the updated values reflected in the
   list.
-- Staff can click "Delete" on an existing insurance record, confirm, and see it removed from the
-  list.
+- Staff can click "Delete" on the existing insurance record, see a confirmation dialog warning
+  "Are you sure? This patient will have no insurance on file", and after confirming, see it
+  removed from the list and the "Add Insurance" button re-appear.
 - All three operations call the existing Patient Service endpoints
   (`POST`/`PUT`/`DELETE /patients/{patient_id}/insurance[/{insurance_id}]`) with no backend,
   schema, or gateway changes.
