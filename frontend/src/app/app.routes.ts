@@ -21,20 +21,6 @@ import { QuestionnaireFormComponent } from './features/patient-portal/questionna
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
-  {
-    path: '',
-    component: ShellComponent,
-    canActivate: [authGuard],
-    children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-      { path: 'dashboard', component: DashboardComponent },
-      { path: 'patients', component: PatientsListComponent },
-      { path: 'patients/:id', component: PatientDetailsComponent },
-      { path: 'referrals', component: ReferralTrackingComponent },
-      { path: 'referrals/new', component: CreateReferralComponent },
-      { path: 'documents', component: DocumentsComponent },
-    ],
-  },
   { path: 'patient-portal/login', component: PatientLoginComponent },
   {
     path: 'patient-portal',
@@ -48,6 +34,20 @@ export const routes: Routes = [
       { path: 'documents/upload', component: DocumentUploadComponent },
       { path: 'questionnaires', component: QuestionnaireListComponent },
       { path: 'questionnaires/:id', component: QuestionnaireFormComponent },
+    ],
+  },
+  {
+    path: '',
+    component: ShellComponent,
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', component: DashboardComponent },
+      { path: 'patients', component: PatientsListComponent },
+      { path: 'patients/:id', component: PatientDetailsComponent },
+      { path: 'referrals', component: ReferralTrackingComponent },
+      { path: 'referrals/new', component: CreateReferralComponent },
+      { path: 'documents', component: DocumentsComponent },
     ],
   },
   { path: '**', redirectTo: 'login' },
