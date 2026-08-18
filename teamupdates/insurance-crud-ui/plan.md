@@ -90,7 +90,7 @@ data, or API Gateway changes are in scope.
     with labeled inputs for `InsurerName`, `PolicyNumber`, `GroupNumber` (optional), `MemberId`,
     `EffectiveDate` (`type="date"`), `TerminationDate` (`type="date"`, optional) —
     structurally mirroring the label/input layout of
-    `create-referral.component.html` (lines 5-38), template-driven with `[(ngModel)]` on each
+    `create-referral.component.html` (lines 4-39), template-driven with `[(ngModel)]` on each
     field of `insuranceForm`.
     - Submit button label reflects mode: "Add Insurance" vs. "Save Changes"
       (`editingInsurance() ? 'Save Changes' : 'Add Insurance'`), disabled when
@@ -98,7 +98,7 @@ data, or API Gateway changes are in scope.
       `create-referral.component.html:59-61`.
     - A "Cancel" button calls `cancelInsuranceForm()`.
     - `@if (insuranceError())` renders the error message, matching
-      `create-referral.component.html:56-58`'s `errorMessage()` pattern.
+      `create-referral.component.html:55-57`'s `errorMessage()` pattern.
 
 ### 2.3 Styling
 - **File**: `frontend/src/app/features/patients/patient-details.component.css`
