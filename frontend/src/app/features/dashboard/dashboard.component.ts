@@ -36,7 +36,6 @@ export class DashboardComponent implements OnInit {
   total = computed(() => this.referralService.referrals().length);
 
   ngOnInit(): void {
-    console.log('DashboardComponent initialized');
     this.referralService.loadAll();
   }
 }
