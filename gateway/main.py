@@ -8,8 +8,8 @@ SERVICE_MAP = {
     "patients": os.environ.get("PATIENT_SERVICE_URL", "http://localhost:8001"),
     "doctors": os.environ.get("DOCTORS_SERVICE_URL", "http://localhost:8002"),
     "referrals": os.environ.get("REFERRAL_SERVICE_URL", "http://localhost:8003"),
-    "appointments": os.environ.get("REFERRAL_SERVICE_URL", "http://localhost:8003"),
     "documents": os.environ.get("DOCUMENT_SERVICE_URL", "http://localhost:8004"),
+    "questionnaires": os.environ.get("QUESTIONNAIRE_SERVICE_URL", "http://localhost:8008"),
     "notifications": os.environ.get("NOTIFICATION_SERVICE_URL", "http://localhost:8005"),
 }
 
