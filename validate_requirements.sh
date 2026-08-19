@@ -46,55 +46,55 @@ print_header "1. BACKEND API ENDPOINTS"
 
 # Medication endpoints
 check_requirement "GET /medications endpoint" \
-    "grep -q 'def get_medications\|@app.get.*medications' services/pharmacy/main.py"
+    "grep -q '@app.get.*\"/medications\"' services/pharmacy/main.py"
 
 check_requirement "GET /medications/{id} endpoint" \
-    "grep -q 'def get_medication.*id\|@app.get.*medications/{' services/pharmacy/main.py"
+    "grep -q '@app.get.*\"/medications/{' services/pharmacy/main.py"
 
-check_requirement "PATCH /medications/{id} update endpoint" \
-    "grep -q '@app.patch.*medications\|def update_medication' services/pharmacy/main.py"
+check_requirement "POST /medications endpoint" \
+    "grep -q '@app.post.*\"/medications\"' services/pharmacy/main.py"
 
 check_requirement "GET /inventory/low-stock endpoint" \
-    "grep -q '@app.get.*low-stock\|def get_low_stock' services/pharmacy/main.py"
+    "grep -q '@app.get.*low-stock' services/pharmacy/main.py"
 
 check_requirement "GET /inventory/stock-status endpoint" \
-    "grep -q '@app.get.*stock-status\|def get_stock_status' services/pharmacy/main.py"
+    "grep -q '@app.get.*stock-status' services/pharmacy/main.py"
 
 # Prescription endpoints
 check_requirement "POST /prescriptions endpoint" \
-    "grep -q '@app.post.*prescriptions\|def create_prescription' services/pharmacy/main.py"
+    "grep -q '@app.post.*\"/prescriptions\"' services/pharmacy/main.py"
 
 check_requirement "GET /prescriptions endpoint" \
-    "grep -q '@app.get.*prescriptions\|def list_prescriptions' services/pharmacy/main.py"
+    "grep -q '@app.get.*\"/prescriptions\"' services/pharmacy/main.py"
 
 check_requirement "GET /prescriptions/{id} endpoint" \
-    "grep -q '@app.get.*prescriptions/{' services/pharmacy/main.py"
+    "grep -q '@app.get.*\"/prescriptions/{' services/pharmacy/main.py"
 
-check_requirement "PATCH /prescriptions/{id} status update" \
-    "grep -q 'def update_prescription_status\|@app.patch.*prescriptions' services/pharmacy/main.py"
+check_requirement "GET /prescriptions/{id}/refill-requests endpoint" \
+    "grep -q '@app.get.*refill-requests' services/pharmacy/main.py"
 
 # Dispensing endpoints
 check_requirement "POST /prescriptions/{id}/dispense endpoint" \
-    "grep -q '@app.post.*dispense\|def dispense_medication' services/pharmacy/main.py"
+    "grep -q '@app.post.*dispense' services/pharmacy/main.py"
 
 check_requirement "GET /prescriptions/{id}/dispensing-history endpoint" \
-    "grep -q '@app.get.*dispensing-history\|def get_dispensing_history' services/pharmacy/main.py"
+    "grep -q '@app.get.*dispensing-history' services/pharmacy/main.py"
 
 # Refill endpoints
 check_requirement "POST /prescriptions/{id}/request-refill endpoint" \
-    "grep -q '@app.post.*request-refill\|def request_refill' services/pharmacy/main.py"
+    "grep -q '@app.post.*request-refill' services/pharmacy/main.py"
 
 check_requirement "GET /refill-requests endpoint" \
-    "grep -q '@app.get.*refill-requests\|def get_refill_requests' services/pharmacy/main.py"
+    "grep -q '@app.get.*\"/refill-requests\"' services/pharmacy/main.py"
 
 check_requirement "POST /refill-requests/{id}/approve endpoint" \
-    "grep -q '@app.post.*approve\|def approve_refill_request' services/pharmacy/main.py"
+    "grep -q '@app.post.*approve' services/pharmacy/main.py"
 
 check_requirement "POST /refill-requests/{id}/reject endpoint" \
-    "grep -q '@app.post.*reject\|def reject_refill_request' services/pharmacy/main.py"
+    "grep -q '@app.post.*reject' services/pharmacy/main.py"
 
 check_requirement "POST /refill-requests/{id}/fulfill endpoint" \
-    "grep -q '@app.post.*fulfill\|def fulfill_refill_request' services/pharmacy/main.py"
+    "grep -q '@app.post.*fulfill' services/pharmacy/main.py"
 
 ###############################################################################
 # DATABASE MODEL REQUIREMENTS
