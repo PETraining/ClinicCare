@@ -117,6 +117,78 @@ h2 {
   margin-bottom: 0;
 }
 
+/* Filters Section */
+.filters-section {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.filters-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.filters-header h2 {
+  margin-bottom: 0;
+  color: #374151;
+}
+
+.filters-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.filter-input {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+  color: #1f2937;
+  transition: border-color 0.2s;
+}
+
+.filter-input:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+}
+
+.button-tertiary {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid #d1d5db;
+  background-color: white;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.button-tertiary:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+  color: #374151;
+}
+
 /* Table */
 .table-container {
   overflow-x: auto;
@@ -150,7 +222,8 @@ h2 {
 }
 
 /* Status Badges */
-.status-active {
+.status-active,
+.status-prescribed {
   display: inline-block;
   padding: 4px 12px;
   background-color: #e8f5e9;
@@ -160,17 +233,29 @@ h2 {
   font-size: 12px;
 }
 
-.status-completed {
+.status-completed,
+.status-fulfilled {
   display: inline-block;
   padding: 4px 12px;
-  background-color: #e0e0e0;
-  color: #424242;
+  background-color: #c8e6c9;
+  color: #1b5e20;
   border-radius: 4px;
   font-weight: 500;
   font-size: 12px;
 }
 
-.status-voided {
+.status-partiallyfulfilled {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: #fff3e0;
+  color: #e65100;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 12px;
+}
+
+.status-voided,
+.status-draft {
   display: inline-block;
   padding: 4px 12px;
   background-color: #ffebee;
@@ -285,6 +370,103 @@ h2 {
   padding: 32px 16px;
   color: #999;
   font-style: italic;
+}
+
+/* Refill Requests Section */
+.refill-requests-section {
+  background: linear-gradient(135deg, #fff3cd 0%, #fff8e1 100%);
+  border: 2px solid #ffc107;
+  border-left: 5px solid #ff9800;
+  padding: 20px;
+  margin-bottom: 32px;
+  border-radius: 8px;
+}
+
+.refill-requests-section h2 {
+  color: #d67c00;
+  margin-bottom: 16px;
+}
+
+.refill-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.refill-card {
+  background: white;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);
+  transition: all 0.3s ease;
+}
+
+.refill-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+}
+
+.refill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ffe0b2;
+}
+
+.refill-id {
+  font-weight: 600;
+  color: #1a1a1a;
+  font-size: 14px;
+}
+
+.refill-status {
+  background: #fff9c4;
+  color: #f57f17;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.refill-details {
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+
+.refill-details p {
+  margin: 6px 0;
+  color: #555;
+}
+
+.refill-details strong {
+  color: #333;
+}
+
+.refill-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.button-success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.button-success:hover {
+  background-color: #45a049;
+}
+
+.button-danger {
+  background-color: #f44336;
+  color: white;
+}
+
+.button-danger:hover {
+  background-color: #da190b;
 }
 
 /* Responsive */

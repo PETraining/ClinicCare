@@ -49,9 +49,179 @@
     <app-documents-panel [patientId]="patient.PatientId" />
   </section>
 
+  <!-- PRESCRIPTION HISTORY SECTION -->
+  <section class="prescription-history">
+    <div class="section-header">
+      <h2>Prescription History</h2>
+      <a class="btn btn-primary" [routerLink]="['/pharmacy/prescriptions/new']" [queryParams]="{ patientId: patient.PatientId }">
+        + Create Prescription
+      </a>
+    </div>
+
+    @if (prescriptionError()) {
+      <div class="error-alert">
+        {{ prescriptionError() }}
+      </div>
+    }
+
+    @if (prescriptionLoading()) {
+      <p class="loading">Loading prescriptions...</p>
+    } @else if (patientPrescriptions().length === 0) {
+      <p class="empty">No prescriptions on record.</p>
+    } @else {
+      <!-- ACTIVE PRESCRIPTIONS TAB -->
+      @if (activePrescriptions().length > 0) {
+        <div class="prescriptions-group">
+          <h3>Active Prescriptions ({{ activePrescriptions().length }})</h3>
+          <div class="prescription-list">
+            @for (rx of activePrescriptions(); track rx.PrescriptionId) {
+              <div class="prescription-card" [class.expanded]="expandedPrescriptionId() === rx.PrescriptionId">
+                <div class="prescription-header" (click)="togglePrescriptionDetails(rx.PrescriptionId)">
+                  <div class="prescription-main">
+                    <span class="rx-id">Rx #{{ rx.PrescriptionId }}</span>
+                    <span class="status-badge" [class]="'status-' + rx.Status.toLowerCase()">
+                      {{ rx.Status }}
+                    </span>
+                    <span class="date">Created: {{ rx.CreatedAt | date: 'short' }}</span>
+                  </div>
+                  <div class="prescription-actions">
+                    <span class="refill-status" [class.can-refill]="canRefill(rx)">
+                      {{ getRefillStatus(rx) }}
+                    </span>
+                    @if (canRefill(rx)) {
+                      <button class="btn btn-sm btn-refill" (click)="requestRefill(rx); $event.stopPropagation()">
+                        Request Refill
+                      </button>
+                    }
+                  </div>
+                  <span class="toggle-icon">{{ expandedPrescriptionId() === rx.PrescriptionId ? '▼' : '▶' }}</span>
+                </div>
+
+                @if (expandedPrescriptionId() === rx.PrescriptionId) {
+                  <div class="prescription-details">
+                    <div class="detail-row">
+                      <strong>Patient:</strong>
+                      <span>{{ getPatientNameSignal(rx.PatientId)() }} (ID: {{ rx.PatientId }})</span>
+                    </div>
+                    <div class="detail-row">
+                      <strong>Doctor:</strong>
+                      <span>{{ getDoctorNameSignal(rx.PrescribingDoctorId)() }} (ID: {{ rx.PrescribingDoctorId }})</span>
+                    </div>
+                    @if (rx.ReferralId) {
+                      <div class="detail-row">
+                        <strong>Referral:</strong>
+                        <a [routerLink]="['/referrals', rx.ReferralId]">Ref #{{ rx.ReferralId }}</a>
+                      </div>
+                    }
+                    <div class="detail-row">
+                      <strong>Medications:</strong>
+                      <ul class="medications-list">
+                        @for (med of rx.Medications; track $index) {
+                          <li>
+                            @if (med.Name) {
+                              <strong>{{ med.Name }}</strong>
+                              @if (med.Dosage) {
+                                ({{ med.Dosage }})
+                              }
+                            } @else {
+                              <strong>Medication #{{ med.medication_id }}</strong>
+                            }
+                            <br />
+                            Qty: {{ med.quantity }}, {{ med.frequency }}
+                            @if (med.instructions) {
+                              <em>{{ med.instructions }}</em>
+                            }
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                    <div class="detail-row">
+                      <strong>Last Refilled:</strong>
+                      <span>{{ rx.LastRefillDate ? (rx.LastRefillDate | date: 'short') : 'Never' }}</span>
+                    </div>
+                    <div class="detail-row">
+                      <strong>Refill Details:</strong>
+                      <ul class="refill-details">
+                        <li>Refills Allowed: <strong>{{ rx.RefillsAllowed === -1 ? 'Unlimited' : rx.RefillsAllowed }}</strong></li>
+                        <li>Refills Remaining: <strong>{{ rx.RefillsRemaining === -1 ? 'Unlimited' : rx.RefillsRemaining }}</strong></li>
+                      </ul>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- COMPLETED PRESCRIPTIONS TAB -->
+      @if (completedPrescriptions().length > 0) {
+        <div class="prescriptions-group completed-section">
+          <h3>Completed Prescriptions ({{ completedPrescriptions().length }})</h3>
+          <div class="prescription-list">
+            @for (rx of completedPrescriptions(); track rx.PrescriptionId) {
+              <div class="prescription-card completed" [class.expanded]="expandedPrescriptionId() === rx.PrescriptionId">
+                <div class="prescription-header" (click)="togglePrescriptionDetails(rx.PrescriptionId)">
+                  <div class="prescription-main">
+                    <span class="rx-id">Rx #{{ rx.PrescriptionId }}</span>
+                    <span class="status-badge status-completed">
+                      {{ rx.Status }}
+                    </span>
+                    <span class="date">Created: {{ rx.CreatedAt | date: 'short' }}</span>
+                  </div>
+                  <span class="toggle-icon">{{ expandedPrescriptionId() === rx.PrescriptionId ? '▼' : '▶' }}</span>
+                </div>
+
+                @if (expandedPrescriptionId() === rx.PrescriptionId) {
+                  <div class="prescription-details">
+                    <div class="detail-row">
+                      <strong>Patient:</strong>
+                      <span>{{ getPatientNameSignal(rx.PatientId)() }} (ID: {{ rx.PatientId }})</span>
+                    </div>
+                    <div class="detail-row">
+                      <strong>Doctor:</strong>
+                      <span>{{ getDoctorNameSignal(rx.PrescribingDoctorId)() }} (ID: {{ rx.PrescribingDoctorId }})</span>
+                    </div>
+                    <div class="detail-row">
+                      <strong>Medications:</strong>
+                      <ul class="medications-list">
+                        @for (med of rx.Medications; track $index) {
+                          <li>
+                            @if (med.Name) {
+                              <strong>{{ med.Name }}</strong>
+                              @if (med.Dosage) {
+                                ({{ med.Dosage }})
+                              }
+                            } @else {
+                              <strong>Medication #{{ med.medication_id }}</strong>
+                            }
+                            <br />
+                            Qty: {{ med.quantity }}, {{ med.frequency }}
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+  </section>
+
   <a class="new-referral" [routerLink]="['/referrals/new']" [queryParams]="{ patientId: patient.PatientId }">
     + Create referral for {{ patient.Name }}
   </a>
+
+  <!-- REFILL REQUEST MODAL -->
+  <app-refill-request-modal
+    [isOpen]="showRefillModal()"
+    [prescription]="selectedPrescriptionForRefill()"
+    [patientId]="patient.PatientId"
+    (close)="closeRefillModal()"
+  />
 } @else {
   <p>Loading patient...</p>
 }

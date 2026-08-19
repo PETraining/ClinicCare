@@ -40,9 +40,21 @@
       </div>
 
       <div class="filter-group">
-        <label for="patient-filter">Patient ID</label>
+        <label for="patient-filter">Patient Name</label>
         <input
           id="patient-filter"
+          type="text"
+          [(ngModel)]="patientNameFilter"
+          (change)="applyFilters()"
+          placeholder="e.g., Anjaly Sharma"
+          class="filter-input"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="patient-id-filter">Patient ID</label>
+        <input
+          id="patient-id-filter"
           type="number"
           [(ngModel)]="patientIdFilter"
           (change)="loadPrescriptions()"
@@ -88,9 +100,9 @@
         <tbody>
           <tr *ngFor="let prescription of filteredPrescriptions">
             <td>#{{ prescription.PrescriptionId }}</td>
-            <td>Patient #{{ prescription.PatientId }}</td>
-            <td>Referral #{{ prescription.ReferralId }}</td>
-            <td>Doctor #{{ prescription.PrescribingDoctorId }}</td>
+            <td>{{ getPatientNameSignal(prescription.PatientId)() }}</td>
+            <td>{{ prescription.ReferralId ? 'Ref #' + prescription.ReferralId : '-' }}</td>
+            <td>{{ getDoctorNameSignal(prescription.PrescribingDoctorId)() }}</td>
             <td>{{ prescription.Medications.length }} medication(s)</td>
             <td>
               <span [ngClass]="'status-' + prescription.Status.toLowerCase()">
