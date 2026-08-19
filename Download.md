@@ -27,4 +27,7 @@ For each of those branches, fetch it and show me the real diff on
 gateway/main.py compared to main. Then compare that against our own
 planned change to gateway/main.py — does a genuine collision exist
 in the actual code, not just in what was planned?
- 
+
+
+ Confirm gateway/main.py on main right now doesn't already contain our
+planned entry, or a conflicting one from anyone who's already merged
