@@ -1,8 +1,11 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs';
+
+import { API_BASE_URL } from '../../core/config';
 
 import { Referral } from '../../core/models/referral.model';
 import { PatientAuthService } from '../../core/services/patient-auth.service';
@@ -267,10 +270,12 @@ import { PatientReferralScreenData } from '../../core/services/referral-validati
 export class PatientReferralViewComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private http = inject(HttpClient);
   private patientAuth = inject(PatientAuthService);
   private referralService = inject(ReferralService);
   private appointmentService = inject(AppointmentService);
   private validationService = inject(ReferralValidationService);
+  private apiBase = API_BASE_URL;
 
   private referralId = toSignal(
     this.route.paramMap.pipe(map((params) => Number(params.get('id')))),
@@ -313,10 +318,17 @@ export class PatientReferralViewComponent implements OnInit {
       const ref = this.referralService.referrals().find((r) => r.ReferralId === id);
       if (ref) {
         this.referral.set(ref);
+        this.loadSpecialistName(ref.SpecialistId);
         this.validateReferral(ref);
       }
       this.loading.set(false);
     }, 500);
+  }
+
+  private loadSpecialistName(specialistId: number): void {
+    this.http
+      .get<any>(`${this.apiBase}/doctors/${specialistId}`)
+      .subscribe((doctor) => this.specialistName.set(doctor.Name));
   }
 
   private validateReferral(referral: Referral): void {
