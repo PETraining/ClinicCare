@@ -54,6 +54,7 @@ Confirmed `1e9ce23` is **not** an ancestor of `F5.2-imp` — this was written tw
 
 **Why it's unnecessary:** Checked `services/referral/main.py` on F1 — every appointment endpoint is mounted under `/referrals/...`:
 
+
 ```
 POST  /referrals/{referral_id}/appointments
 GET   /referrals/{referral_id}/appointments
