@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { ActivatedRoute, provideRouter } from '@angular/router';
+import { of, throwError } from 'rxjs';
 
 import { PatientDetailsComponent } from './patient-details.component';
 import { PatientService } from '../../core/services/patient.service';
@@ -49,11 +49,11 @@ describe('PatientDetailsComponent — Insurance CRUD', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideRouter([]),
         {
           provide: ActivatedRoute,
           useValue: { paramMap: of({ get: (key: string) => (key === 'id' ? '1' : null) }) },
         },
-        { provide: Router, useValue: { navigate: jasmine.createSpy('navigate') } },
       ],
     }).compileComponents();
 
@@ -65,6 +65,9 @@ describe('PatientDetailsComponent — Insurance CRUD', () => {
     fixture.detectChanges();
     const patientReq = httpTesting.expectOne(`${API_BASE_URL}/patients/1`);
     patientReq.flush(mockPatientWithInsurance());
+
+    fixture.detectChanges(); // renders the patient view, including <app-documents-panel>
+    httpTesting.expectOne(`${API_BASE_URL}/documents?patientId=1`).flush([]);
   });
 
   afterEach(() => {
@@ -141,9 +144,7 @@ describe('PatientDetailsComponent — Insurance CRUD', () => {
 
     it('submitInsurance() sets insuranceError on failure', () => {
       spyOn(patientService, 'createInsurance').and.returnValue(
-        new Promise((_, reject) => {
-          reject({ error: { detail: 'Invalid data' } });
-        }) as any,
+        throwError(() => ({ error: { detail: 'Invalid data' } })),
       );
       component.insuranceForm = {
         InsurerName: 'Test',
@@ -296,9 +297,7 @@ describe('PatientDetailsComponent — Insurance CRUD', () => {
       };
       spyOn(window, 'confirm').and.returnValue(true);
       spyOn(patientService, 'deleteInsurance').and.returnValue(
-        new Promise((_, reject) => {
-          reject({ error: { detail: 'Insurance not found' } });
-        }) as any,
+        throwError(() => ({ error: { detail: 'Insurance not found' } })),
       );
 
       component.deleteInsuranceRecord(record);
@@ -326,18 +325,17 @@ describe('PatientDetailsComponent — Insurance CRUD', () => {
       patientService.selected.set(mockPatientWithoutInsurance());
       fixture.detectChanges();
 
-      const emptyMsg = fixture.nativeElement.querySelector('.empty');
-      expect(emptyMsg?.textContent).toContain('No insurance on record');
+      const emptyMessages: HTMLElement[] = Array.from(fixture.nativeElement.querySelectorAll('.empty'));
+      expect(emptyMessages.some((el) => el.textContent?.includes('No insurance on record'))).toBeTruthy();
     });
 
     it('renders Edit and Delete buttons for existing record', () => {
       patientService.selected.set(mockPatientWithInsurance());
       fixture.detectChanges();
 
-      const editBtn = fixture.nativeElement.querySelector('button:has-text("Edit")');
-      const deleteBtn = fixture.nativeElement.querySelector('button:has-text("Delete")');
-      expect(editBtn || fixture.nativeElement.textContent.includes('Edit')).toBeTruthy();
-      expect(deleteBtn || fixture.nativeElement.textContent.includes('Delete')).toBeTruthy();
+      const buttons: HTMLButtonElement[] = Array.from(fixture.nativeElement.querySelectorAll('button'));
+      expect(buttons.some((b) => b.textContent?.includes('Edit'))).toBeTruthy();
+      expect(buttons.some((b) => b.textContent?.includes('Delete'))).toBeTruthy();
     });
 
     it('shows inline form when showInsuranceForm is true', () => {
@@ -432,7 +430,7 @@ describe('PatientDetailsComponent — Insurance CRUD', () => {
       patientService.selected.set(patientWith2);
       fixture.detectChanges();
 
-      const listItems = fixture.nativeElement.querySelectorAll('section:has(h2:text("Insurance")) li');
+      const listItems = fixture.nativeElement.querySelectorAll('.insurance-actions');
       expect(listItems.length).toBe(1);
     });
 
