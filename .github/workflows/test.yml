@@ -2,7 +2,9 @@ name: Run Tests
 
 on:
   push:
+    branches: [F2-InsuranceEligibility]
   pull_request:
+    branches: [F2-InsuranceEligibility]
 
 jobs:
   frontend-tests:

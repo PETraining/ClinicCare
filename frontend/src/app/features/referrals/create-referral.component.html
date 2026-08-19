@@ -56,7 +56,7 @@
     <p class="error">{{ errorMessage() }}</p>
   }
 
-  <button type="submit" [disabled]="!f.valid || submitting()">
+  <button type="submit" [disabled]="!f.valid || submitting() || deniedAuthorizations().length > 0">
     {{ submitting() ? 'Creating...' : 'Create Referral (Draft)' }}
   </button>
 </form>
