@@ -148,19 +148,19 @@ check_requirement "Prescription filtering by status" \
 print_header "4. FRONTEND COMPONENTS"
 
 check_requirement "Pharmacy dashboard component exists" \
-    "test -f frontend/src/app/features/pharmacy/pharmacy-dashboard.component.ts"
+    "[ -f frontend/src/app/features/pharmacy/pharmacy-dashboard.component.ts ]"
 
 check_requirement "Prescription creation component exists" \
-    "test -f frontend/src/app/features/pharmacy/prescription-create.component.ts"
+    "[ -f frontend/src/app/features/pharmacy/prescription-create.component.ts ]"
 
 check_requirement "Prescription detail component exists" \
-    "test -f frontend/src/app/features/pharmacy/prescription-detail.component.ts"
+    "[ -f frontend/src/app/features/pharmacy/prescription-detail.component.ts ]"
 
 check_requirement "Prescription list component exists" \
-    "test -f frontend/src/app/features/pharmacy/prescription-list.component.ts"
+    "[ -f frontend/src/app/features/pharmacy/prescription-list.component.ts ]"
 
 check_requirement "Refill request modal exists" \
-    "test -f frontend/src/app/features/patients/refill-request-modal.component.ts"
+    "[ -f frontend/src/app/features/patients/refill-request-modal.component.ts ]"
 
 check_requirement "Pharmacy service exists" \
     "test -f frontend/src/app/core/services/pharmacy.service.ts"

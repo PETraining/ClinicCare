@@ -29,9 +29,15 @@ jobs:
 
           # Check frontend components
           echo "Checking frontend components..."
-          test -f "frontend/src/app/features/pharmacy/pharmacy-dashboard.component.ts" && echo "✅ Pharmacy dashboard" || (echo "❌ Dashboard missing" && exit 1)
-          test -f "frontend/src/app/features/pharmacy/prescription-create.component.ts" && echo "✅ Prescription create" || (echo "❌ Create missing" && exit 1)
-          test -f "frontend/src/app/features/patients/refill-request-modal.component.ts" && grep -q "request-refill" frontend/src/app/features/patients/refill-request-modal.component.ts && echo "✅ Refill functionality" || (echo "❌ Refill functionality missing" && exit 1)
+          [ -f "frontend/src/app/features/pharmacy/pharmacy-dashboard.component.ts" ] && echo "✅ Pharmacy dashboard" || (echo "❌ Dashboard missing" && exit 1)
+          [ -f "frontend/src/app/features/pharmacy/prescription-create.component.ts" ] && echo "✅ Prescription create" || (echo "❌ Create missing" && exit 1)
+          [ -f "frontend/src/app/features/pharmacy/prescription-detail.component.ts" ] && echo "✅ Prescription detail" || (echo "❌ Detail missing" && exit 1)
+          if [ -f "frontend/src/app/features/patients/refill-request-modal.component.ts" ]; then
+            grep -q "request-refill" frontend/src/app/features/patients/refill-request-modal.component.ts && echo "✅ Refill functionality" || (echo "❌ Refill functionality missing" && exit 1)
+          else
+            echo "❌ Refill modal missing"
+            exit 1
+          fi
 
           echo ""
           echo "✅ All pharmacy requirements validated!"
