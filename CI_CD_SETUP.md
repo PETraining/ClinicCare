@@ -5,7 +5,6 @@
 **Trigger:** Automatic on every PR to main/master/develop
 
 ---
-
 ## Overview
 
 This document explains the automated testing workflow that runs on every Pull Request.

@@ -33,19 +33,132 @@
       </div>
     </div>
 
+    <!-- Pending Refill Requests Section -->
+    <section class="section refill-requests-section" *ngIf="pendingRefillRequests().length > 0">
+      <h2>⚕️ Pending Refill Requests ({{ pendingRefillRequests().length }})</h2>
+      <div class="refill-cards">
+        <div *ngFor="let refill of pendingRefillRequests()" class="refill-card">
+          <div class="refill-header">
+            <span class="refill-id">Refill #{{ refill.RefillRequestId }}</span>
+            <span class="refill-status">{{ refill.Status }}</span>
+          </div>
+          <div class="refill-details">
+            <p><strong>Prescription:</strong> #{{ refill.PrescriptionId }}</p>
+            <p><strong>Patient ID:</strong> {{ refill.PatientId }}</p>
+            <p><strong>Requested:</strong> {{ refill.RequestedAt | date: 'short' }}</p>
+          </div>
+          <div class="refill-actions">
+            <button
+              (click)="approveRefill(refill.RefillRequestId)"
+              class="button button-success"
+              title="Approve this refill request"
+            >
+              ✓ Approve
+            </button>
+            <button
+              (click)="fulfillRefill(refill.RefillRequestId)"
+              class="button button-primary"
+              title="Dispense the refill"
+            >
+              📦 Fulfill
+            </button>
+            <button
+              (click)="rejectRefill(refill.RefillRequestId)"
+              class="button button-danger"
+              title="Reject this refill request"
+            >
+              ✗ Reject
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters Section -->
+    <section class="section filters-section">
+      <div class="filters-header">
+        <h2>Filters</h2>
+        <button *ngIf="hasActiveFilters()" (click)="clearFilters()" class="button-tertiary">
+          Clear Filters
+        </button>
+      </div>
+
+      <div class="filters-row">
+        <div class="filter-group">
+          <label for="patient-name-filter">Patient Name</label>
+          <input
+            id="patient-name-filter"
+            type="text"
+            [(ngModel)]="patientNameFilter"
+            placeholder="e.g., John Doe"
+            class="filter-input"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label for="patient-id-filter">Patient ID</label>
+          <input
+            id="patient-id-filter"
+            type="number"
+            [(ngModel)]="patientIdFilter"
+            placeholder="Enter patient ID"
+            class="filter-input"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label for="doctor-name-filter">Doctor Name</label>
+          <input
+            id="doctor-name-filter"
+            type="text"
+            [(ngModel)]="doctorNameFilter"
+            placeholder="e.g., Dr. Smith"
+            class="filter-input"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label for="doctor-id-filter">Doctor ID</label>
+          <input
+            id="doctor-id-filter"
+            type="number"
+            [(ngModel)]="doctorIdFilter"
+            placeholder="Enter doctor ID"
+            class="filter-input"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label for="status-filter">Status</label>
+          <select
+            id="status-filter"
+            [(ngModel)]="statusFilter"
+            class="filter-input"
+          >
+            <option value="">All</option>
+            <option value="Prescribed">Prescribed</option>
+            <option value="PartiallyFulfilled">Partially Fulfilled</option>
+            <option value="Fulfilled">Fulfilled</option>
+            <option value="Voided">Voided</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
     <!-- Recent Prescriptions Section -->
     <section class="section">
       <div class="section-header">
-        <h2>Recent Prescriptions</h2>
+        <h2>Recent Prescriptions ({{ filteredPrescriptions.length }})</h2>
         <a routerLink="/pharmacy/prescriptions" class="button-secondary">View All</a>
       </div>
 
-      <div *ngIf="recentPrescriptions.length > 0; else noPrescriptions" class="table-container">
+      <div *ngIf="filteredPrescriptions.length > 0; else noPrescriptions" class="table-container">
         <table class="table">
           <thead>
             <tr>
               <th>ID</th>
               <th>Patient</th>
+              <th>Doctor</th>
               <th>Referral</th>
               <th>Status</th>
               <th>Created</th>
@@ -55,8 +168,9 @@
           <tbody>
             <tr *ngFor="let prescription of recentPrescriptions">
               <td>#{{ prescription.PrescriptionId }}</td>
-              <td>Patient #{{ prescription.PatientId }}</td>
-              <td>Referral #{{ prescription.ReferralId }}</td>
+              <td>{{ getPatientNameSignal(prescription.PatientId)() }} (ID: {{ prescription.PatientId }})</td>
+              <td>{{ getDoctorNameSignal(prescription.PrescribingDoctorId)() }} (ID: {{ prescription.PrescribingDoctorId }})</td>
+              <td>{{ prescription.ReferralId ? 'Ref #' + prescription.ReferralId : '-' }}</td>
               <td>
                 <span [ngClass]="'status-' + prescription.Status.toLowerCase()">
                   {{ prescription.Status }}
@@ -77,7 +191,7 @@
       </div>
 
       <ng-template #noPrescriptions>
-        <p class="no-data">No prescriptions yet</p>
+        <p class="no-data">No prescriptions found matching your filters</p>
       </ng-template>
     </section>
 

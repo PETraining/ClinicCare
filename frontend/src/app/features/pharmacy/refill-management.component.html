@@ -1,0 +1,171 @@
+<div class="refill-management-container">
+  <div class="header">
+    <div class="header-content">
+      <h1>Refill Request Management</h1>
+      <p class="subtitle">Track and process patient medication refill requests</p>
+    </div>
+    <a routerLink="/pharmacy/dashboard" class="btn btn-secondary">← Back to Dashboard</a>
+  </div>
+
+  @if (error()) {
+    <div class="error-alert">
+      ❌ {{ error() }}
+    </div>
+  }
+
+  <!-- STATUS OVERVIEW -->
+  <div class="status-overview">
+    <div class="status-card">
+      <div class="status-count">{{ statusCounts().total }}</div>
+      <div class="status-label">Total Requests</div>
+    </div>
+    <div class="status-card pending">
+      <div class="status-count">{{ statusCounts().pending }}</div>
+      <div class="status-label">Pending</div>
+    </div>
+    <div class="status-card approved">
+      <div class="status-count">{{ statusCounts().approved }}</div>
+      <div class="status-label">Approved</div>
+    </div>
+    <div class="status-card fulfilled">
+      <div class="status-count">{{ statusCounts().fulfilled }}</div>
+      <div class="status-label">Fulfilled</div>
+    </div>
+    <div class="status-card rejected">
+      <div class="status-count">{{ statusCounts().rejected }}</div>
+      <div class="status-label">Rejected</div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <label for="statusFilter">Filter by Status:</label>
+      <select
+        id="statusFilter"
+        [value]="selectedStatus()"
+        (change)="selectedStatus.set($any($event).target.value)"
+        class="filter-select"
+      >
+        <option value="">All Statuses</option>
+        <option value="Pending">Pending</option>
+        <option value="Approved">Approved</option>
+        <option value="Fulfilled">Fulfilled</option>
+        <option value="Rejected">Rejected</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="patientFilter">Filter by Patient ID:</label>
+      <input
+        id="patientFilter"
+        type="number"
+        [value]="searchPatientId()"
+        (input)="searchPatientId.set($any($event).target.value)"
+        placeholder="Enter patient ID..."
+        class="filter-input"
+      />
+    </div>
+
+    @if (selectedStatus() || searchPatientId()) {
+      <button class="btn btn-small" (click)="selectedStatus.set(''); searchPatientId.set('')">
+        Clear Filters
+      </button>
+    }
+  </div>
+
+  <!-- REFILL REQUESTS LIST -->
+  @if (loading()) {
+    <div class="loading-indicator">
+      <p>Loading refill requests...</p>
+    </div>
+  } @else if (filteredRequests().length === 0) {
+    <div class="empty-state">
+      <p>No refill requests found.</p>
+    </div>
+  } @else {
+    <div class="refill-requests-list">
+      @for (refill of filteredRequests(); track refill.RefillRequestId) {
+        <div class="refill-card" [class]="'status-' + refill.Status.toLowerCase()">
+          <!-- Header -->
+          <div class="refill-header">
+            <div class="refill-main-info">
+              <span class="refill-id">Refill #{{ refill.RefillRequestId }}</span>
+              <span class="status-badge" [class]="getStatusColor(refill.Status)">
+                {{ getStatusIcon(refill.Status) }} {{ refill.Status }}
+              </span>
+            </div>
+            <div class="refill-patient">
+              Patient #{{ refill.PatientId }} | Rx #{{ refill.PrescriptionId }}
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="refill-details">
+            <div class="detail-row">
+              <span class="detail-label">Requested:</span>
+              <span class="detail-value">{{ formatDate(refill.RequestedAt) }}</span>
+            </div>
+
+            @if (refill.ApprovedAt) {
+              <div class="detail-row">
+                <span class="detail-label">Approved:</span>
+                <span class="detail-value">{{ formatDate(refill.ApprovedAt) }} by Doctor #{{ refill.ApprovedBy }}</span>
+              </div>
+            }
+
+            @if (refill.FulfilledAt) {
+              <div class="detail-row">
+                <span class="detail-label">Fulfilled:</span>
+                <span class="detail-value">{{ formatDate(refill.FulfilledAt) }} by Staff #{{ refill.FulfilledBy }}</span>
+              </div>
+            }
+
+            @if (refill.RejectionReason) {
+              <div class="detail-row error">
+                <span class="detail-label">Rejection Reason:</span>
+                <span class="detail-value">{{ refill.RejectionReason }}</span>
+              </div>
+            }
+
+            @if (refill.Notes) {
+              <div class="detail-row">
+                <span class="detail-label">Notes:</span>
+                <span class="detail-value">{{ refill.Notes }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Actions -->
+          <div class="refill-actions">
+            @if (refill.Status === 'Pending') {
+              <button class="btn btn-approve" (click)="approveRefill(refill.RefillRequestId)">
+                ✅ Approve
+              </button>
+              <button class="btn btn-reject" (click)="rejectRefill(refill.RefillRequestId, 'Approved by pharmacist')">
+                ❌ Reject
+              </button>
+            }
+
+            @if (refill.Status === 'Approved') {
+              <button class="btn btn-fulfill" (click)="fulfillRefill(refill.RefillRequestId)">
+                📦 Fulfill
+              </button>
+              <button class="btn btn-reject" (click)="rejectRefill(refill.RefillRequestId, 'Cannot fulfill')">
+                ❌ Reject
+              </button>
+            }
+
+            @if (refill.Status === 'Fulfilled') {
+              <span class="action-status completed">✅ Completed</span>
+            }
+
+            @if (refill.Status === 'Rejected') {
+              <span class="action-status rejected">❌ Rejected</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
