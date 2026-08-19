@@ -26,7 +26,10 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: PatientDashboardComponent },
-      // 'documents' and 'tracking' children added by Sub-Features 2 and 3.
+      { path: 'documents', loadComponent: () => import('./features/patient-portal/documents/patient-documents.component').then(m => m.PatientDocumentsComponent) },
+      { path: 'referrals', loadComponent: () => import('./features/patient-portal/referrals/patient-referral-tracking.component').then(m => m.PatientReferralTrackingComponent) },
+      { path: 'appointments', loadComponent: () => import('./features/patient-portal/appointments/patient-appointments.component').then(m => m.PatientAppointmentsComponent) },
+      { path: 'questionnaires', loadComponent: () => import('./features/patient-portal/questionnaires/patient-questionnaires.component').then(m => m.PatientQuestionnairesComponent) },
     ],
   },
   { path: '**', redirectTo: 'patient-portal/login' },

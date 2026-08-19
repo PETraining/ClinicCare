@@ -1,0 +1,105 @@
+.container {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+h2 {
+  color: #333;
+  margin-bottom: 2rem;
+}
+
+.loading {
+  padding: 1rem;
+  background: #e8f4f8;
+  color: #0066cc;
+  border-radius: 4px;
+}
+
+.empty {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.appointment-card {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1.5rem;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.appointment-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #f0f0f0;
+  color: #666;
+}
+
+.appointment-badge.upcoming {
+  background: #c8e6c9;
+  color: #2e7d32;
+}
+
+.date-time {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  min-width: 120px;
+  text-align: center;
+}
+
+.date {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.time {
+  font-size: 1.3rem;
+  color: #0066cc;
+  margin-top: 0.5rem;
+}
+
+.appointment-content {
+  flex: 1;
+}
+
+.location-info h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.instructions {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #fffbea;
+  border-left: 4px solid #ffc107;
+  border-radius: 4px;
+}
+
+.instructions strong {
+  color: #666;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.instructions p {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}

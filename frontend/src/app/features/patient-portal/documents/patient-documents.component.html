@@ -1,0 +1,40 @@
+<div class="container">
+  <h2>Medical Documents</h2>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading documents...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!loading && !error" class="documents-list">
+    <div *ngIf="documents.length === 0" class="empty">
+      <p>No documents available yet.</p>
+    </div>
+
+    <table *ngIf="documents.length > 0">
+      <thead>
+        <tr>
+          <th>Document Type</th>
+          <th>File Name</th>
+          <th>Uploaded Date</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let doc of documents">
+          <td>{{ doc.Type }}</td>
+          <td>{{ doc.FileName }}</td>
+          <td>{{ doc.UploadedDate | date: 'short' }}</td>
+          <td>
+            <button (click)="downloadDocument(doc)" class="btn-download">
+              Download
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -2,11 +2,10 @@
   <div class="brand">ReferralIQ — Patient Portal</div>
   <nav>
     <a routerLink="/patient-portal/dashboard" routerLinkActive="active">Dashboard</a>
-    <!-- Documents and Referral Tracking are delivered by Sub-Features 2 and 3
-         (see INTEGRATION_PLAN.md). Shown as coming-soon placeholders here so
-         the shared shell/nav doesn't need to change shape once those land. -->
-    <span class="nav-placeholder" title="Coming soon">Documents</span>
-    <span class="nav-placeholder" title="Coming soon">Referral Tracking</span>
+    <a routerLink="/patient-portal/referrals" routerLinkActive="active">Referrals</a>
+    <a routerLink="/patient-portal/appointments" routerLinkActive="active">Appointments</a>
+    <a routerLink="/patient-portal/documents" routerLinkActive="active">Documents</a>
+    <a routerLink="/patient-portal/questionnaires" routerLinkActive="active">Questionnaires</a>
   </nav>
   <div class="user">
     <span>{{ patientAuth.currentPatient()?.patientName }}</span>

@@ -1,0 +1,39 @@
+<div class="container">
+  <h2>My Appointments</h2>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading appointments...</p>
+  </div>
+
+  <div *ngIf="!loading" class="appointments-list">
+    <div *ngIf="appointments().length === 0" class="empty">
+      <p>No appointments scheduled.</p>
+    </div>
+
+    <div *ngFor="let apt of appointments()" class="appointment-card">
+      <div class="appointment-badge" [class.upcoming]="isUpcoming(apt.ScheduledAt)">
+        {{ isUpcoming(apt.ScheduledAt) ? 'UPCOMING' : 'PAST' }}
+      </div>
+
+      <div class="appointment-content">
+        <div class="date-time">
+          <div class="date">
+            {{ apt.ScheduledAt | date: 'MMMM d, yyyy' }}
+          </div>
+          <div class="time">
+            {{ apt.ScheduledAt | date: 'h:mm a' }}
+          </div>
+        </div>
+
+        <div class="location-info">
+          <h3>📍 {{ apt.Location }}</h3>
+        </div>
+
+        <div class="instructions" *ngIf="apt.CheckInInstructions">
+          <strong>Check-in Instructions:</strong>
+          <p>{{ apt.CheckInInstructions }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

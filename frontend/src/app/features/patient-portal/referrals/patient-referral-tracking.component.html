@@ -1,0 +1,95 @@
+<div class="container">
+  <h2>Referral Tracking</h2>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading referrals...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!loading && !error" class="referrals-list">
+    <div *ngIf="referrals.length === 0" class="empty">
+      <p>No referrals found.</p>
+    </div>
+
+    <div *ngFor="let ref of referrals" class="referral-card">
+      <div class="referral-header">
+        <div class="referral-info">
+          <h3>{{ ref.Reason }}</h3>
+          <p class="specialist">To: {{ getSpecialistName(ref.SpecialistId) }}</p>
+        </div>
+        <div class="referral-status">
+          <span
+            class="status-badge"
+            [style.backgroundColor]="getStatusColor(ref.Status)"
+          >
+            {{ ref.Status }}
+          </span>
+        </div>
+      </div>
+
+      <div class="referral-details">
+        <div class="detail">
+          <span class="label">Priority:</span>
+          <span class="value">{{ ref.Priority }}</span>
+        </div>
+        <div class="detail">
+          <span class="label">Created:</span>
+          <span class="value">{{ ref.CreatedAt | date: 'short' }}</span>
+        </div>
+        <div class="detail">
+          <span class="label">Last Updated:</span>
+          <span class="value">{{ ref.UpdatedAt | date: 'short' }}</span>
+        </div>
+      </div>
+
+      <div class="progress-bar">
+        <div
+          class="progress-fill"
+          [style.width.%]="getProgressPercentage(ref.Status)"
+        ></div>
+      </div>
+
+      <div class="referral-timeline">
+        <div
+          class="timeline-item"
+          [class.active]="
+            ref.Status === 'Draft' ||
+            ref.Status === 'Submitted' ||
+            ref.Status === 'Accepted' ||
+            ref.Status === 'Completed'
+          "
+        >
+          <div class="timeline-dot"></div>
+          <span>Draft</span>
+        </div>
+        <div
+          class="timeline-item"
+          [class.active]="
+            ref.Status === 'Submitted' ||
+            ref.Status === 'Accepted' ||
+            ref.Status === 'Completed'
+          "
+        >
+          <div class="timeline-dot"></div>
+          <span>Submitted</span>
+        </div>
+        <div
+          class="timeline-item"
+          [class.active]="
+            ref.Status === 'Accepted' || ref.Status === 'Completed'
+          "
+        >
+          <div class="timeline-dot"></div>
+          <span>Accepted</span>
+        </div>
+        <div class="timeline-item" [class.active]="ref.Status === 'Completed'">
+          <div class="timeline-dot"></div>
+          <span>Completed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

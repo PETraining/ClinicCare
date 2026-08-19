@@ -1,0 +1,102 @@
+<div class="container">
+  <h2>Health Questionnaires</h2>
+
+  <div class="stats" *ngIf="!loading">
+    <div class="stat-card">
+      <div class="stat-number">{{ getPendingCount() }}</div>
+      <div class="stat-label">Pending</div>
+    </div>
+    <div class="stat-card completed">
+      <div class="stat-number">{{ getCompletedCount() }}</div>
+      <div class="stat-label">Completed</div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <p>Loading questionnaires...</p>
+  </div>
+
+  <div *ngIf="error" class="error">
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!loading && !error" class="questionnaires-list">
+    <div *ngIf="questionnaires.length === 0" class="empty">
+      <p>No questionnaires available.</p>
+    </div>
+
+    <div *ngFor="let q of questionnaires" class="questionnaire-card">
+      <div class="questionnaire-header">
+        <div>
+          <h3>{{ q.Title }}</h3>
+          <p class="type">{{ q.Type }}</p>
+          <p class="description" *ngIf="q.Description">{{ q.Description }}</p>
+        </div>
+        <div class="status">
+          <span
+            class="status-badge"
+            [class.pending]="q.Status === 'Pending'"
+            [class.completed]="q.Status === 'Completed'"
+          >
+            {{ q.Status }}
+          </span>
+        </div>
+      </div>
+
+      <div class="questionnaire-footer">
+        <span class="date">Created: {{ q.CreatedAt | date: 'short' }}</span>
+        <button
+          *ngIf="q.Status === 'Pending'"
+          (click)="selectQuestionnaire(q)"
+          class="btn-complete"
+        >
+          Complete Form
+        </button>
+        <span *ngIf="q.Status === 'Completed'" class="completed-date">
+          ✓ Completed: {{ q.CompletedAt | date: 'short' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for questionnaire details -->
+  <div *ngIf="selectedQuestionnaire" class="modal-overlay">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>{{ selectedQuestionnaire.Title }}</h2>
+        <button (click)="closeQuestionnaire()" class="btn-close">×</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="description">{{ selectedQuestionnaire.Description }}</p>
+
+        <!-- Sample form fields -->
+        <div class="form-section">
+          <h4>Sample Questions:</h4>
+          <div class="form-group">
+            <label>Have you experienced any symptoms?</label>
+            <input type="checkbox" />
+          </div>
+          <div class="form-group">
+            <label>Current medications:</label>
+            <textarea placeholder="List any medications you are taking"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Any allergies?</label>
+            <textarea placeholder="List any known allergies"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="closeQuestionnaire()" class="btn-cancel">Cancel</button>
+        <button
+          (click)="completeQuestionnaire(selectedQuestionnaire)"
+          class="btn-submit"
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
