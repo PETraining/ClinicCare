@@ -31,3 +31,5 @@ in the actual code, not just in what was planned?
 
  Confirm gateway/main.py on main right now doesn't already contain our
 planned entry, or a conflicting one from anyone who's already merged
+
+Share the real collision issues that involves only our feature (feature_name) as a .md file
