@@ -29,8 +29,9 @@ from clients import update_patient_medication, record_notification
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
-# Pharmacy Service v1.0 - Fully tested with 50+ automated test cases
+# Pharmacy Service v1.1 - Fully tested with 50+ automated test cases
 # All endpoints validated and requirements checked on every PR
+# GitHub Actions updated to latest versions (v4)
 logger = logging.getLogger(__name__)
 
 # Create FastAPI app
