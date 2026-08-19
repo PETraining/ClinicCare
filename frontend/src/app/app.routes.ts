@@ -18,6 +18,10 @@ import { PatientDocumentsComponent } from './features/patient-portal/documents/p
 import { DocumentUploadComponent } from './features/patient-portal/documents/document-upload.component';
 import { QuestionnaireListComponent } from './features/patient-portal/questionnaires/questionnaire-list.component';
 import { QuestionnaireFormComponent } from './features/patient-portal/questionnaires/questionnaire-form.component';
+import { PharmacyDashboardComponent } from './features/pharmacy/pharmacy-dashboard.component';
+import { PrescriptionListComponent } from './features/pharmacy/prescription-list.component';
+import { PrescriptionDetailComponent } from './features/pharmacy/prescription-detail.component';
+import { InventoryManagementComponent } from './features/pharmacy/inventory-management.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -41,6 +45,10 @@ export const routes: Routes = [
       { path: 'referrals', component: ReferralTrackingComponent },
       { path: 'referrals/new', component: CreateReferralComponent },
       { path: 'documents', component: DocumentsComponent },
+      { path: 'pharmacy/dashboard', component: PharmacyDashboardComponent },
+      { path: 'pharmacy/prescriptions', component: PrescriptionListComponent },
+      { path: 'pharmacy/prescriptions/:id', component: PrescriptionDetailComponent },
+      { path: 'pharmacy/inventory', component: InventoryManagementComponent },
     ],
   },
   { path: '**', redirectTo: 'login' },

@@ -21,9 +21,11 @@ services:
     environment:
       DOCTORS_SERVICE_URL: http://doctors-service:8002
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
+      PHARMACY_SERVICE_URL: http://pharmacy-service:8006
     depends_on:
       - doctors-service
       - notification-service
+      - pharmacy-service
 
   document-service:
     build: ./services/document
@@ -42,6 +44,15 @@ services:
     ports:
       - "8008:8008"
 
+  pharmacy-service:
+    build: ./services/pharmacy
+    ports:
+      - "8006:8006"
+    environment:
+      PATIENT_SERVICE_URL: http://patient-service:8001
+    depends_on:
+      - patient-service
+
   gateway:
     build: ./gateway
     ports:
@@ -54,6 +65,7 @@ services:
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
       APPOINTMENT_SERVICE_URL: http://appointment-service:8007
       QUESTIONNAIRE_SERVICE_URL: http://questionnaire-service:8008
+      PHARMACY_SERVICE_URL: http://pharmacy-service:8006
     depends_on:
       - patient-service
       - doctors-service
@@ -62,6 +74,7 @@ services:
       - notification-service
       - appointment-service
       - questionnaire-service
+      - pharmacy-service
 
 volumes:
   document-uploads:

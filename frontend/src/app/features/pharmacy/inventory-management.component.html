@@ -1,0 +1,252 @@
+<div class="inventory-management">
+  <div class="page-header">
+    <h1>Inventory Management</h1>
+    <p class="page-subtitle">Track and manage medication stock levels</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error()" class="alert alert-error">
+    {{ error() }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading">
+    <p>Loading inventory data...</p>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading()" class="inventory-content">
+    <!-- Search and Filter Section -->
+    <section class="filters-section">
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="Search medications by name or dosage..."
+          [(ngModel)]="searchQuery"
+          class="search-input"
+        />
+      </div>
+
+      <div class="filter-controls">
+        <button
+          (click)="filterBy = 'all'"
+          [class.active]="filterBy === 'all'"
+          class="filter-button"
+        >
+          All Medications
+        </button>
+        <button
+          (click)="filterBy = 'low-stock'"
+          [class.active]="filterBy === 'low-stock'"
+          class="filter-button"
+        >
+          Low Stock
+        </button>
+        <button
+          (click)="filterBy = 'critical'"
+          [class.active]="filterBy === 'critical'"
+          class="filter-button"
+        >
+          Critical
+        </button>
+      </div>
+
+      <div class="stats-summary">
+        <div class="stat">
+          <div class="stat-number">{{ medications().length }}</div>
+          <div class="stat-label">Total Medications</div>
+        </div>
+        <div class="stat">
+          <div class="stat-number">{{ lowStockItems().length }}</div>
+          <div class="stat-label">Below Minimum</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Inventory Table -->
+    <section class="inventory-section">
+      <div class="section-header">
+        <h2>Medication Stock Levels</h2>
+      </div>
+
+      <div *ngIf="filteredMedications.length > 0; else noMedications" class="table-container">
+        <table class="inventory-table">
+          <thead>
+            <tr>
+              <th>Medication</th>
+              <th>Dosage</th>
+              <th>Current Stock</th>
+              <th>Minimum Level</th>
+              <th>Status</th>
+              <th>Stock %</th>
+              <th>Unit Price</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              *ngFor="let medication of filteredMedications"
+              [class.editing]="editingId === medication.MedicationId"
+              [class.stock-critical]="getStockStatus(medication) === 'critical'"
+              [class.stock-low]="getStockStatus(medication) === 'low'"
+              [class.stock-out]="getStockStatus(medication) === 'out-of-stock'"
+            >
+              <!-- Medication Name -->
+              <td class="med-name">{{ medication.Name }}</td>
+
+              <!-- Dosage -->
+              <td class="dosage">{{ medication.Dosage }}</td>
+
+              <!-- Current Stock -->
+              <td class="stock-level">
+                <span *ngIf="editingId !== medication.MedicationId">
+                  {{ medication.StockLevel }}
+                </span>
+                <input
+                  *ngIf="editingId === medication.MedicationId"
+                  type="number"
+                  [(ngModel)]="editingValues.StockLevel"
+                  class="edit-input"
+                />
+              </td>
+
+              <!-- Minimum Level -->
+              <td class="min-level">
+                <span *ngIf="editingId !== medication.MedicationId">
+                  {{ medication.MinStockLevel }}
+                </span>
+                <input
+                  *ngIf="editingId === medication.MedicationId"
+                  type="number"
+                  [(ngModel)]="editingValues.MinStockLevel"
+                  class="edit-input"
+                />
+              </td>
+
+              <!-- Status Badge -->
+              <td class="status-cell">
+                <span [ngClass]="'status-badge ' + getStockStatus(medication)">
+                  {{ getStockStatusLabel(medication) }}
+                </span>
+              </td>
+
+              <!-- Stock Progress Bar -->
+              <td class="progress-cell">
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    [style.width.%]="getStockPercentage(medication)"
+                    [ngClass]="getStockStatus(medication)"
+                  ></div>
+                </div>
+                <span class="progress-text">{{ getStockPercentage(medication) | number: '1.0-0' }}%</span>
+              </td>
+
+              <!-- Unit Price -->
+              <td class="price">
+                <span *ngIf="editingId !== medication.MedicationId">
+                  ${{ medication.UnitPrice?.toFixed(2) }}
+                </span>
+                <input
+                  *ngIf="editingId === medication.MedicationId"
+                  type="number"
+                  [(ngModel)]="editingValues.UnitPrice"
+                  step="0.01"
+                  class="edit-input"
+                />
+              </td>
+
+              <!-- Actions -->
+              <td class="actions">
+                <div *ngIf="editingId !== medication.MedicationId" class="action-buttons">
+                  <button
+                    (click)="restock(medication)"
+                    class="button button-small button-success"
+                    title="Add stock"
+                  >
+                    + Restock
+                  </button>
+                  <button
+                    (click)="startEdit(medication)"
+                    class="button button-small button-secondary"
+                    title="Edit"
+                  >
+                    ✏️ Edit
+                  </button>
+                </div>
+
+                <div *ngIf="editingId === medication.MedicationId" class="edit-actions">
+                  <button
+                    (click)="saveEdit(medication.MedicationId)"
+                    class="button button-small button-success"
+                  >
+                    ✓ Save
+                  </button>
+                  <button
+                    (click)="cancelEdit()"
+                    class="button button-small button-danger"
+                  >
+                    ✕ Cancel
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #noMedications>
+        <p class="no-data">No medications found matching your criteria</p>
+      </ng-template>
+    </section>
+
+    <!-- Low Stock Alert Summary -->
+    <section class="section" *ngIf="lowStockItems().length > 0">
+      <div class="section-header">
+        <h2>⚠️ Stock Alerts</h2>
+        <span class="alert-count">{{ lowStockItems().length }} items below minimum</span>
+      </div>
+
+      <div class="alerts-grid">
+        <div
+          *ngFor="let item of lowStockItems()"
+          [class.alert-critical]="item.StockLevel < (item.MinStockLevel * 0.5)"
+          [class.alert-warning]="item.StockLevel >= (item.MinStockLevel * 0.5)"
+          class="alert-card"
+        >
+          <div class="alert-header">
+            <span class="alert-icon">{{ item.StockLevel === 0 ? '🚫' : '⚠️' }}</span>
+            <div>
+              <div class="alert-title">{{ item.Name }}</div>
+              <div class="alert-dosage">{{ item.Dosage }}</div>
+            </div>
+          </div>
+
+          <div class="alert-details">
+            <div class="detail-row">
+              <span class="label">Current Stock:</span>
+              <span class="value">{{ item.StockLevel }} units</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Minimum Required:</span>
+              <span class="value">{{ item.MinStockLevel }} units</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Shortage:</span>
+              <span class="value shortage">{{ item.MinStockLevel - item.StockLevel }} units</span>
+            </div>
+          </div>
+
+          <div class="alert-actions">
+            <button
+              (click)="restock(item)"
+              class="button button-small button-primary"
+            >
+              Restock Now
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
