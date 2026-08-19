@@ -15,3 +15,16 @@ on main for what's already merged there.
 
 List all remote branches on origin. Identify which ones look like
 they belong to the other four teams, not ours.
+
+Here are the real branches per feature - please ignore all other branches for this entire session:
+F1-Appointments
+F2-InsuranceEligibility
+F3-DiagnosticLab
+F4-Pharmacy-Ann
+F5.2-imp
+ 
+For each of those branches, fetch it and show me the real diff on
+gateway/main.py compared to main. Then compare that against our own
+planned change to gateway/main.py — does a genuine collision exist
+in the actual code, not just in what was planned?
+ 
