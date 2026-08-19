@@ -10,3 +10,8 @@ Based on the other teams' context-map.md files, and our own plan,
 does anyone's SERVICE_MAP entry (service name, route prefix) collide
 with ours or with each other's? Also check gateway/main.py directly
 on main for what's already merged there.
+
+
+
+List all remote branches on origin. Identify which ones look like
+they belong to the other four teams, not ours.
