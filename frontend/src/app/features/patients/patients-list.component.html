@@ -14,6 +14,7 @@
   <thead>
     <tr>
       <th>Name</th>
+      <th>Type</th>
       <th>DOB</th>
       <th>Gender</th>
       <th></th>
@@ -23,13 +24,20 @@
     @for (patient of patientService.patients(); track patient.PatientId) {
       <tr>
         <td>{{ patient.Name }}</td>
+        <td>
+          @if (patient.IsReferralPatient) {
+            <span class="badge-small badge-referral-small">📋 Referral</span>
+          } @else {
+            <span class="badge-small badge-ordinary-small">👤 Ordinary</span>
+          }
+        </td>
         <td>{{ patient.DOB }}</td>
         <td>{{ patient.Gender }}</td>
         <td><a [routerLink]="['/patients', patient.PatientId]">View details</a></td>
       </tr>
     } @empty {
       <tr>
-        <td colspan="4">No patients found.</td>
+        <td colspan="5">No patients found.</td>
       </tr>
     }
   </tbody>

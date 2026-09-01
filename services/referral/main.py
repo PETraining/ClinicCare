@@ -91,6 +91,12 @@ async def create_referral(payload: schemas.ReferralCreate, db: Session = Depends
     db.add(referral)
     db.commit()
     db.refresh(referral)
+
+    # Mark patient as referral patient (async, non-blocking)
+    asyncio.create_task(
+        clients.mark_patient_as_referral(payload.PatientId, referral.ReferralId)
+    )
+
     return referral
 
 

@@ -1,7 +1,17 @@
 @if (patientService.selected(); as patient) {
   <a routerLink="/patients" class="back">&larr; Back to Patients</a>
   <h1>{{ patient.Name }}</h1>
-  <p class="meta">DOB: {{ patient.DOB }} &middot; Gender: {{ patient.Gender }}</p>
+  <p class="meta">
+    DOB: {{ patient.DOB }} &middot; Gender: {{ patient.Gender }}
+    @if (patient.IsReferralPatient) {
+      <span class="badge badge-referral">📋 Referral Patient</span>
+      @if (patient.LastReferralId) {
+        <span class="badge-info">(Referral #{{ patient.LastReferralId }})</span>
+      }
+    } @else {
+      <span class="badge badge-ordinary">👤 Ordinary Patient</span>
+    }
+  </p>
 
   <div class="grid">
     <section>

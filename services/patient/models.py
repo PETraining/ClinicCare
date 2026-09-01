@@ -11,6 +11,8 @@ class Patient(Base):
     Name = Column(String, nullable=False, index=True)
     DOB = Column(Date, nullable=False)
     Gender = Column(String, nullable=False)
+    IsReferralPatient = Column(Boolean, default=False, nullable=False)  # True if came from referral
+    LastReferralId = Column(Integer, nullable=True)  # Track latest referral
 
     allergies = relationship("Allergy", back_populates="patient", cascade="all, delete-orphan")
     conditions = relationship("ChronicCondition", back_populates="patient", cascade="all, delete-orphan")

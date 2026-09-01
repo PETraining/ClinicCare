@@ -68,6 +68,8 @@ class PatientRead(PatientBase):
     model_config = ConfigDict(from_attributes=True)
 
     PatientId: int
+    IsReferralPatient: bool = False  # Indicates if patient came from a referral
+    LastReferralId: int | None = None  # Latest referral ID
 
 
 class PatientDetail(PatientRead):

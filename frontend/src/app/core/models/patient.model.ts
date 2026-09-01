@@ -25,6 +25,8 @@ export interface Patient {
   Name: string;
   DOB: string;
   Gender: string;
+  IsReferralPatient?: boolean;
+  LastReferralId?: number | null;
 }
 
 export interface PatientDetail extends Patient {

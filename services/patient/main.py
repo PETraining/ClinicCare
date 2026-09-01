@@ -61,3 +61,18 @@ def create_patient(payload: schemas.PatientCreate, db: Session = Depends(get_db)
     db.commit()
     db.refresh(patient)
     return get_patient(patient.PatientId, db)
+
+
+@app.patch("/patients/{patient_id}", response_model=schemas.PatientRead)
+def update_patient_referral_status(patient_id: int, update: dict, db: Session = Depends(get_db)):
+    """Update patient referral status when they're added via referral."""
+    patient = db.query(models.Patient).filter(models.Patient.PatientId == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail=f"Patient {patient_id} not found")
+    if "IsReferralPatient" in update:
+        patient.IsReferralPatient = update["IsReferralPatient"]
+    if "LastReferralId" in update:
+        patient.LastReferralId = update["LastReferralId"]
+    db.commit()
+    db.refresh(patient)
+    return patient

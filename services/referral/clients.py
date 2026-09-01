@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 DOCTORS_SERVICE_URL = os.environ.get("DOCTORS_SERVICE_URL", "http://localhost:8002")
 NOTIFICATION_SERVICE_URL = os.environ.get("NOTIFICATION_SERVICE_URL", "http://localhost:8005")
 PHARMACY_SERVICE_URL = os.environ.get("PHARMACY_SERVICE_URL", "http://localhost:8006")
+PATIENT_SERVICE_URL = os.environ.get("PATIENT_SERVICE_URL", "http://localhost:8001")
 
 _client = httpx.AsyncClient(timeout=5.0)
 
@@ -67,6 +68,19 @@ async def create_prescription_from_referral(
             f"[referral] WARNING: failed to create prescription for referral {referral_id}: {exc} "
             f"(Continuing anyway - referral accepted locally)"
         )
+
+
+async def mark_patient_as_referral(patient_id: int, referral_id: int) -> None:
+    """Mark patient as referral patient in patient service."""
+    try:
+        resp = await _client.patch(
+            f"{PATIENT_SERVICE_URL}/patients/{patient_id}",
+            json={"IsReferralPatient": True, "LastReferralId": referral_id},
+        )
+        resp.raise_for_status()
+        logger.info(f"Marked patient {patient_id} as referral patient")
+    except httpx.HTTPError as exc:
+        logger.warning(f"[referral] Could not mark patient {patient_id} as referral: {exc}")
 
 
 class UpstreamUnavailable(Exception):

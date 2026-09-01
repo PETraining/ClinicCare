@@ -6,6 +6,7 @@ from datetime import datetime
 
 from db import Base, engine, get_db
 from models import Medication, Prescription, DispensingRecord
+from sqlalchemy import func
 from schemas import (
     MedicationRead,
     MedicationCreate,
@@ -372,6 +373,24 @@ async def dispense_medication(
             )
         )
 
+        # ===== AUTO-COMPLETE: Check if all medications fully dispensed =====
+        all_fully_dispensed = True
+        for med in prescription.Medications:
+            med_id = med.get('medication_id')
+            prescribed_qty = med.get('quantity', 0)
+            total_dispensed = db.query(DispensingRecord).filter(
+                DispensingRecord.PrescriptionId == prescription_id,
+                DispensingRecord.MedicationId == med_id,
+            ).with_entities(lambda: func.sum(DispensingRecord.QuantityDispensed)).scalar() or 0
+            if total_dispensed < prescribed_qty:
+                all_fully_dispensed = False
+                break
+
+        if all_fully_dispensed:
+            prescription.Status = "Completed"
+            db.commit()
+            logger.info(f"Prescription #{prescription_id} auto-completed (all medications dispensed)")
+
         return DispenseResponse(
             success=True,
             dispensing_id=dispensing_record.DispensingId,
@@ -699,6 +718,49 @@ async def reject_refill_request(
 
     return refill
 
+
+# ============ REPORTING ENDPOINTS ============
+
+@app.get("/reports/prescriptions-issued")
+async def prescriptions_issued_report(db: Session = Depends(get_db)):
+    """Prescriptions issued by status."""
+    all_rx = db.query(Prescription).all()
+    by_status = {}
+    for rx in all_rx:
+        status = rx.Status or "Unknown"
+        by_status[status] = by_status.get(status, 0) + 1
+    return {"total": len(all_rx), "by_status": by_status}
+
+@app.get("/reports/medications-dispensed")
+async def medications_dispensed_report(db: Session = Depends(get_db)):
+    """Top dispensed medications with quantities and trends."""
+    stats = db.query(
+        DispensingRecord.MedicationId,
+        func.sum(DispensingRecord.QuantityDispensed).label("total_dispensed"),
+        func.count(DispensingRecord.DispensingId).label("dispense_count")
+    ).group_by(DispensingRecord.MedicationId).order_by(func.sum(DispensingRecord.QuantityDispensed).desc()).all()
+    return {"most_dispensed": [{"medication_id": m[0], "total_qty": m[1], "dispense_count": m[2]} for m in stats]}
+
+@app.get("/reports/refill-statistics")
+async def refill_statistics_report(db: Session = Depends(get_db)):
+    """Refill approval/rejection rates and trends."""
+    from models import RefillRequest
+    stats = db.query(
+        RefillRequest.Status,
+        func.count(RefillRequest.RefillRequestId).label("count")
+    ).group_by(RefillRequest.Status).all()
+    return {"refill_stats": [{"status": s[0], "count": s[1]} for s in stats]}
+
+@app.get("/reports/inventory-trends")
+async def inventory_trends_report(db: Session = Depends(get_db)):
+    """Low-stock alerts and reorder recommendations."""
+    low_stock = db.query(Medication).filter(
+        Medication.StockLevel <= Medication.MinStockLevel
+    ).all()
+    return {
+        "low_stock_count": len(low_stock),
+        "items": [{"id": m.MedicationId, "name": m.Name, "current": m.StockLevel, "min": m.MinStockLevel} for m in low_stock]
+    }
 
 # ============ ROOT ENDPOINT ============
 
