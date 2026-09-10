@@ -119,7 +119,20 @@ async def submit_referral(referral_id: int, db: Session = Depends(get_db)):
 
 @app.patch("/referrals/{referral_id}/accept", response_model=schemas.ReferralRead)
 async def accept_referral(referral_id: int, db: Session = Depends(get_db)):
-    return await _transition(referral_id, "accept", db)
+    referral = await _transition(referral_id, "accept", db)
+
+    # When referral is accepted, create a prescription in pharmacy service (fire-and-forget)
+    if referral.Status == "Accepted":
+        asyncio.create_task(
+            clients.create_prescription_from_referral(
+                referral_id=referral.ReferralId,
+                patient_id=referral.PatientId,
+                prescribing_doctor_id=referral.SpecialistId,
+                medications=[],  # Empty medications list for MVP
+            )
+        )
+
+    return referral
 
 
 @app.patch("/referrals/{referral_id}/reject", response_model=schemas.ReferralRead)
