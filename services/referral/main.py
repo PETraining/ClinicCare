@@ -59,6 +59,15 @@ def get_referral(referral_id: int, db: Session = Depends(get_db)):
     return _get_referral_or_404(referral_id, db)
 
 
+@app.get("/referrals/{referral_id}/history", response_model=list[schemas.ReferralStatusHistoryRead])
+def get_referral_history(referral_id: int, db: Session = Depends(get_db)):
+    _get_referral_or_404(referral_id, db)
+    history = db.query(models.ReferralStatusHistory).filter(
+        models.ReferralStatusHistory.ReferralId == referral_id
+    ).order_by(models.ReferralStatusHistory.ChangedAt).all()
+    return history
+
+
 @app.post("/referrals", response_model=schemas.ReferralRead, status_code=201)
 async def create_referral(payload: schemas.ReferralCreate, db: Session = Depends(get_db)):
     try:
@@ -102,12 +111,22 @@ async def _transition(referral_id: int, action: str, db: Session) -> models.Refe
             status_code=400,
             detail=f"Cannot {action} referral in status '{referral.Status}' — expected '{required_status}'.",
         )
+    old_status = referral.Status
     referral.Status = next_status
     referral.UpdatedAt = datetime.utcnow()
+    now = datetime.utcnow()
+    history_row = models.ReferralStatusHistory(
+        ReferralId=referral.ReferralId,
+        OldStatus=old_status,
+        NewStatus=next_status,
+        ChangedAt=now,
+        Reason=f"Referral {next_status.lower()} by system.",
+    )
+    db.add(history_row)
     db.commit()
     db.refresh(referral)
     await clients.record_notification(
-        referral.ReferralId, next_status, f"Referral #{referral.ReferralId} {next_status.lower()}."
+        referral.ReferralId, next_status, f"Referral #{referral.ReferralId} {next_status.lower()}.", referral.PatientId
     )
     return referral
 

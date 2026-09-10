@@ -56,3 +56,17 @@ class AppointmentRead(AppointmentBase):
     model_config = ConfigDict(from_attributes=True)
 
     AppointmentId: int
+
+
+class ReferralStatusHistoryBase(BaseModel):
+    ReferralId: int
+    OldStatus: str
+    NewStatus: str
+    ChangedAt: datetime
+    Reason: Optional[str] = None
+
+
+class ReferralStatusHistoryRead(ReferralStatusHistoryBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    HistoryId: int

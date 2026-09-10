@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from fastapi import Depends, FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
 import models
@@ -24,10 +24,19 @@ def on_startup() -> None:
 
 
 @app.get("/notifications", response_model=list[schemas.NotificationRead])
-def list_notifications(referralId: Optional[int] = None, db: Session = Depends(get_db)):
+def list_notifications(
+    referralId: Optional[int] = None,
+    patientId: Optional[int] = None,
+    unreadOnly: Optional[bool] = None,
+    db: Session = Depends(get_db),
+):
     query = db.query(models.Notification)
     if referralId is not None:
         query = query.filter(models.Notification.ReferralId == referralId)
+    if patientId is not None:
+        query = query.filter(models.Notification.PatientId == patientId)
+    if unreadOnly:
+        query = query.filter(models.Notification.Read == False)
     return query.order_by(models.Notification.Timestamp).all()
 
 
@@ -37,10 +46,23 @@ def create_notification(payload: schemas.NotificationCreate, db: Session = Depen
         ReferralId=payload.ReferralId,
         EventType=payload.EventType.value,
         Message=payload.Message,
+        PatientId=payload.PatientId,
+        Read=payload.Read,
         Timestamp=datetime.utcnow(),
     )
     db.add(notification)
     db.commit()
     db.refresh(notification)
     print(f"[notification] Referral #{notification.ReferralId} -> {notification.EventType}: {notification.Message}")
+    return notification
+
+
+@app.patch("/notifications/{notification_id}/read", response_model=schemas.NotificationRead)
+def mark_notification_read(notification_id: int, db: Session = Depends(get_db)):
+    notification = db.get(models.Notification, notification_id)
+    if notification is None:
+        raise HTTPException(status_code=404, detail=f"Notification {notification_id} not found")
+    notification.Read = True
+    db.commit()
+    db.refresh(notification)
     return notification

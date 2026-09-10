@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -15,6 +16,8 @@ class NotificationBase(BaseModel):
     ReferralId: int
     EventType: EventType
     Message: str
+    PatientId: Optional[int] = None
+    Read: bool = False
 
 
 class NotificationCreate(NotificationBase):

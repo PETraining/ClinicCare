@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from models import Appointment, Referral
+from models import Appointment, Referral, ReferralStatusHistory
 
 # PatientId refs: 1=Anjali Verma, 2=Rajesh Kumar, 3=Divya Menon, 4=Suresh Iyengar, 5=Neha Bhatt
 # DoctorId refs: 1=Krishnan/Cardiology, 2=Reddy/Ortho, 3=Nair/Derm, 4=Malhotra/Neuro, 5=Iyer/Endo,
@@ -46,6 +46,24 @@ SEED_APPOINTMENTS = [
          Location="City Heart Institute", CheckInInstructions="Fasting required prior to lab work."),
 ]
 
+# Status history mirrors seeded referral progressions and timestamps from notification seed
+SEED_STATUS_HISTORY = [
+    dict(ReferralId=3, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 7, 20, 9, 15), Reason="Referral submitted by system."),
+    dict(ReferralId=4, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 7, 22, 11, 0), Reason="Referral submitted by system."),
+    dict(ReferralId=5, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 7, 10, 10, 30), Reason="Referral submitted by system."),
+    dict(ReferralId=5, OldStatus="Submitted", NewStatus="Accepted", ChangedAt=datetime(2026, 7, 12, 14, 0), Reason="Referral accepted by specialist."),
+    dict(ReferralId=6, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 7, 11, 8, 45), Reason="Referral submitted by system."),
+    dict(ReferralId=6, OldStatus="Submitted", NewStatus="Accepted", ChangedAt=datetime(2026, 7, 14, 16, 20), Reason="Referral accepted by specialist."),
+    dict(ReferralId=7, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 6, 15, 9, 0), Reason="Referral submitted by system."),
+    dict(ReferralId=7, OldStatus="Submitted", NewStatus="Accepted", ChangedAt=datetime(2026, 6, 17, 13, 30), Reason="Referral accepted by specialist."),
+    dict(ReferralId=7, OldStatus="Accepted", NewStatus="Completed", ChangedAt=datetime(2026, 6, 25, 15, 0), Reason="Referral completed by system."),
+    dict(ReferralId=8, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 6, 18, 9, 0), Reason="Referral submitted by system."),
+    dict(ReferralId=8, OldStatus="Submitted", NewStatus="Accepted", ChangedAt=datetime(2026, 6, 20, 10, 15), Reason="Referral accepted by specialist."),
+    dict(ReferralId=8, OldStatus="Accepted", NewStatus="Completed", ChangedAt=datetime(2026, 6, 28, 11, 45), Reason="Referral completed by system."),
+    dict(ReferralId=9, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 7, 5, 9, 30), Reason="Referral submitted by system."),
+    dict(ReferralId=9, OldStatus="Submitted", NewStatus="Rejected", ChangedAt=datetime(2026, 7, 7, 12, 0), Reason="Referral rejected by specialist."),
+]
+
 
 def seed_if_empty(db: Session) -> None:
     if db.query(Referral).count() == 0:
@@ -56,4 +74,9 @@ def seed_if_empty(db: Session) -> None:
     if db.query(Appointment).count() == 0:
         for row in SEED_APPOINTMENTS:
             db.add(Appointment(**row))
+        db.commit()
+
+    if db.query(ReferralStatusHistory).count() == 0:
+        for row in SEED_STATUS_HISTORY:
+            db.add(ReferralStatusHistory(**row))
         db.commit()
