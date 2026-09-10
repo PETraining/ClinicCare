@@ -1,8 +1,8 @@
 # Patient Portal — Integration Plan
 
-**Date**: 2026-08-13
-**Status**: Planning Phase (rewritten against actual repo structure — see note below)
-**Target Completion**: After all 3 sub-features complete
+**Date**: 2026-09-10 (originally written 2026-08-13; re-grounded against branch `F5.3-IMP`)
+**Status**: Sub-Feature 1 (Referral & Appointment View) **implemented** on branch `F5.3-IMP`, pending validation. Sub-Feature 2 (Document & Form Management) and Sub-Feature 3 (Referral Progress Tracking) are **not yet started** — confirmed by inspecting `services/document/models.py`, `services/document/schemas.py`, `services/notification/models.py`, and `services/referral/models.py` on 2026-09-10.
+**Target Completion**: After Sub-Features 2 and 3 complete and pass validation; Integration Phase runs after that
 
 > **Revision note**: this replaces an earlier version of this file that assumed a `services/api-gateway/` path, an `/api/patient-portal/*` gateway prefix, and an `Appointment` model already living in the Patient Service — none of which exist in this repo. The gateway (`gateway/main.py`) is a generic path-segment proxy keyed by `SERVICE_MAP`; it maps the *first* segment of `/api/{segment}/...` to a fixed upstream URL (`patients→8001, doctors→8002, referrals→8003, documents→8004, notifications→8005`). There is no support for arbitrary nested prefixes — every new resource needs its own top-level segment added to `SERVICE_MAP` (or reuses an existing segment if it belongs to an existing service). All routes below reflect that constraint.
 
@@ -33,7 +33,7 @@ The two real dependencies are **much lighter** than a typical 3-way split becaus
 - Sub-Feature 2 needs referral data for its upload-form dropdown → **already available**, zero backend work required, zero waiting.
 - Sub-Feature 3 needs referral data to render its timeline → **already available** for the "current status" part; only the *history* table is new (owned entirely by Sub-Feature 3).
 
-The dependency that **does** create real coordination overhead is a **shared-file** one, not a data one: Sub-Feature 1 and Sub-Feature 3 both add models/endpoints to `services/referral/models.py` and `services/referral/main.py`. See "Critical Path" below.
+The dependency that **would have** created real coordination overhead is a **shared-file** one, not a data one: Sub-Feature 1 and Sub-Feature 3 both add models/endpoints to `services/referral/models.py` and `services/referral/main.py`. As of 2026-09-10, Sub-Feature 1's changes to those files are already merged on branch `F5.3-IMP`, so this is now moot — Engineer C can build `ReferralStatusHistory` additively on top of the current file contents with no rebase required. See "Critical Path" below (kept for historical record and because it's still a good model of how to sequence file-level overlaps in general).
 
 ## Sub-Feature Summaries
 
@@ -136,9 +136,9 @@ Gateway routes stay flat, keyed by the first path segment, exactly as today:
 ```
 GET    /api/referrals?patientId=                  → Referral Service (8003) — EXISTING
 GET    /api/referrals/{id}                        → Referral Service (8003) — EXISTING
-GET    /api/referrals/{id}/history                 → Referral Service (8003) — NEW (Sub-Feature 3)
-GET    /api/appointments?patientId=                → Referral Service (8003) — NEW (Sub-Feature 1; new SERVICE_MAP entry)
-GET    /api/appointments/{id}                      → Referral Service (8003) — NEW (Sub-Feature 1)
+GET    /api/referrals/{id}/history                 → Referral Service (8003) — NEW (Sub-Feature 3, not yet built)
+GET    /api/appointments?patientId=                → Referral Service (8003) — IMPLEMENTED (Sub-Feature 1; SERVICE_MAP entry present in gateway/main.py)
+GET    /api/appointments/{id}                      → Referral Service (8003) — IMPLEMENTED (Sub-Feature 1)
 GET    /api/documents?patientId=|referralId=        → Document Service (8004) — EXISTING
 POST   /api/documents/upload                       → Document Service (8004) — NEW (Sub-Feature 2)
 GET    /api/documents/{id}/download                 → Document Service (8004) — NEW (Sub-Feature 2)
@@ -171,9 +171,9 @@ Existing clinician routes (`/login`, `/dashboard`, `/patients`, `/patients/:id`,
 
 ## Critical Path / Key Cross-Feature Dependency
 
-The single biggest coordination risk is **not** a data dependency — it's that **Sub-Feature 1 and Sub-Feature 3 both edit the same two backend files**: `services/referral/models.py` (Appointment vs. ReferralStatusHistory) and `services/referral/main.py` (new appointment endpoints vs. the `_transition()` history hook). If both engineers work off week-old branches, this is where merge pain happens.
+**Status update (2026-09-10): this critical path has already been cleared.** Sub-Feature 1's Referral Service changes (Appointment model + endpoints + gateway entry) are merged on branch `F5.3-IMP`. Engineer C can start Sub-Feature 3 immediately, building `ReferralStatusHistory` additively on top of the current `services/referral/models.py`/`main.py` — no rebase, no waiting, no coordination overhead remaining on this axis.
 
-**Recommendation**: Engineer A lands their Referral Service changes (Appointment model + endpoints) by end of Day 2. Engineer C rebases onto that before starting their own Referral Service changes on Day 3, rather than both branches diverging for the full week. Sub-Feature 2 has no file-level overlap with either (it lives entirely in the Document Service) and can proceed fully independently start to finish.
+Original risk (kept for record): the single biggest coordination risk was **not** a data dependency — it was that **Sub-Feature 1 and Sub-Feature 3 both edit the same two backend files**: `services/referral/models.py` (Appointment vs. ReferralStatusHistory) and `services/referral/main.py` (new appointment endpoints vs. the `_transition()` history hook). Sub-Feature 2 has no file-level overlap with either (it lives entirely in the Document Service) and can proceed fully independently start to finish — this remains true and unaffected by Sub-Feature 1's completion.
 
 ## Integration Phase (after all 3 sub-features pass validation)
 
@@ -193,4 +193,4 @@ After each sub-feature: run `/validate-patient-portal <sub-feature-name>` (valid
 All backend changes in this plan are additive (new tables, new nullable columns, new endpoints) — nothing renames or removes existing fields the clinician UI depends on. A sub-feature can be reverted independently by dropping its new table(s)/columns and removing its routes/gateway entry without affecting the other two.
 
 ---
-_Integration plan rewritten 2026-08-13 against actual repo structure._
+_Integration plan rewritten 2026-08-13 against actual repo structure. Re-grounded 2026-09-10 against branch `F5.3-IMP` to reflect that Sub-Feature 1 is now implemented and Sub-Features 2/3 remain pending._

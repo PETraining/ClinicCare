@@ -1,0 +1,3 @@
+﻿IMAGING REPORT
+
+This is a sample imaging report with radiological findings.

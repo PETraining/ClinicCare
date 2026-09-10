@@ -47,7 +47,7 @@
           @if (r.Status === 'Accepted') {
             <button (click)="complete(r)">Complete</button>
           }
-          <a [routerLink]="['/documents']" [queryParams]="{ referralId: r.ReferralId }">Docs</a>
+          <a [routerLink]="['/patients/documents']" [queryParams]="{ referralId: r.ReferralId }">Docs</a>
         </td>
       </tr>
     } @empty {

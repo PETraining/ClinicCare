@@ -4,8 +4,8 @@
 **Sub-Feature of**: Patient Portal
 **Assigned Team**: Engineer B
 **Timeline**: 1–2 weeks (Days 1–7/10) — this is the heaviest of the three sub-features
-**Status**: Pending Implementation
-**Last grounded against repo**: 2026-08-13, branch `F5.2-imp`
+**Status**: Pending Implementation — confirmed still not started as of the 2026-09-10 re-grounding pass (`services/document/models.py` and `schemas.py` are unchanged from the state described below: metadata-only `Document`, no `Questionnaire`/`QuestionnaireResponse`, no upload/download endpoints).
+**Last grounded against repo**: 2026-09-10, branch `F5.3-IMP` (re-confirmed; content unchanged from the original 2026-08-13 grounding against branch `F5.2-imp` since no Document Service code has changed since)
 
 ## Ground truth this spec is based on (read this before coding)
 

@@ -3,9 +3,9 @@
 **Feature Name**: Referral Progress Tracking
 **Sub-Feature of**: Patient Portal
 **Assigned Team**: Engineer C
-**Timeline**: 1 week (Days 1–5, starting once Sub-Feature 1's referral-service changes have landed — see Integration Notes)
-**Status**: Pending Implementation
-**Last grounded against repo**: 2026-08-13, branch `F5.2-imp`
+**Timeline**: 1 week (Days 1–5) — the "wait for Sub-Feature 1's referral-service changes" condition below is now satisfied (see Status)
+**Status**: Pending Implementation. **Update (2026-09-10)**: Sub-Feature 1's `services/referral/models.py`/`main.py` changes (the `Appointment` table + endpoints) have already landed on branch `F5.3-IMP`. Engineer C no longer needs to wait or coordinate a rebase — start directly against the current `main.py`/`models.py`, adding `ReferralStatusHistory` alongside the existing `Appointment` model. `ReferralStatusHistory` and `Notification.PatientId`/`Read` themselves are still **not** present in the codebase; this sub-feature's Phase 1/2 scope below is entirely unbuilt.
+**Last grounded against repo**: 2026-09-10, branch `F5.3-IMP` (re-confirmed against current `services/referral/*` and `services/notification/*`; original grounding was 2026-08-13 against branch `F5.2-imp`)
 
 > Note: an earlier draft of this spec lived at `teamupdates/features/patient-portal/referral-tracking/context-map.md`. This file supersedes it — the directory name changed to `referral-progress-tracking` to avoid confusion with the existing clinician-facing `ReferralTrackingComponent` at `frontend/src/app/features/referrals/referral-tracking.component.ts` (see Open Question 3). The old file was left in place; treat this one as canonical.
 
@@ -102,7 +102,7 @@ Patients can see the status history of each of their referrals as a timeline (e.
 
 ## Integration Notes (cross-feature dependencies — this is the critical path)
 
-- **Same-file collision with Sub-Feature 1**: both this sub-feature (`ReferralStatusHistory` + `_transition()` hook) and Sub-Feature 1 (`Appointment` model + endpoints) modify `services/referral/models.py` and `services/referral/main.py`. Recommendation: Engineer A lands their referral-service changes first (per their spec's Days 1–2 target); Engineer C rebases onto that before starting Phase 1 here, rather than both branches drifting for a full week and merging late.
+- **Same-file collision with Sub-Feature 1 — now resolved.** Both this sub-feature (`ReferralStatusHistory` + `_transition()` hook) and Sub-Feature 1 (`Appointment` model + endpoints) modify `services/referral/models.py` and `services/referral/main.py`. As of 2026-09-10, Sub-Feature 1's changes to those two files are already merged on branch `F5.3-IMP`, so there is no live rebase risk anymore — Engineer C should branch from the current `F5.3-IMP` tip and add `ReferralStatusHistory` additively alongside the existing `Appointment` class, leaving it untouched.
 - **Depends on Sub-Feature 1** for the shared `PatientPortalShellComponent`/`patientAuthGuard` only — the referral *data* dependency (`GET /referrals/{id}`) already exists and is stable today, no mocking needed.
 - **Does not depend on Sub-Feature 2.** "Next steps" messaging in this sub-feature is derived purely from `Referral.Status`; it does not need to query Document Service state for the MVP (a richer "next steps: upload your insurance form" cross-link is integration-phase polish, not core scope — see `INTEGRATION_PLAN.md`).
 

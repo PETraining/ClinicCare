@@ -1,4 +1,5 @@
-export type DocumentType = 'Lab Report' | 'Imaging' | 'Referral Letter' | 'Discharge Summary';
+export type DocumentType = 'Lab Report' | 'Imaging' | 'Referral Letter' | 'Discharge Summary' | 'Pre-Visit Form';
+export type UploadedByType = 'Clinician' | 'Patient';
 
 export interface ClinicalDocument {
   DocumentId: number;
@@ -7,4 +8,6 @@ export interface ClinicalDocument {
   Type: DocumentType;
   UploadedDate: string;
   FileName: string;
+  StoragePath: string | null;
+  UploadedBy: UploadedByType;
 }

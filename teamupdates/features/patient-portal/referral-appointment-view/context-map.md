@@ -4,8 +4,8 @@
 **Sub-Feature of**: Patient Portal
 **Assigned Team**: Engineer A (foundational — build first)
 **Timeline**: 1 week (Days 1–5)
-**Status**: Pending Implementation
-**Last grounded against repo**: 2026-08-13, branch `F5.2-imp`
+**Status**: **Implemented** — backend (`Appointment` model/endpoints in Referral Service) and frontend (patient auth, shell, login, dashboard) are present on this branch as of the re-grounding below. Re-run the Manual Verification Steps before sign-off; this spec has not been re-validated by the validator agent since the 2026-08-13 draft.
+**Last grounded against repo**: 2026-09-10, branch `F5.3-IMP` (previously grounded 2026-08-13 against branch `F5.2-imp`, prior to implementation)
 
 ## Ground truth this spec is based on (read this before coding)
 
@@ -114,7 +114,7 @@ Patients can view their active referrals and (derived) upcoming appointments in 
 
 1. **Appointment scheduling data doesn't exist today.** This spec's default is a new additive `Appointment` table in the Referral Service (see Phase 1 model). An alternative would be adding `ScheduledAt`/`Location` columns directly onto the existing `Referral` table — **do not do this**, it risks changing behavior/shape of data the clinician UI and existing tests already depend on. If product later wants every `Accepted` referral to automatically imply a visit, that's a follow-up, not part of this MVP — for now, appointments are seeded/created explicitly and only loosely correlated to referral status.
 2. **Patient login has no real credential model.** `Patient` (in `services/patient/models.py`) has no username/password/email field, and none should be added speculatively. Default: an unauthenticated "pick who you are" demo picker, consistent with the existing single-demo-user clinician login. Do not add a password field, and do not use DOB as a shared secret/PIN.
-3. **Doctors Service single-get.** Confirm whether `GET /doctors/{id}` exists before assuming it; the referral service only relies on `/doctors/{id}/exists`. If missing, add it — it's a small, safe addition other sub-features can also use.
+3. **Doctors Service single-get.** ~~Confirm whether `GET /doctors/{id}` exists before assuming it~~ — **Resolved**: `GET /doctors/{doctor_id}` already existed in `services/doctors/main.py` before this sub-feature started (alongside `/doctors/{id}/exists` and `GET /doctors`). No change was needed there. As implemented, `PatientDashboardComponent` does not even call the single-get — it loads the full doctor list via the existing `DoctorService.search()` (`GET /api/doctors`) once and resolves `SpecialistId → "Name (Specialty)"` client-side via a `computed()` map. Both approaches are valid; the bulk-list approach was simpler given the small seeded doctor count.
 4. **Timezone handling for `ScheduledAt`.** Store and seed as naive UTC datetimes, consistent with `Referral.CreatedAt`/`UpdatedAt`; display as-is on the frontend for MVP (no timezone conversion).
 
 ## Integration Notes (what Sub-Features 2 & 3 can rely on immediately)
@@ -133,8 +133,22 @@ Patients can view their active referrals and (derived) upcoming appointments in 
 4. Switch to a different patient via logout/login; confirm the lists change accordingly.
 5. Visit `/dashboard` (clinician route) and confirm it still works unchanged.
 
+## As-Built Notes (added 2026-09-10, re-grounding pass)
+
+Verified directly against the current working tree on branch `F5.3-IMP`:
+
+- `services/referral/models.py` — `Appointment` table present exactly as specced (additive, `ForeignKey("referrals.ReferralId")`).
+- `services/referral/schemas.py` — `AppointmentBase` / `AppointmentCreate` / `AppointmentRead` present, PascalCase, `ConfigDict(from_attributes=True)`.
+- `services/referral/main.py` — `GET /appointments?patientId=` and `GET /appointments/{appointment_id}` present.
+- `services/referral/seed.py` — seed rows present, comment-documented against the same `PatientId`/`DoctorId` legend used by `services/document/seed.py` and `services/notification/seed.py` (1=Anjali Verma, 2=Rajesh Kumar, 3=Divya Menon, 4=Suresh Iyengar, 5=Neha Bhatt).
+- `gateway/main.py` — `"appointments"` entry present in `SERVICE_MAP`, also added to `services_with_prefix` so `/api/appointments/...` maps to `/appointments/...` on the Referral Service.
+- Frontend: `patient-auth.guard.ts`, `patient-auth.service.ts`, `patient-session.model.ts`, `appointment.service.ts`, `appointment.model.ts`, and `features/patient-portal/{shell,login,dashboard}/*` all present and wired into `app.routes.ts` under the guarded `/patient-portal` subtree, separate from the clinician route block.
+- Not yet re-run as part of this planning pass: the Manual Verification Steps below (curl checks, browser walkthrough, patient-switch isolation check). Treat those as the acceptance gate before this sub-feature is marked "done" in `TEAM_ASSIGNMENT.md`.
+
+This sub-feature's exports (`PatientAuthService`, `patientAuthGuard`, `PatientPortalShellComponent`, the `/patient-portal` route skeleton) are now real, existing code — Sub-Features 2 and 3 should build on top of them directly rather than treating them as a future dependency.
+
 ---
-_Context-map rewritten 2026-08-13 against actual repo structure (previous draft referenced a non-existent `services/api-gateway/` path and an `/api/patient-portal/*` gateway prefix that the real gateway does not support)._
+_Context-map rewritten 2026-08-13 against actual repo structure (previous draft referenced a non-existent `services/api-gateway/` path and an `/api/patient-portal/*` gateway prefix that the real gateway does not support). Status updated 2026-09-10 after confirming implementation landed on branch `F5.3-IMP`._
 
 ---
 _Implemented by patient-portal-implementor agent, invoked by Rejayi Chandra Surendran, on 2026-08-13._

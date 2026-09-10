@@ -58,7 +58,7 @@ export class CreateReferralComponent implements OnInit {
     this.referralService.create(this.form).subscribe({
       next: (referral) => {
         this.submitting.set(false);
-        this.router.navigate(['/referrals'], { queryParams: { created: referral.ReferralId } });
+        this.router.navigate(['/patients/referrals'], { queryParams: { created: referral.ReferralId } });
       },
       error: (err) => {
         this.submitting.set(false);
