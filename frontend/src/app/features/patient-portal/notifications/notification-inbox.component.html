@@ -1,0 +1,40 @@
+<div class="notification-inbox-container">
+  <div class="inbox-header">
+    <h1>Notifications</h1>
+    <div class="unread-badge" *ngIf="unreadCount > 0">
+      {{ unreadCount }} unread
+    </div>
+  </div>
+
+  <div class="notifications-list">
+    <div *ngIf="notifications().length === 0" class="empty-state">
+      <p>No notifications yet.</p>
+    </div>
+
+    <div
+      *ngFor="let notification of notifications()"
+      class="notification-card"
+      [ngClass]="{ unread: !notification.Read }"
+      (click)="markAsRead(notification)"
+    >
+      <div class="notification-header">
+        <div class="event-badge" [ngClass]="'event-' + getEventTypeColor(notification.EventType).toLowerCase()">
+          {{ notification.EventType }}
+        </div>
+        <div class="timestamp">{{ notification.Timestamp | date: 'short' }}</div>
+      </div>
+
+      <div class="notification-content">
+        <p class="message">{{ notification.Message }}</p>
+        <p class="referral-link">Referral #{{ notification.ReferralId }}</p>
+      </div>
+
+      <div *ngIf="!notification.Read" class="read-indicator">
+        <span class="dot"></span> Unread
+      </div>
+      <div *ngIf="notification.Read" class="read-indicator read">
+        <span class="dot"></span> Read
+      </div>
+    </div>
+  </div>
+</div>

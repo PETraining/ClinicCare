@@ -17,6 +17,8 @@ import { PatientDocumentsComponent } from './features/patient-portal/documents/p
 import { UploadFormComponent } from './features/patient-portal/documents/upload-form.component';
 import { QuestionnaireListComponent } from './features/patient-portal/questionnaires/questionnaire-list.component';
 import { QuestionnaireDetailComponent } from './features/patient-portal/questionnaires/questionnaire-detail.component';
+import { PatientReferralProgressComponent } from './features/patient-portal/tracking/patient-referral-progress.component';
+import { NotificationInboxComponent } from './features/patient-portal/notifications/notification-inbox.component';
 import { PharmacyDashboardComponent } from './features/pharmacy/pharmacy-dashboard.component';
 import { PrescriptionListComponent } from './features/pharmacy/prescription-list.component';
 import { PrescriptionDetailComponent } from './features/pharmacy/prescription-detail.component';
@@ -81,6 +83,12 @@ export const routes: Routes = [
       // Appointments & Check-in (consumes F1 endpoints: GET /api/referrals/{id}/appointments)
       // { path: 'appointments', component: AppointmentListComponent },
       // { path: 'appointments/:id/checkin', component: CheckinComponent },
+
+      // Referral Progress Tracking (F5.3-Patient Portal - Sub-Feature 2)
+      { path: 'tracking/:referralId', component: PatientReferralProgressComponent },
+
+      // Notification Inbox (F5.3-Patient Portal - Sub-Feature 2)
+      { path: 'notifications', component: NotificationInboxComponent },
 
       // Documents & Forms Management (F5.3-Patient Portal)
       { path: 'documents', component: PatientDocumentsComponent },
