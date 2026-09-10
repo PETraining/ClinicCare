@@ -1,0 +1,44 @@
+<div class="container">
+  <div class="header">
+    <h1>Questionnaires</h1>
+    <p>Complete forms to help us serve you better</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading">
+      <p>Loading questionnaires...</p>
+    </div>
+  }
+
+  @if (error) {
+    <div class="alert alert-error">
+      {{ error }}
+    </div>
+  }
+
+  @if (!isLoading && questionnaires.length > 0) {
+    <div class="questionnaire-list">
+      @for (q of questionnaires; track q.QuestionnaireId) {
+        <div class="questionnaire-card">
+          <div class="questionnaire-info">
+            <h2>{{ q.Title }}</h2>
+            @if (q.Description) {
+              <p class="description">{{ q.Description }}</p>
+            }
+          </div>
+          <div class="questionnaire-actions">
+            <a [routerLink]="[q.QuestionnaireId]" class="btn-primary">
+              Start Questionnaire
+            </a>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (!isLoading && questionnaires.length === 0 && !error) {
+    <p class="no-questionnaires">
+      No questionnaires available at this time.
+    </p>
+  }
+</div>

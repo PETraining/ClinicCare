@@ -1,0 +1,54 @@
+<div class="container">
+  <div class="header">
+    <h1>My Documents</h1>
+    <a routerLink="../documents/upload" class="btn-primary">Upload Document</a>
+  </div>
+
+  <div class="document-section">
+    <h2>Clinic-Provided Documents</h2>
+    <div class="document-list">
+      @for (doc of documents() | slice: 0:6; track doc.DocumentId) {
+        @if (doc.UploadedBy === 'Clinician' && doc.StoragePath) {
+          <div class="document-card">
+            <div class="document-info">
+              <h3>{{ doc.FileName }}</h3>
+              <p class="document-type">{{ doc.Type }}</p>
+              <p class="document-date">Uploaded: {{ doc.UploadedDate | date: 'short' }}</p>
+            </div>
+            <div class="document-actions">
+              @if (canDownload(doc)) {
+                <a [href]="getDownloadUrl(doc)" class="btn-download" download>Download</a>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="document-section">
+    <h2>My Uploads</h2>
+    <div class="document-list">
+      @for (doc of documents(); track doc.DocumentId) {
+        @if (doc.UploadedBy === 'Patient') {
+          <div class="document-card">
+            <div class="document-info">
+              <h3>{{ doc.FileName }}</h3>
+              <p class="document-type">{{ doc.Type }}</p>
+              <p class="document-date">Uploaded: {{ doc.UploadedDate | date: 'short' }}</p>
+            </div>
+            <div class="document-actions">
+              @if (canDownload(doc)) {
+                <a [href]="getDownloadUrl(doc)" class="btn-download" download>Download</a>
+              }
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+
+  @if (documents().length === 0) {
+    <p class="no-documents">No documents found. <a routerLink="../documents/upload">Upload one now.</a></p>
+  }
+</div>

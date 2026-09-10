@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { NotificationService } from '../../../core/services/notification.service';
-import { PatientSessionService } from '../../../core/services/patient-session.service';
+import { PatientAuthService } from '../../../core/services/patient-auth.service';
 import { NotificationEvent } from '../../../core/models/notification.model';
 
 @Component({
@@ -14,17 +14,17 @@ import { NotificationEvent } from '../../../core/models/notification.model';
 })
 export class NotificationInboxComponent implements OnInit {
   private notificationService = inject(NotificationService);
-  private sessionService = inject(PatientSessionService);
+  private patientAuth = inject(PatientAuthService);
 
   notifications = this.notificationService.notifications;
   unreadCount = 0;
   currentPatientId: number | null = null;
 
   ngOnInit(): void {
-    const session = this.sessionService.session();
-    if (session && session.patientId) {
-      this.currentPatientId = session.patientId;
-      this.loadNotifications(session.patientId);
+    const patient = this.patientAuth.currentPatient();
+    if (patient && patient.patientId) {
+      this.currentPatientId = patient.patientId;
+      this.loadNotifications(patient.patientId);
     }
   }
 
