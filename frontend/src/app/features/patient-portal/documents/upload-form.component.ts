@@ -92,7 +92,7 @@ export class UploadFormComponent implements OnInit {
           this.isUploading = false;
           this.documentService.loadByPatient(this.patientId);
           setTimeout(() => {
-            this.router.navigate(['../documents'], { relativeTo: undefined });
+            this.router.navigate(['/patient-portal/documents']);
           }, 2000);
         },
         error: (err) => {
@@ -104,6 +104,6 @@ export class UploadFormComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['../documents'], { relativeTo: undefined });
+    this.router.navigate(['/patient-portal/documents']);
   }
 }

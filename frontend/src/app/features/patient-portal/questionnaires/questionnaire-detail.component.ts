@@ -112,7 +112,7 @@ export class QuestionnaireDetailComponent implements OnInit {
         this.isSubmitting = false;
         this.questionnaireService.loadResponsesByPatient(this.patientId);
         setTimeout(() => {
-          this.router.navigate(['../questionnaires'], { relativeTo: this.route });
+          this.router.navigate(['/patient-portal/questionnaires']);
         }, 2000);
       },
       error: (err) => {
@@ -123,6 +123,6 @@ export class QuestionnaireDetailComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.router.navigate(['../questionnaires'], { relativeTo: this.route });
+    this.router.navigate(['/patient-portal/questionnaires']);
   }
 }
