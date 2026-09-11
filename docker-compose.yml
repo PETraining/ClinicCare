@@ -22,10 +22,12 @@ services:
       DOCTORS_SERVICE_URL: http://doctors-service:8002
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
       PHARMACY_SERVICE_URL: http://pharmacy-service:8006
+      LAB_SERVICE_URL: http://lab-service:8007
     depends_on:
       - doctors-service
       - notification-service
       - pharmacy-service
+      - lab-service
 
   document-service:
     build: ./services/document
@@ -41,6 +43,21 @@ services:
     depends_on:
       - patient-service
 
+  lab-service:
+    build: ./services/lab
+    ports:
+      - "8007:8007"
+    environment:
+      PATIENT_SERVICE_URL: http://patient-service:8001
+      DOCTORS_SERVICE_URL: http://doctors-service:8002
+      REFERRAL_SERVICE_URL: http://referral-service:8003
+      NOTIFICATION_SERVICE_URL: http://notification-service:8005
+    depends_on:
+      - patient-service
+      - doctors-service
+      - referral-service
+      - notification-service
+
   gateway:
     build: ./gateway
     ports:
@@ -52,6 +69,7 @@ services:
       DOCUMENT_SERVICE_URL: http://document-service:8004
       NOTIFICATION_SERVICE_URL: http://notification-service:8005
       PHARMACY_SERVICE_URL: http://pharmacy-service:8006
+      LAB_SERVICE_URL: http://lab-service:8007
     depends_on:
       - patient-service
       - doctors-service
@@ -59,6 +77,7 @@ services:
       - document-service
       - notification-service
       - pharmacy-service
+      - lab-service
 
   frontend:
     build: ./frontend

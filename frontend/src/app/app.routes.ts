@@ -14,6 +14,14 @@ import { PharmacyDashboardComponent } from './features/pharmacy/pharmacy-dashboa
 import { PrescriptionListComponent } from './features/pharmacy/prescription-list.component';
 import { PrescriptionDetailComponent } from './features/pharmacy/prescription-detail.component';
 import { InventoryManagementComponent } from './features/pharmacy/inventory-management.component';
+import { TechnicianDashboardComponent } from './features/lab-technician/technician-dashboard.component';
+import { SampleTrackerComponent } from './features/lab-technician/sample-tracker.component';
+import { TestProcessingComponent } from './features/lab-technician/test-processing.component';
+import { LabStatsComponent } from './features/lab-technician/lab-stats.component';
+import { LabOrdersListComponent } from './features/lab/lab-orders-list.component';
+import { CreateLabOrderComponent } from './features/lab/create-lab-order.component';
+import { LabResultsComponent } from './features/lab/lab-results.component';
+import { LabTestCatalogComponent } from './features/lab/lab-test-catalog.component';
 import { PatientPortalShellComponent } from './features/patient-portal/shell/patient-portal-shell.component';
 import { PatientLoginComponent } from './features/patient-portal/login/patient-login.component';
 import { PatientDashboardComponent } from './features/patient-portal/dashboard/patient-dashboard.component';
@@ -36,6 +44,20 @@ export const routes: Routes = [
       { path: 'pharmacy/prescriptions', component: PrescriptionListComponent },
       { path: 'pharmacy/prescriptions/:id', component: PrescriptionDetailComponent },
       { path: 'pharmacy/inventory', component: InventoryManagementComponent },
+      { path: 'lab/tests', component: LabTestCatalogComponent },
+      { path: 'lab/orders', component: LabOrdersListComponent },
+      { path: 'lab/orders/new', component: CreateLabOrderComponent },
+      { path: 'lab/orders/:id', component: LabResultsComponent },
+      {
+        path: 'lab-tech',
+        children: [
+          { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+          { path: 'dashboard', component: TechnicianDashboardComponent },
+          { path: 'samples', component: SampleTrackerComponent },
+          { path: 'process', component: TestProcessingComponent },
+          { path: 'stats', component: LabStatsComponent },
+        ],
+      },
     ],
   },
   // Patient-facing portal: entirely separate identity model, shell, and

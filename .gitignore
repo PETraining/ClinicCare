@@ -3,11 +3,14 @@ __pycache__/
 *.pyc
 .venv/
 *.db
+.coverage
+.pytest_cache/
 
 # Node / Angular
 node_modules/
 dist/
 .angular/
+coverage/
 
 # Run artifacts
 .run/

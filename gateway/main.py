@@ -8,10 +8,10 @@ SERVICE_MAP = {
     "patients": os.environ.get("PATIENT_SERVICE_URL", "http://localhost:8001"),
     "doctors": os.environ.get("DOCTORS_SERVICE_URL", "http://localhost:8002"),
     "referrals": os.environ.get("REFERRAL_SERVICE_URL", "http://localhost:8003"),
-    "appointments": os.environ.get("REFERRAL_SERVICE_URL", "http://localhost:8003"),
     "documents": os.environ.get("DOCUMENT_SERVICE_URL", "http://localhost:8004"),
     "notifications": os.environ.get("NOTIFICATION_SERVICE_URL", "http://localhost:8005"),
     "pharmacy": os.environ.get("PHARMACY_SERVICE_URL", "http://localhost:8006"),
+    "labs": os.environ.get("LAB_SERVICE_URL", "http://localhost:8007"),
 }
 
 app = FastAPI(title="API Gateway")
@@ -43,9 +43,11 @@ async def proxy(full_path: str, request: Request):
     # /api/patients/1 → /patients/1
     # /api/pharmacy/medications → /medications
     # /api/pharmacy/medications/1 → /medications/1
+    # /api/labs/tests → /tests
+    # /api/labs/results → /results
     #
     # Services without explicit service keyword (patients, doctors, etc.) use service name as endpoint prefix
-    # Services with explicit service keyword (pharmacy) strip the service name
+    # Services with explicit service keyword (pharmacy, labs) strip the service name
     services_with_prefix = {"patients", "doctors", "referrals", "documents", "notifications"}
 
     if segment in services_with_prefix:
@@ -53,8 +55,9 @@ async def proxy(full_path: str, request: Request):
         # /api/patients → /patients, /api/patients/1 → /patients/1
         upstream_path = f"/{full_path}"
     else:
-        # For other services (pharmacy), strip the service name
+        # For other services (pharmacy, labs), strip the service name
         # /api/pharmacy/medications → /medications
+        # /api/labs/tests → /tests
         upstream_path = f"/{full_path.split('/', 1)[1]}" if "/" in full_path else "/"
 
     try:

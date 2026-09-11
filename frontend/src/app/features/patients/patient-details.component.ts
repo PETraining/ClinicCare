@@ -7,6 +7,7 @@ import { map } from 'rxjs';
 import { Insurance, InsuranceCreate } from '../../core/models/patient.model';
 import { PatientService } from '../../core/services/patient.service';
 import { DocumentsPanelComponent } from '../documents/documents-panel.component';
+import { LabResultsPanelComponent } from '../lab/lab-results-panel.component';
 
 function blankInsuranceForm(): InsuranceCreate {
   return {
@@ -22,7 +23,7 @@ function blankInsuranceForm(): InsuranceCreate {
 @Component({
   selector: 'app-patient-details',
   standalone: true,
-  imports: [RouterLink, DocumentsPanelComponent, FormsModule],
+  imports: [RouterLink, DocumentsPanelComponent, LabResultsPanelComponent, FormsModule],
   templateUrl: './patient-details.component.html',
   styleUrl: './patient-details.component.css',
 })
