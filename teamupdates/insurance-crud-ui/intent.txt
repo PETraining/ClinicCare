@@ -1,0 +1,36 @@
+
+Intent: Insurance CRUD UI
+
+The Insurance Eligibility & Prior Authorization feature's backend (Patient Service, Week 1)
+already stores insurance records and exposes create/read/update/delete endpoints, but the
+Week 2 frontend build only ever rendered insurance info read-only on the patient details page.
+Staff have no way to add, correct, or remove a patient's insurance record from the app itself —
+today that only happens via seed data or direct API calls. This gap was confirmed during
+requirement validation of the Insurance Eligibility & Prior Authorization feature
+(see validationresult.md — "No Insurance Add/Edit/Delete UI"): `PatientService`
+(frontend/src/app/core/services/patient.service.ts) has no methods calling the backend's
+insurance POST/PUT/DELETE endpoints, and no form or modal exists anywhere under
+frontend/src/app/features/patients.
+
+Who needs it:
+Clinic front-desk/intake staff who register patients and keep their insurance details current —
+the same staff who create referrals and rely on authorization status being accurate.
+
+Why:
+The whole point of tracking insurance and prior authorization is to catch problems before an
+appointment happens. That only works if insurance details on file are correct. Right now, if a
+patient's policy number is wrong, their insurer changes, or a new policy needs to be added,
+staff have no way to fix it through ClinicCare — they'd have to go around the app entirely. The
+backend CRUD work from Week 1 is fully built and sitting unused; this feature closes that gap by
+giving staff a real entry point to it.
+
+What it does:
+- Adds create/edit/delete methods to `PatientService` (frontend/src/app/core/services/
+  patient.service.ts) that call the existing `/api/patients/{patient_id}/insurance` endpoints
+- Adds a form/modal in the patient-details view so staff can add a new insurance record, edit an
+  existing one, or delete one, without leaving the patient details page
+- Refreshes the existing read-only insurance list after any create/edit/delete so the display
+  stays in sync
+- Reuses the insurance request/response contract already defined in the Patient Service's
+  schemas — no backend changes are required, this is purely wiring the existing Week 1 endpoints
+  up to the UI

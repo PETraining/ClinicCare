@@ -1,4 +1,4 @@
-export type NotificationEventType = 'Submitted' | 'Accepted' | 'Rejected' | 'Completed';
+export type NotificationEventType = 'Submitted' | 'Accepted' | 'Rejected' | 'Completed' | 'AuthorizationUpdated';
 
 export interface NotificationEvent {
   NotificationId: number;

@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
-# Starts the full ReferralIQ stack: all 6 backend containers (docker-compose)
-# plus the Angular frontend (ng serve). Safe to re-run — skips the frontend
-# if it's already listening on :4200.
+# Starts the full ReferralIQ stack: all backend containers plus the Angular
+# frontend, all via docker-compose. Safe to re-run.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
-
-RUN_DIR="$SCRIPT_DIR/.run"
-mkdir -p "$RUN_DIR"
 
 wait_for() {
   local url="$1" label="$2" attempts=0
@@ -22,7 +18,7 @@ wait_for() {
   fi
 }
 
-echo "==> Building and starting backend containers..."
+echo "==> Building and starting backend and frontend containers..."
 docker compose up -d --build
 
 echo "==> Waiting for API Gateway (http://localhost:8000)..."
@@ -32,21 +28,12 @@ if ! wait_for "http://localhost:8000/api/doctors" "API Gateway"; then
 fi
 echo "    Backend is up."
 
-if lsof -ti:4200 -sTCP:LISTEN >/dev/null 2>&1; then
-  echo "==> Frontend already running on :4200, leaving it as-is."
-else
-  echo "==> Starting Angular frontend..."
-  (
-    cd "$SCRIPT_DIR/frontend"
-    nohup ./node_modules/.bin/ng serve --port 4200 > "$RUN_DIR/frontend.log" 2>&1 &
-  )
-  echo "==> Waiting for frontend (http://localhost:4200)..."
-  if ! wait_for "http://localhost:4200" "Frontend"; then
-    echo "Check logs at: $RUN_DIR/frontend.log" >&2
-    exit 1
-  fi
-  echo "    Frontend is up."
+echo "==> Waiting for frontend (http://localhost:4200)..."
+if ! wait_for "http://localhost:4200" "Frontend"; then
+  echo "Check logs with: docker compose logs frontend" >&2
+  exit 1
 fi
+echo "    Frontend is up."
 
 cat <<EOF
 
@@ -54,7 +41,6 @@ ReferralIQ is running:
   Frontend:    http://localhost:4200
   API Gateway: http://localhost:8000
 
-Backend logs:  docker compose logs -f
-Frontend logs: $RUN_DIR/frontend.log
-Stop with:     ./stop.sh
+Logs:  docker compose logs -f
+Stop with: ./stop.sh
 EOF

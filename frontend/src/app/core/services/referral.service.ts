@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { tap } from 'rxjs';
 
 import { API_BASE_URL } from '../config';
-import { Referral, ReferralCreate } from '../models/referral.model';
+import { Authorization, AuthorizationUpdate, Referral, ReferralCreate } from '../models/referral.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReferralService {
@@ -50,5 +50,23 @@ export class ReferralService {
 
   complete(id: number) {
     return this.transition(id, 'complete');
+  }
+
+  requestAuthorization(referralId: number, payload: AuthorizationUpdate) {
+    return this.http
+      .post<Authorization>(`${this.base}/${referralId}/authorization`, payload)
+      .pipe(tap((authorization) => this.applyAuthorization(referralId, authorization)));
+  }
+
+  updateAuthorization(referralId: number, payload: AuthorizationUpdate) {
+    return this.http
+      .put<Authorization>(`${this.base}/${referralId}/authorization`, payload)
+      .pipe(tap((authorization) => this.applyAuthorization(referralId, authorization)));
+  }
+
+  private applyAuthorization(referralId: number, authorization: Authorization): void {
+    this.referrals.update((list) =>
+      list.map((r) => (r.ReferralId === referralId ? { ...r, authorization } : r)),
+    );
   }
 }

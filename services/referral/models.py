@@ -18,6 +18,9 @@ class Referral(Base):
     UpdatedAt = Column(DateTime, nullable=False)
 
     appointments = relationship("Appointment", back_populates="referral", cascade="all, delete-orphan")
+    authorization = relationship(
+        "Authorization", back_populates="referral", uselist=False, cascade="all, delete-orphan"
+    )
 
 
 class Appointment(Base):
@@ -34,3 +37,18 @@ class Appointment(Base):
     UpdatedAt = Column(DateTime, nullable=False)
 
     referral = relationship("Referral", back_populates="appointments")
+
+
+class Authorization(Base):
+    __tablename__ = "authorizations"
+
+    AuthorizationId = Column(Integer, primary_key=True, index=True)
+    ReferralId = Column(Integer, ForeignKey("referrals.ReferralId"), nullable=False, unique=True, index=True)
+    Status = Column(String, nullable=False, index=True)
+    RequestedDate = Column(DateTime, nullable=True)
+    DecisionDate = Column(DateTime, nullable=True)
+    DecisionNotes = Column(String, nullable=True)
+    CreatedAt = Column(DateTime, nullable=False)
+    UpdatedAt = Column(DateTime, nullable=False)
+
+    referral = relationship("Referral", back_populates="authorization")

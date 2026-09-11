@@ -42,6 +42,77 @@
         <p class="empty">No medications on record.</p>
       }
     </section>
+
+    <section>
+      <div class="insurance-header">
+        <h2>Insurance</h2>
+        @if (patient.insurance.length === 0) {
+          <button type="button" class="insurance-add" (click)="startAddInsurance()">+ Add Insurance</button>
+        }
+      </div>
+      @if (patient.insurance.length > 0) {
+        @let i = patient.insurance[0];
+        <ul>
+          <li>
+            {{ i.InsurerName }} — Policy {{ i.PolicyNumber }} (Member {{ i.MemberId }})
+            <br />
+            Effective {{ i.EffectiveDate }}
+            @if (i.TerminationDate) { through {{ i.TerminationDate }} }
+            <div class="insurance-actions">
+              <button type="button" (click)="startEditInsurance(i)">Edit</button>
+              <button type="button" (click)="deleteInsuranceRecord(i)">Delete</button>
+            </div>
+          </li>
+        </ul>
+      } @else {
+        <p class="empty">No insurance on record.</p>
+      }
+
+      @if (showInsuranceForm()) {
+        <form class="insurance-form" (ngSubmit)="submitInsurance()" #insF="ngForm">
+          <label>
+            Insurer Name
+            <input type="text" name="insurerName" [(ngModel)]="insuranceForm.InsurerName" required />
+          </label>
+
+          <label>
+            Policy Number
+            <input type="text" name="policyNumber" [(ngModel)]="insuranceForm.PolicyNumber" required />
+          </label>
+
+          <label>
+            Group Number
+            <input type="text" name="groupNumber" [(ngModel)]="insuranceForm.GroupNumber" />
+          </label>
+
+          <label>
+            Member ID
+            <input type="text" name="memberId" [(ngModel)]="insuranceForm.MemberId" required />
+          </label>
+
+          <label>
+            Effective Date
+            <input type="date" name="effectiveDate" [(ngModel)]="insuranceForm.EffectiveDate" required />
+          </label>
+
+          <label>
+            Termination Date
+            <input type="date" name="terminationDate" [(ngModel)]="insuranceForm.TerminationDate" />
+          </label>
+
+          @if (insuranceError()) {
+            <p class="error">{{ insuranceError() }}</p>
+          }
+
+          <div class="insurance-form-actions">
+            <button type="submit" [disabled]="!insF.valid || insuranceSubmitting()">
+              {{ insuranceSubmitting() ? 'Saving...' : (editingInsurance() ? 'Save Changes' : 'Add Insurance') }}
+            </button>
+            <button type="button" (click)="cancelInsuranceForm()">Cancel</button>
+          </div>
+        </form>
+      }
+    </section>
   </div>
 
   <section>
