@@ -1,0 +1,18 @@
+
+Intent
+State your feature's core requirement, in your own words.
+What is this actually for? Who needs it, and why?
+ 
+Context
+Decide where this lives in the existing services.
+Then, using Plan Mode:
+Split the spec into two pieces — what you'll build and validate as a real, working slice today, and what's deliberately deferred to next week.
+Don't write any code yet — just the plan.
+Capture the split in context-map.md, under a new section: “Scope: This Week vs. Next.”
+ 
+
+Pharmacy & Prescription Management Doctors prescribe medication after consultation. Pharmacy fulfills prescriptions. Tracks:
+Inventory
+Dispensing
+Refills
+Why this matters: right now there's no record of what's been prescribed, and pharmacy has no visibility into what needs fulfilling. Prescriptions should be linked to patients and referrals, support multiple medications per prescription, and record dispensing activity. Inventory levels should be updated as medications are dispensed, with low-stock items clearly identified. 

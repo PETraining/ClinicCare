@@ -1,0 +1,118 @@
+<div class="prescription-list-container">
+  <div class="page-header">
+    <h1>Prescriptions</h1>
+    <a routerLink="/pharmacy/dashboard" class="button-secondary">← Back to Dashboard</a>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error()" class="alert alert-error">
+    {{ error() }}
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading()" class="loading">
+    <p>Loading prescriptions...</p>
+  </div>
+
+  <!-- Filters -->
+  <div *ngIf="!loading()" class="filters-section">
+    <div class="filters-header">
+      <h2>Filters</h2>
+      <button *ngIf="hasActiveFilters()" (click)="clearFilters()" class="button-tertiary">
+        Clear Filters
+      </button>
+    </div>
+
+    <div class="filters-row">
+      <div class="filter-group">
+        <label for="status-filter">Status</label>
+        <select
+          id="status-filter"
+          [(ngModel)]="statusFilter"
+          (change)="loadPrescriptions()"
+          class="filter-input"
+        >
+          <option value="">All</option>
+          <option value="Active">Active</option>
+          <option value="Completed">Completed</option>
+          <option value="Voided">Voided</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="patient-filter">Patient ID</label>
+        <input
+          id="patient-filter"
+          type="number"
+          [(ngModel)]="patientIdFilter"
+          (change)="loadPrescriptions()"
+          placeholder="Enter patient ID"
+          class="filter-input"
+        />
+      </div>
+
+      <div class="filter-group">
+        <label for="referral-filter">Referral ID</label>
+        <input
+          id="referral-filter"
+          type="number"
+          [(ngModel)]="referralIdFilter"
+          (change)="loadPrescriptions()"
+          placeholder="Enter referral ID"
+          class="filter-input"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Prescriptions List -->
+  <div *ngIf="!loading()" class="prescriptions-section">
+    <div class="section-header">
+      <h2>{{ filteredPrescriptions.length }} Prescription(s)</h2>
+    </div>
+
+    <div *ngIf="filteredPrescriptions.length > 0; else noPrescriptions" class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Patient</th>
+            <th>Referral</th>
+            <th>Doctor</th>
+            <th>Medications</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let prescription of filteredPrescriptions">
+            <td>#{{ prescription.PrescriptionId }}</td>
+            <td>Patient #{{ prescription.PatientId }}</td>
+            <td>Referral #{{ prescription.ReferralId }}</td>
+            <td>Doctor #{{ prescription.PrescribingDoctorId }}</td>
+            <td>{{ prescription.Medications.length }} medication(s)</td>
+            <td>
+              <span [ngClass]="'status-' + prescription.Status.toLowerCase()">
+                {{ prescription.Status }}
+              </span>
+            </td>
+            <td>{{ prescription.CreatedAt | date: 'short' }}</td>
+            <td>
+              <a
+                [routerLink]="['/pharmacy/prescriptions', prescription.PrescriptionId]"
+                class="button-small button-primary-small"
+              >
+                View
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <ng-template #noPrescriptions>
+      <p class="no-data">No prescriptions found matching your filters</p>
+    </ng-template>
+  </div>
+</div>

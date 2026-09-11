@@ -4,25 +4,30 @@ import { RouterLink } from '@angular/router';
 import { DoctorService } from '../../core/services/doctor.service';
 import { PatientService } from '../../core/services/patient.service';
 import { ReferralService } from '../../core/services/referral.service';
+import { AppointmentService } from '../../core/services/appointment.service';
 import { Referral, ReferralStatus } from '../../core/models/referral.model';
+import { AppointmentListComponent } from '../appointments/appointment-list.component';
+import { ScheduleAppointmentComponent } from '../appointments/schedule-appointment.component';
 
 const STATUS_FILTERS: (ReferralStatus | 'All')[] = ['All', 'Draft', 'Submitted', 'Accepted', 'Rejected', 'Completed'];
 
 @Component({
   selector: 'app-referral-tracking',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, AppointmentListComponent, ScheduleAppointmentComponent],
   templateUrl: './referral-tracking.component.html',
   styleUrl: './referral-tracking.component.css',
 })
 export class ReferralTrackingComponent implements OnInit {
   referralService = inject(ReferralService);
+  appointmentService = inject(AppointmentService);
   private patientService = inject(PatientService);
   private doctorService = inject(DoctorService);
 
   statusFilters = STATUS_FILTERS;
   activeFilter = signal<ReferralStatus | 'All'>('All');
   actionError = signal<string | null>(null);
+  showScheduleForm = signal<number | null>(null);
 
   private patientNames = computed(() => {
     const map = new Map<number, string>();
@@ -43,7 +48,7 @@ export class ReferralTrackingComponent implements OnInit {
   filteredReferrals = computed(() => {
     const filter = this.activeFilter();
     const all = this.referralService.referrals();
-    return filter === 'All' ? all : all.filter((r) => r.Status === filter);
+    return filter === 'All' ? all : all.filter((r: Referral) => r.Status === filter);
   });
 
   ngOnInit(): void {
@@ -67,7 +72,7 @@ export class ReferralTrackingComponent implements OnInit {
   private runAction(action: (id: number) => ReturnType<ReferralService['submit']>, referral: Referral): void {
     this.actionError.set(null);
     action.call(this.referralService, referral.ReferralId).subscribe({
-      error: (err) => this.actionError.set(err?.error?.detail ?? 'Action failed.'),
+      error: (err: any) => this.actionError.set(err?.error?.detail ?? 'Action failed.'),
     });
   }
 
@@ -85,5 +90,19 @@ export class ReferralTrackingComponent implements OnInit {
 
   complete(referral: Referral): void {
     this.runAction(this.referralService.complete, referral);
+  }
+
+  openScheduleForm(referral: Referral): void {
+    this.showScheduleForm.set(referral.ReferralId);
+    this.appointmentService.listByReferral(referral.ReferralId);
+  }
+
+  onAppointmentSuccess(referralId: number): void {
+    this.showScheduleForm.set(null);
+    this.appointmentService.listByReferral(referralId);
+  }
+
+  onAppointmentCancel(): void {
+    this.showScheduleForm.set(null);
   }
 }

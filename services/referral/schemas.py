@@ -1,6 +1,5 @@
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -40,19 +39,28 @@ class ReferralRead(ReferralBase):
     UpdatedAt: datetime
 
 
-class AppointmentBase(BaseModel):
-    ReferralId: int
-    PatientId: int
-    ScheduledAt: datetime
+class AppointmentStatus(str, Enum):
+    scheduled = "Scheduled"
+    completed = "Completed"
+    cancelled = "Cancelled"
+    no_show = "No Show"
+
+
+class AppointmentCreate(BaseModel):
+    ScheduledDate: datetime
     Location: str
-    CheckInInstructions: Optional[str] = None
+    SpecialistId: int
 
 
-class AppointmentCreate(AppointmentBase):
-    pass
-
-
-class AppointmentRead(AppointmentBase):
+class AppointmentRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     AppointmentId: int
+    ReferralId: int
+    PatientId: int
+    SpecialistId: int
+    ScheduledDate: datetime
+    Location: str
+    Status: AppointmentStatus
+    CreatedAt: datetime
+    UpdatedAt: datetime

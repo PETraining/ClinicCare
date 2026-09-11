@@ -119,7 +119,20 @@ async def submit_referral(referral_id: int, db: Session = Depends(get_db)):
 
 @app.patch("/referrals/{referral_id}/accept", response_model=schemas.ReferralRead)
 async def accept_referral(referral_id: int, db: Session = Depends(get_db)):
-    return await _transition(referral_id, "accept", db)
+    referral = await _transition(referral_id, "accept", db)
+
+    # When referral is accepted, create a prescription in pharmacy service (fire-and-forget)
+    if referral.Status == "Accepted":
+        asyncio.create_task(
+            clients.create_prescription_from_referral(
+                referral_id=referral.ReferralId,
+                patient_id=referral.PatientId,
+                prescribing_doctor_id=referral.SpecialistId,
+                medications=[],  # Empty medications list for MVP
+            )
+        )
+
+    return referral
 
 
 @app.patch("/referrals/{referral_id}/reject", response_model=schemas.ReferralRead)
@@ -132,20 +145,80 @@ async def complete_referral(referral_id: int, db: Session = Depends(get_db)):
     return await _transition(referral_id, "complete", db)
 
 
-@app.get("/appointments", response_model=list[schemas.AppointmentRead])
-def list_appointments(
-    patientId: Optional[int] = None,
-    db: Session = Depends(get_db),
-):
-    query = db.query(models.Appointment)
-    if patientId is not None:
-        query = query.filter(models.Appointment.PatientId == patientId)
-    return query.order_by(models.Appointment.ScheduledAt).all()
-
-
-@app.get("/appointments/{appointment_id}", response_model=schemas.AppointmentRead)
-def get_appointment(appointment_id: int, db: Session = Depends(get_db)):
+def _get_appointment_or_404(appointment_id: int, db: Session) -> models.Appointment:
     appointment = db.get(models.Appointment, appointment_id)
     if appointment is None:
         raise HTTPException(status_code=404, detail=f"Appointment {appointment_id} not found")
+    return appointment
+
+
+@app.post("/referrals/{referral_id}/appointments", response_model=schemas.AppointmentRead, status_code=201)
+def create_appointment(referral_id: int, payload: schemas.AppointmentCreate, db: Session = Depends(get_db)):
+    referral = _get_referral_or_404(referral_id, db)
+    if referral.Status != "Accepted":
+        raise HTTPException(status_code=400, detail="Appointment can only be created for Accepted referrals")
+
+    now = datetime.utcnow()
+    appointment = models.Appointment(
+        ReferralId=referral_id,
+        PatientId=referral.PatientId,
+        SpecialistId=referral.SpecialistId,
+        ScheduledDate=payload.ScheduledDate,
+        Location=payload.Location,
+        Status="Scheduled",
+        CreatedAt=now,
+        UpdatedAt=now,
+    )
+    db.add(appointment)
+    db.commit()
+    db.refresh(appointment)
+    return appointment
+
+
+@app.get("/referrals/{referral_id}/appointments", response_model=list[schemas.AppointmentRead])
+def list_appointments(referral_id: int, db: Session = Depends(get_db)):
+    _get_referral_or_404(referral_id, db)
+    appointments = db.query(models.Appointment).filter(
+        models.Appointment.ReferralId == referral_id
+    ).order_by(models.Appointment.CreatedAt.desc()).all()
+    return appointments
+
+
+@app.patch("/referrals/appointments/{appointment_id}/reschedule", response_model=schemas.AppointmentRead)
+def reschedule_appointment(appointment_id: int, payload: schemas.AppointmentCreate, db: Session = Depends(get_db)):
+    appointment = _get_appointment_or_404(appointment_id, db)
+    if appointment.Status != "Scheduled":
+        raise HTTPException(status_code=400, detail=f"Cannot reschedule {appointment.Status.lower()} appointment")
+
+    appointment.ScheduledDate = payload.ScheduledDate
+    appointment.Location = payload.Location
+    appointment.UpdatedAt = datetime.utcnow()
+    db.commit()
+    db.refresh(appointment)
+    return appointment
+
+
+@app.patch("/referrals/appointments/{appointment_id}/complete", response_model=schemas.AppointmentRead)
+def complete_appointment(appointment_id: int, db: Session = Depends(get_db)):
+    appointment = _get_appointment_or_404(appointment_id, db)
+    if appointment.Status != "Scheduled":
+        raise HTTPException(status_code=400, detail="Cannot complete non-scheduled appointment")
+
+    appointment.Status = "Completed"
+    appointment.UpdatedAt = datetime.utcnow()
+    db.commit()
+    db.refresh(appointment)
+    return appointment
+
+
+@app.patch("/referrals/appointments/{appointment_id}/cancel", response_model=schemas.AppointmentRead)
+def cancel_appointment(appointment_id: int, db: Session = Depends(get_db)):
+    appointment = _get_appointment_or_404(appointment_id, db)
+    if appointment.Status != "Scheduled":
+        raise HTTPException(status_code=400, detail="Cannot cancel non-scheduled appointment")
+
+    appointment.Status = "Cancelled"
+    appointment.UpdatedAt = datetime.utcnow()
+    db.commit()
+    db.refresh(appointment)
     return appointment

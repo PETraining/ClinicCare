@@ -10,6 +10,14 @@ from models import Appointment, Referral
 #
 # Statuses/timestamps are hand-kept in sync with the Notification Service's
 # seed data (services don't share a DB, even at seed time).
+# Appointments are linked to Accepted referrals (ReferralIds 5, 6)
+SEED_APPOINTMENTS = [
+    dict(ReferralId=5, PatientId=3, SpecialistId=3, ScheduledDate=datetime(2026, 8, 15, 10, 0),
+         Location="Dermatology Clinic, Building A, Room 201", Status="Scheduled", CreatedAt=datetime(2026, 7, 25, 11, 0), UpdatedAt=datetime(2026, 7, 25, 11, 0)),
+    dict(ReferralId=6, PatientId=2, SpecialistId=2, ScheduledDate=datetime(2026, 8, 20, 14, 30),
+         Location="Orthopedic Center, Suite 300", Status="Scheduled", CreatedAt=datetime(2026, 7, 26, 9, 30), UpdatedAt=datetime(2026, 7, 26, 9, 30)),
+]
+
 SEED_REFERRALS = [
     dict(PatientId=1, ReferringDoctorId=6, SpecialistId=1, Reason="Evaluate new-onset chest pain and possible cardiac workup",
          Priority="Urgent", Status="Draft", CreatedAt=datetime(2026, 7, 25, 9, 0), UpdatedAt=datetime(2026, 7, 25, 9, 0)),
@@ -31,27 +39,13 @@ SEED_REFERRALS = [
          Priority="Routine", Status="Rejected", CreatedAt=datetime(2026, 7, 4, 9, 0), UpdatedAt=datetime(2026, 7, 7, 12, 0)),
 ]
 
-# Appointments (Patient Portal / Sub-Feature 1) — additive, loosely correlated
-# to the Accepted/Completed referrals above (ReferralId 5, 6, 7 per the
-# seed-order comments, i.e. the 5th/6th/7th rows inserted above).
-# ReferralId=5 -> PatientId=3 (Divya Menon), Accepted, Dermatology (SpecialistId=3)
-# ReferralId=6 -> PatientId=2 (Rajesh Kumar), Accepted, Orthopedics (SpecialistId=2)
-# ReferralId=7 -> PatientId=4 (Suresh Iyengar), Completed, Cardiology (SpecialistId=1)
-SEED_APPOINTMENTS = [
-    dict(ReferralId=5, PatientId=3, ScheduledAt=datetime(2026, 8, 20, 10, 0),
-         Location="Downtown Clinic - Dermatology Suite", CheckInInstructions="Please arrive 15 minutes early."),
-    dict(ReferralId=6, PatientId=2, ScheduledAt=datetime(2026, 8, 25, 14, 30),
-         Location="Westside Orthopedic Center", CheckInInstructions="Bring any prior X-ray images if available."),
-    dict(ReferralId=7, PatientId=4, ScheduledAt=datetime(2026, 6, 25, 9, 0),
-         Location="City Heart Institute", CheckInInstructions="Fasting required prior to lab work."),
-]
-
 
 def seed_if_empty(db: Session) -> None:
-    if db.query(Referral).count() == 0:
-        for row in SEED_REFERRALS:
-            db.add(Referral(**row))
-        db.commit()
+    if db.query(Referral).count() > 0:
+        return
+    for row in SEED_REFERRALS:
+        db.add(Referral(**row))
+    db.commit()
 
     if db.query(Appointment).count() == 0:
         for row in SEED_APPOINTMENTS:

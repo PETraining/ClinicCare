@@ -2,7 +2,16 @@ export interface Appointment {
   AppointmentId: number;
   ReferralId: number;
   PatientId: number;
-  ScheduledAt: string;
+  SpecialistId: number;
+  ScheduledDate: Date;
   Location: string;
-  CheckInInstructions: string | null;
+  Status: 'Scheduled' | 'Completed' | 'Cancelled' | 'No Show';
+  CreatedAt: Date;
+  UpdatedAt: Date;
+}
+
+export interface AppointmentCreate {
+  ScheduledDate: Date;
+  Location: string;
+  SpecialistId: number;
 }
