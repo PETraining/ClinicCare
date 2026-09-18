@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { signal, computed } from '@angular/core';
+import { signal } from '@angular/core';
 
 interface Referral {
   ReferralId: number;
@@ -151,13 +151,17 @@ export class PatientReferralTrackingComponent implements OnInit {
       const session = JSON.parse(sessionStr);
       const patientId = session.patientId;
       
-      this.http.get<Referral[]>(`/api/referrals?patientId=${patientId}`)
+      this.http.get<any>(`/api/referrals?patientId=${patientId}`)
         .subscribe({
-          next: (data) => {
-            this.referrals.set(data || []);
+          next: (response: any) => {
+            const data = Array.isArray(response) ? response : (response.data || []);
+            const validReferrals = (data as any[]).filter(r => 
+              r && typeof r === 'object' && 'ReferralId' in r
+            );
+            this.referrals.set(validReferrals);
             this.error.set('');
           },
-          error: (err) => {
+          error: (err: any) => {
             console.error('Failed to load referrals', err);
             this.error.set('Failed to load referrals');
             this.referrals.set([]);
