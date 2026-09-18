@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -17,11 +17,13 @@ class EventType(str, Enum):
 
 
 class NotificationBase(BaseModel):
+    PatientId: Optional[int] = None
     # Optional because not every event (e.g. lab-service events) is tied to a referral.
     ReferralId: Optional[int] = None
     EventType: EventType
     Message: str
     Source: Optional[str] = None
+    Read: bool = False
 
 
 class NotificationCreate(NotificationBase):
@@ -33,3 +35,7 @@ class NotificationRead(NotificationBase):
 
     NotificationId: int
     Timestamp: datetime
+
+
+class NotificationUpdate(BaseModel):
+    Read: bool

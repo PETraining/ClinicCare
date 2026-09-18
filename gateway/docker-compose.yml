@@ -27,6 +27,7 @@ services:
       - doctors-service
       - notification-service
       - pharmacy-service
+      - lab-service
 
   document-service:
     build: ./services/document

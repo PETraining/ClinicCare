@@ -1,10 +1,11 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+﻿import { Component, OnInit, inject, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { ReferralService } from '../../core/services/referral.service';
 import { DoctorService } from '../../core/services/doctor.service';
 import { PatientService } from '../../core/services/patient.service';
-import { ReferralService } from '../../core/services/referral.service';
 import { AppointmentService } from '../../core/services/appointment.service';
+import { AuthService } from '../../core/services/auth.service';
 import { Referral, ReferralStatus } from '../../core/models/referral.model';
 import { AppointmentListComponent } from '../appointments/appointment-list.component';
 import { ScheduleAppointmentComponent } from '../appointments/schedule-appointment.component';
@@ -23,6 +24,7 @@ export class ReferralTrackingComponent implements OnInit {
   appointmentService = inject(AppointmentService);
   private patientService = inject(PatientService);
   private doctorService = inject(DoctorService);
+  private authService = inject(AuthService);
 
   statusFilters = STATUS_FILTERS;
   activeFilter = signal<ReferralStatus | 'All'>('All');
@@ -40,7 +42,7 @@ export class ReferralTrackingComponent implements OnInit {
   private doctorNames = computed(() => {
     const map = new Map<number, string>();
     for (const d of this.doctorService.doctors()) {
-      map.set(d.DoctorId, `${d.Name} (${d.Specialty})`);
+      map.set(d.DoctorId, \\ (\)\);
     }
     return map;
   });
@@ -58,11 +60,11 @@ export class ReferralTrackingComponent implements OnInit {
   }
 
   patientName(id: number): string {
-    return this.patientNames().get(id) ?? `Patient #${id}`;
+    return this.patientNames().get(id) ?? \Patient #\\;
   }
 
   doctorName(id: number): string {
-    return this.doctorNames().get(id) ?? `Doctor #${id}`;
+    return this.doctorNames().get(id) ?? \Doctor #\\;
   }
 
   setFilter(status: ReferralStatus | 'All'): void {
@@ -90,6 +92,35 @@ export class ReferralTrackingComponent implements OnInit {
 
   complete(referral: Referral): void {
     this.runAction(this.referralService.complete, referral);
+  }
+
+  setAuthorizationStatus(referral: Referral, status: 'Approved' | 'Denied'): void {
+    this.actionError.set(null);
+    if (status === 'Approved') {
+      this.accept(referral);
+    } else {
+      this.reject(referral);
+    }
+  }
+
+  requestAuthorization(referral: Referral): void {
+    this.actionError.set(null);
+    this.referralService.updateStatus(referral.ReferralId, 'Submitted').subscribe({
+      error: (err: any) => this.actionError.set(err?.error?.detail ?? 'Failed to request authorization'),
+    });
+  }
+
+  canSubmit(referral: Referral): boolean {
+    return referral.Status === 'Draft';
+  }
+
+  canAccept(referral: Referral): boolean {
+    return referral.Status === 'Submitted' && this.isSpecialist(referral);
+  }
+
+  private isSpecialist(referral: Referral): boolean {
+    const currentDoctor = this.authService.currentDoctor();
+    return currentDoctor?.DoctorId === referral.SpecialistId;
   }
 
   openScheduleForm(referral: Referral): void {

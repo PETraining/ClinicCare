@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+﻿import { Component, OnInit, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { PatientAuthService } from '../../../core/services/patient-auth.service';
@@ -19,6 +19,7 @@ export class PatientLoginComponent implements OnInit {
   error = signal<string | null>(null);
 
   ngOnInit(): void {
+    // Load all patients for the dropdown
     this.patientService.search();
   }
 

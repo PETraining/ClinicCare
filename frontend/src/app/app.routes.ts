@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+﻿import { Routes } from '@angular/router';
 
 import { authGuard } from './core/guards/auth.guard';
 import { patientAuthGuard } from './core/guards/patient-auth.guard';
@@ -25,6 +25,7 @@ import { LabTestCatalogComponent } from './features/lab/lab-test-catalog.compone
 import { PatientPortalShellComponent } from './features/patient-portal/shell/patient-portal-shell.component';
 import { PatientLoginComponent } from './features/patient-portal/login/patient-login.component';
 import { PatientDashboardComponent } from './features/patient-portal/dashboard/patient-dashboard.component';
+import { PatientReferralTrackingComponent } from './features/patient-portal/referrals/patient-referral-tracking.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -60,8 +61,6 @@ export const routes: Routes = [
       },
     ],
   },
-  // Patient-facing portal: entirely separate identity model, shell, and
-  // guard from the clinician routes above (see features/patient-portal).
   { path: 'patient-portal/login', component: PatientLoginComponent },
   {
     path: 'patient-portal',
@@ -70,6 +69,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: PatientDashboardComponent },
+      { path: 'tracking', component: PatientReferralTrackingComponent },
     ],
   },
   { path: '**', redirectTo: 'login' },

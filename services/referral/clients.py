@@ -1,4 +1,4 @@
-import os
+﻿import os
 import logging
 
 import httpx
@@ -34,7 +34,6 @@ async def record_notification(referral_id: int, event_type: str, message: str) -
         print(f"[referral] WARNING: failed to record notification for referral {referral_id}: {exc}")
 
 
-<<<<<<< HEAD
 async def create_prescription_from_referral(
     referral_id: int,
     patient_id: int,
@@ -68,14 +67,6 @@ async def create_prescription_from_referral(
             f"[referral] WARNING: failed to create prescription for referral {referral_id}: {exc} "
             f"(Continuing anyway - referral accepted locally)"
         )
-=======
-async def record_authorization_notification(referral_id: int, authorization_status: str) -> None:
-    await record_notification(
-        referral_id,
-        "AuthorizationUpdated",
-        f"Referral #{referral_id} authorization is now {authorization_status}.",
-    )
->>>>>>> origin/F2-InsuranceEligibility
 
 
 class UpstreamUnavailable(Exception):
