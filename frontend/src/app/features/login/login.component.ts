@@ -15,6 +15,6 @@ export class LoginComponent {
 
   login(): void {
     this.auth.login();
-    this.router.navigateByUrl('/dashboard');
+    this.router.navigateByUrl('/shell/dashboard');
   }
 }
