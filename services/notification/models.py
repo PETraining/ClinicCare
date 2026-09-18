@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+﻿<<<<<<< HEAD
 ﻿from sqlalchemy import Boolean, Column, DateTime, Integer, String
 =======
 from sqlalchemy import Boolean, Column, DateTime, Integer, String
