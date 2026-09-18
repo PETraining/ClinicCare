@@ -69,7 +69,8 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: PatientDashboardComponent },
-      { path: 'tracking/:referralId', component: PatientReferralTrackingComponent },
+      { path: 'tracking', component: PatientReferralTrackingComponent },
+        { path: 'tracking/:referralId', component: PatientReferralTrackingComponent },
     ],
   },
   { path: '**', redirectTo: 'login' },

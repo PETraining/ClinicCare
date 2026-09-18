@@ -1,7 +1,6 @@
 ﻿import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { ActivatedRoute } from '@angular/router';
 
 interface Referral {
   Id: number;
@@ -41,32 +40,25 @@ export class PatientReferralTrackingComponent implements OnInit {
     'Completed': '#4CAF50'
   };
 
-  constructor(
-    private http: HttpClient,
-    private route: ActivatedRoute
-  ) {}
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    const patientId = this.route.snapshot.params['patientId'];
-    if (patientId) {
-      this.loading.set(true);
-      this.http.get<Referral[]>(`/api/referrals`, {
-        params: { patientId: patientId.toString() }
-      }).subscribe({
-        next: (refs) => {
-          this.referrals = refs;
-          this.loadDoctors();
-        },
-        error: (err) => {
-          this.error.set('Failed to load referrals');
-          this.loading.set(false);
-        }
-      });
-    }
+    // For now, get all referrals - in a real app, would get current patient context
+    this.loading.set(true);
+    this.http.get<Referral[]>('/api/referrals').subscribe({
+      next: (refs) => {
+        this.referrals = refs;
+        this.loadDoctors();
+      },
+      error: (err) => {
+        this.error.set('Failed to load referrals');
+        this.loading.set(false);
+      }
+    });
   }
 
   private loadDoctors(): void {
-    this.http.get<Doctor[]>(`/api/doctors`).subscribe({
+    this.http.get<Doctor[]>('/api/doctors').subscribe({
       next: (doctors) => {
         doctors.forEach(d => this.doctors.set(d.Id, d));
         this.loading.set(false);
