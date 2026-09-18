@@ -10,6 +10,9 @@ import { PatientDetailsComponent } from './features/patients/patient-details.com
 import { CreateReferralComponent } from './features/referrals/create-referral.component';
 import { ReferralTrackingComponent } from './features/referrals/referral-tracking.component';
 import { DocumentsComponent } from './features/documents/documents.component';
+import { PharmacyDashboardComponent } from './features/pharmacy/pharmacy-dashboard.component';
+import { LabDashboardComponent } from './features/lab/lab-dashboard.component';
+import { LabTechDashboardComponent } from './features/lab/lab-tech-dashboard.component';
 import { PatientPortalShellComponent } from './features/patient-portal/shell/patient-portal-shell.component';
 import { PatientLoginComponent } from './features/patient-portal/login/patient-login.component';
 import { PatientDashboardComponent } from './features/patient-portal/dashboard/patient-dashboard.component';
@@ -32,10 +35,10 @@ export const routes: Routes = [
     ],
   },
 
-  // Other clinician routes (standalone)
-  { path: 'pharmacy/dashboard', redirectTo: 'shell/dashboard', pathMatch: 'full' },
-  { path: 'lab/orders', redirectTo: 'shell/dashboard', pathMatch: 'full' },
-  { path: 'lab-tech', redirectTo: 'shell/dashboard', pathMatch: 'full' },
+  // Other clinician routes (standalone with auth guard redirect)
+  { path: 'pharmacy/dashboard', component: PharmacyDashboardComponent, canActivate: [authGuard] },
+  { path: 'lab/orders', component: LabDashboardComponent, canActivate: [authGuard] },
+  { path: 'lab-tech', component: LabTechDashboardComponent, canActivate: [authGuard] },
 
   // Patient-facing portal: entirely separate identity model, shell, and
   // guard from the clinician routes above.
