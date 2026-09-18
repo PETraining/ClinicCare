@@ -1,111 +1,60 @@
-<h1>Referral Tracking</h1>
+﻿<div class="referral-tracking-container">
+  <h2>Referrals</h2>
 
-<div class="filters">
-  @for (status of statusFilters; track status) {
-    <button
-      [class.active]="activeFilter() === status"
-      (click)="setFilter(status)"
-    >
-      {{ status }}
-    </button>
+  <div class="filters">
+    <div class="filter-group">
+      <h4>Status Filter</h4>
+      @for (status of statusFilters; track status) {
+        <button [class.active]="activeFilter() === status" (click)="setFilter(status)">
+          {{ status }}
+        </button>
+      }
+    </div>
+
+    <div class="filter-group">
+      <h4>Authorization Filter</h4>
+      @for (status of authStatusFilters; track status) {
+        <button [class.active]="activeAuthFilter() === status" (click)="setAuthFilter(status)">
+          {{ status }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (filteredReferrals().length > 0) {
+    <table class="referrals-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Patient</th>
+          <th>Referring Doctor</th>
+          <th>Specialist</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (r of filteredReferrals(); track r.ReferralId) {
+          <tr>
+            <td>{{ r.ReferralId }}</td>
+            <td>{{ patientName(r.PatientId) }}</td>
+            <td>{{ doctorName(r.ReferringDoctorId) }}</td>
+            <td>{{ doctorName(r.SpecialistId) }}</td>
+            <td>{{ r.Status }}</td>
+            <td class="actions">
+              @if (canSubmit(r)) {
+                <button (click)="submit(r)">Submit</button>
+              }
+              @if (canAccept(r)) {
+                <button (click)="accept(r)">Accept</button>
+                <button (click)="reject(r)" class="danger">Reject</button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <p>No referrals found</p>
   }
 </div>
-
-<div class="filters">
-  @for (status of authStatusFilters; track status) {
-    <button
-      [class.active]="activeAuthFilter() === status"
-      (click)="setAuthFilter(status)"
-    >
-      {{ status === 'None' ? 'No Authorization' : status }}
-    </button>
-  }
-</div>
-
-@if (actionError()) {
-  <p class="error">{{ actionError() }}</p>
-}
-
-<table>
-  <thead>
-    <tr>
-      <th>Patient</th>
-      <th>Referring Doctor</th>
-      <th>Specialist</th>
-      <th>Priority</th>
-      <th>Status</th>
-      <th>Authorization</th>
-      <th>Reason</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    @for (r of filteredReferrals(); track r.ReferralId) {
-      <tr>
-        <td>{{ patientName(r.PatientId) }}</td>
-        <td>{{ doctorName(r.ReferringDoctorId) }}</td>
-        <td>{{ doctorName(r.SpecialistId) }}</td>
-        <td>{{ r.Priority }}</td>
-        <td><span class="status status-{{ r.Status.toLowerCase() }}">{{ r.Status }}</span></td>
-        <td class="auth">
-          @if (r.authorization; as auth) {
-            <span class="auth-badge auth-{{ auth.Status.toLowerCase().replace(' ', '-') }}">{{ auth.Status }}</span>
-            @if (auth.Status === 'Pending') {
-              <div class="auth-actions">
-                <button (click)="setAuthorizationStatus(r, 'Approved')">Approve</button>
-                <button class="danger" (click)="setAuthorizationStatus(r, 'Denied')">Deny</button>
-              </div>
-            }
-          } @else {
-            <button (click)="requestAuthorization(r)">Request Authorization</button>
-          }
-        </td>
-        <td class="reason">{{ r.Reason }}</td>
-        <td class="actions">
-          @if (r.Status === 'Draft') {
-            <button [disabled]="!canSubmit(r)" [title]="canSubmit(r) ? '' : 'Authorization denied'" (click)="submit(r)">Submit</button>
-          }
-          @if (r.Status === 'Submitted') {
-            <button
-              [disabled]="!canAccept(r)"
-              [title]="canAccept(r) ? '' : 'Authorization must be approved (or not required) before accepting'"
-              (click)="accept(r)"
-            >Accept</button>
-            <button class="danger" (click)="reject(r)">Reject</button>
-          }
-          @if (r.Status === 'Accepted') {
-            @if (showScheduleForm() !== r.ReferralId) {
-              <button (click)="openScheduleForm(r)">Schedule Appt</button>
-            }
-            <button (click)="complete(r)">Complete</button>
-          }
-<<<<<<< HEAD
-          <a [routerLink]="['/documents']" [queryParams]="{ referralId: r.ReferralId }">Docs</a>
-          <a [routerLink]="['/lab/orders']" [queryParams]="{ referralId: r.ReferralId }">Labs</a>
-          <a [routerLink]="['/lab/orders/new']" [queryParams]="{ patientId: r.PatientId, referralId: r.ReferralId }">
-            Order Labs
-          </a>
-=======
-          <a [routerLink]="['/patients/documents']" [queryParams]="{ referralId: r.ReferralId }">Docs</a>
->>>>>>> c8c0ad3c4d321465544637502323626ca3f53fe6
-        </td>
-      </tr>
-    } @empty {
-      <tr>
-        <td colspan="8">No referrals in this status.</td>
-      </tr>
-    }
-  </tbody>
-</table>
-
-@if (showScheduleForm() !== null) {
-  <app-schedule-appointment
-    [referralId]="showScheduleForm()!"
-    (onSuccess)="onAppointmentSuccess(showScheduleForm()!)"
-    (onCancel)="onAppointmentCancel()"
-  ></app-schedule-appointment>
-}
-
-@if (showScheduleForm() !== null) {
-  <app-appointment-list [referralId]="showScheduleForm()!"></app-appointment-list>
-}

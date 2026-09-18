@@ -1,139 +1,138 @@
-﻿import { Component, OnInit, inject, computed, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+﻿import { Component, OnInit, signal, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 
-import { ReferralService } from '../../core/services/referral.service';
-import { DoctorService } from '../../core/services/doctor.service';
-import { PatientService } from '../../core/services/patient.service';
-import { AppointmentService } from '../../core/services/appointment.service';
-import { AuthService } from '../../core/services/auth.service';
-import { Referral, ReferralStatus } from '../../core/models/referral.model';
-import { AppointmentListComponent } from '../appointments/appointment-list.component';
-import { ScheduleAppointmentComponent } from '../appointments/schedule-appointment.component';
+interface Referral {
+  ReferralId: number;
+  PatientId: number;
+  ReferringDoctorId: number;
+  SpecialistId: number;
+  Status: string;
+  AuthorizationStatus?: string;
+  CreatedDate: string;
+}
 
-const STATUS_FILTERS: (ReferralStatus | 'All')[] = ['All', 'Draft', 'Submitted', 'Accepted', 'Rejected', 'Completed'];
+interface Patient {
+  Id: number;
+  Name: string;
+}
+
+interface Doctor {
+  Id: number;
+  Name: string;
+}
 
 @Component({
   selector: 'app-referral-tracking',
   standalone: true,
-  imports: [RouterLink, AppointmentListComponent, ScheduleAppointmentComponent],
+  imports: [CommonModule],
   templateUrl: './referral-tracking.component.html',
-  styleUrl: './referral-tracking.component.css',
+  styleUrl: './referral-tracking.component.css'
 })
 export class ReferralTrackingComponent implements OnInit {
-  referralService = inject(ReferralService);
-  appointmentService = inject(AppointmentService);
-  private patientService = inject(PatientService);
-  private doctorService = inject(DoctorService);
-  private authService = inject(AuthService);
-
-  statusFilters = STATUS_FILTERS;
-  activeFilter = signal<ReferralStatus | 'All'>('All');
-  actionError = signal<string | null>(null);
-  showScheduleForm = signal<number | null>(null);
-
-  private patientNames = computed(() => {
-    const map = new Map<number, string>();
-    for (const p of this.patientService.patients()) {
-      map.set(p.PatientId, p.Name);
-    }
-    return map;
-  });
-
-  private doctorNames = computed(() => {
-    const map = new Map<number, string>();
-    for (const d of this.doctorService.doctors()) {
-      map.set(d.DoctorId, \\ (\)\);
-    }
-    return map;
-  });
-
+  referrals = signal<Referral[]>([]);
+  patients: Map<number, Patient> = new Map();
+  doctors: Map<number, Doctor> = new Map();
+  
+  activeFilter = signal<string>('All');
+  activeAuthFilter = signal<string>('All');
+  
+  statusFilters = ['All', 'Draft', 'Submitted', 'Approved', 'Denied', 'Completed'];
+  authStatusFilters = ['All', 'Pending', 'Approved', 'Denied'];
+  
   filteredReferrals = computed(() => {
-    const filter = this.activeFilter();
-    const all = this.referralService.referrals();
-    return filter === 'All' ? all : all.filter((r: Referral) => r.Status === filter);
+    const refs = this.referrals();
+    const statusFilter = this.activeFilter();
+    const authFilter = this.activeAuthFilter();
+    
+    return refs.filter(r => {
+      const statusMatch = statusFilter === 'All' || r.Status === statusFilter;
+      const authMatch = authFilter === 'All' || r.AuthorizationStatus === authFilter;
+      return statusMatch && authMatch;
+    });
   });
+
+  constructor(private http: HttpClient) {}
 
   ngOnInit(): void {
-    this.referralService.loadAll();
-    this.patientService.search();
-    this.doctorService.search();
+    this.loadReferrals();
+    this.loadPatients();
+    this.loadDoctors();
   }
 
-  patientName(id: number): string {
-    return this.patientNames().get(id) ?? \Patient #\\;
+  private loadReferrals(): void {
+    this.http.get<Referral[]>('/api/referrals').subscribe(
+      referrals => this.referrals.set(referrals),
+      error => console.error('Failed to load referrals:', error)
+    );
   }
 
-  doctorName(id: number): string {
-    return this.doctorNames().get(id) ?? \Doctor #\\;
+  private loadPatients(): void {
+    this.http.get<Patient[]>('/api/patients').subscribe(
+      patients => patients.forEach(p => this.patients.set(p.Id, p)),
+      error => console.error('Failed to load patients:', error)
+    );
   }
 
-  setFilter(status: ReferralStatus | 'All'): void {
+  private loadDoctors(): void {
+    this.http.get<Doctor[]>('/api/doctors').subscribe(
+      doctors => doctors.forEach(d => this.doctors.set(d.Id, d)),
+      error => console.error('Failed to load doctors:', error)
+    );
+  }
+
+  setFilter(status: string): void {
     this.activeFilter.set(status);
   }
 
-  private runAction(action: (id: number) => ReturnType<ReferralService['submit']>, referral: Referral): void {
-    this.actionError.set(null);
-    action.call(this.referralService, referral.ReferralId).subscribe({
-      error: (err: any) => this.actionError.set(err?.error?.detail ?? 'Action failed.'),
-    });
+  setAuthFilter(status: string): void {
+    this.activeAuthFilter.set(status);
+  }
+
+  patientName(id: number): string {
+    return this.patients.get(id)?.Name || 'Unknown Patient';
+  }
+
+  doctorName(id: number): string {
+    return this.doctors.get(id)?.Name || 'Unknown Doctor';
   }
 
   submit(referral: Referral): void {
-    this.runAction(this.referralService.submit, referral);
+    this.http.patch(`/api/referrals/${referral.ReferralId}`, {
+      Status: 'Submitted'
+    }).subscribe(
+      () => this.loadReferrals(),
+      error => console.error('Failed to submit referral:', error)
+    );
   }
 
   accept(referral: Referral): void {
-    this.runAction(this.referralService.accept, referral);
+    this.http.patch(`/api/referrals/${referral.ReferralId}`, {
+      Status: 'Approved'
+    }).subscribe(
+      () => this.loadReferrals(),
+      error => console.error('Failed to approve referral:', error)
+    );
   }
 
   reject(referral: Referral): void {
-    this.runAction(this.referralService.reject, referral);
-  }
-
-  complete(referral: Referral): void {
-    this.runAction(this.referralService.complete, referral);
-  }
-
-  setAuthorizationStatus(referral: Referral, status: 'Approved' | 'Denied'): void {
-    this.actionError.set(null);
-    if (status === 'Approved') {
-      this.accept(referral);
-    } else {
-      this.reject(referral);
-    }
-  }
-
-  requestAuthorization(referral: Referral): void {
-    this.actionError.set(null);
-    this.referralService.updateStatus(referral.ReferralId, 'Submitted').subscribe({
-      error: (err: any) => this.actionError.set(err?.error?.detail ?? 'Failed to request authorization'),
-    });
+    this.http.patch(`/api/referrals/${referral.ReferralId}`, {
+      Status: 'Denied'
+    }).subscribe(
+      () => this.loadReferrals(),
+      error => console.error('Failed to reject referral:', error)
+    );
   }
 
   canSubmit(referral: Referral): boolean {
     return referral.Status === 'Draft';
   }
 
+  isSpecialist(referral: Referral): boolean {
+    return referral.SpecialistId > 0;
+  }
+
   canAccept(referral: Referral): boolean {
     return referral.Status === 'Submitted' && this.isSpecialist(referral);
-  }
-
-  private isSpecialist(referral: Referral): boolean {
-    const currentDoctor = this.authService.currentDoctor();
-    return currentDoctor?.DoctorId === referral.SpecialistId;
-  }
-
-  openScheduleForm(referral: Referral): void {
-    this.showScheduleForm.set(referral.ReferralId);
-    this.appointmentService.listByReferral(referral.ReferralId);
-  }
-
-  onAppointmentSuccess(referralId: number): void {
-    this.showScheduleForm.set(null);
-    this.appointmentService.listByReferral(referralId);
-  }
-
-  onAppointmentCancel(): void {
-    this.showScheduleForm.set(null);
   }
 }
