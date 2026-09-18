@@ -25,6 +25,7 @@ export const routes: Routes = [
       { path: 'dashboard', component: DashboardComponent },
       { path: 'patients', component: PatientsListComponent },
       { path: 'patients/:id', component: PatientDetailsComponent },
+      { path: 'referrals', component: ReferralTrackingComponent },
       { path: 'referrals/create', component: CreateReferralComponent },
       { path: 'referrals/tracking', component: ReferralTrackingComponent },
       { path: 'documents', component: DocumentsComponent },
