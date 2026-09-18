@@ -69,14 +69,11 @@ export class PatientReferralTrackingComponent implements OnInit {
       const session = JSON.parse(sessionStr);
       const patientId = session.patientId;
       
-      this.http.get<any>(`/api/referrals?patientId=${patientId}`)
+      this.http.get<Referral[]>(`http://localhost:8000/api/referrals?patientId=${patientId}`)
         .subscribe({
           next: (response: any) => {
             const data = Array.isArray(response) ? response : (response.data || []);
-            const validReferrals = (data as any[]).filter(r => 
-              r && typeof r === 'object' && 'ReferralId' in r
-            );
-            this.referrals.set(validReferrals);
+            this.referrals.set(data);
             this.error.set('');
           },
           error: (err: any) => {
