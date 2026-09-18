@@ -2,20 +2,20 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-patient-documents',
+  selector: 'app-patient-questionnaires',
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="documents-container">
-      <h2>Medical Documents</h2>
-      <p>Your medical documents, lab results, and prescriptions will appear here.</p>
+    <div class="questionnaires-container">
+      <h2>Health Questionnaires</h2>
+      <p>Complete health questionnaires and assessments here.</p>
       <div class="placeholder">
-        <p>No documents available</p>
+        <p>No questionnaires available</p>
       </div>
     </div>
   `,
   styles: [`
-    .documents-container {
+    .questionnaires-container {
       padding: 20px;
       background: #f5f5f5;
       border-radius: 4px;
@@ -29,4 +29,4 @@ import { CommonModule } from '@angular/common';
     }
   `]
 })
-export class PatientDocumentsComponent {}
+export class PatientQuestionnairesComponent {}
