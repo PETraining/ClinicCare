@@ -32,6 +32,11 @@ export const routes: Routes = [
     ],
   },
 
+  // Other clinician routes (standalone)
+  { path: 'pharmacy/dashboard', redirectTo: 'shell/dashboard', pathMatch: 'full' },
+  { path: 'lab/orders', redirectTo: 'shell/dashboard', pathMatch: 'full' },
+  { path: 'lab-tech', redirectTo: 'shell/dashboard', pathMatch: 'full' },
+
   // Patient-facing portal: entirely separate identity model, shell, and
   // guard from the clinician routes above.
   { path: 'patient-portal/login', component: PatientLoginComponent },
