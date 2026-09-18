@@ -1,0 +1,192 @@
+.referral-progress-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.referral-header {
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 20px;
+  margin-bottom: 30px;
+}
+
+.referral-header h1 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 28px;
+}
+
+.reason {
+  color: #666;
+  font-size: 14px;
+  margin: 10px 0;
+  font-style: italic;
+}
+
+.current-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.current-status .label {
+  font-weight: 600;
+  color: #333;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-badge.status-draft {
+  background-color: #f5f5f5;
+  color: #666;
+  border: 1px solid #ccc;
+}
+
+.status-badge.status-submitted {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc107;
+}
+
+.status-badge.status-accepted {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #28a745;
+}
+
+.status-badge.status-rejected {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-badge.status-completed {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.next-steps {
+  background-color: #f9f9f9;
+  border-left: 4px solid #007bff;
+  padding: 15px 20px;
+  margin-bottom: 30px;
+  border-radius: 4px;
+}
+
+.next-steps h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.next-steps p {
+  margin: 0;
+  color: #555;
+  line-height: 1.5;
+}
+
+.timeline {
+  margin-top: 30px;
+}
+
+.timeline h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.timeline-container {
+  position: relative;
+  padding-left: 30px;
+}
+
+.timeline-container::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #e0e0e0;
+}
+
+.no-history {
+  color: #999;
+  font-style: italic;
+  padding: 10px 0;
+}
+
+.timeline-entry {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.timeline-marker {
+  position: absolute;
+  left: -26px;
+  top: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #007bff;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 2px #007bff;
+}
+
+.timeline-entry:last-child .timeline-marker {
+  background-color: #28a745;
+  box-shadow: 0 0 0 2px #28a745;
+}
+
+.timeline-content {
+  padding: 0;
+}
+
+.status-change {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.old-status,
+.new-status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+}
+
+.new-status {
+  background-color: #d4edda;
+  border-color: #28a745;
+  color: #155724;
+  font-weight: 600;
+}
+
+.arrow {
+  color: #999;
+}
+
+.timestamp {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 5px;
+}
+
+.reason {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}

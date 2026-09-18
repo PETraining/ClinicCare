@@ -1,0 +1,3 @@
+﻿DISCHARGE SUMMARY
+
+This is a sample discharge summary for clinical documentation.

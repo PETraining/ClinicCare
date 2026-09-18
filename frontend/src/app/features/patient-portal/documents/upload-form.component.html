@@ -1,0 +1,82 @@
+<div class="container">
+  <div class="form-header">
+    <h1>Upload Document</h1>
+    <p>Share documents with your healthcare provider</p>
+  </div>
+
+  @if (uploadSuccess) {
+    <div class="alert alert-success">
+      <strong>Success!</strong> Your document has been uploaded successfully.
+      Redirecting to your documents...
+    </div>
+  }
+
+  @if (uploadError) {
+    <div class="alert alert-error">
+      <strong>Error:</strong> {{ uploadError }}
+    </div>
+  }
+
+  <form (ngSubmit)="onSubmit()" class="upload-form">
+    <div class="form-group">
+      <label for="documentType">Document Type</label>
+      <select
+        id="documentType"
+        [(ngModel)]="documentType"
+        name="documentType"
+        class="form-control"
+      >
+        @for (type of documentTypes; track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="referral">Linked Referral (Optional)</label>
+      <select
+        id="referral"
+        [(ngModel)]="selectedReferralId"
+        name="referral"
+        class="form-control"
+      >
+        <option [value]="null">-- No Referral --</option>
+        @for (referral of referrals; track referral.ReferralId) {
+          <option [value]="referral.ReferralId">
+            {{ referral.SpecialistDepartment }} - {{ referral.Status }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="file">Choose File</label>
+      <input
+        id="file"
+        type="file"
+        (change)="onFileSelected($event)"
+        class="form-control"
+      />
+      @if (selectedFile) {
+        <p class="file-info">Selected: {{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(2) }} KB)</p>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button
+        type="submit"
+        [disabled]="isUploading || !selectedFile"
+        class="btn-primary"
+      >
+        @if (isUploading) {
+          Uploading...
+        } @else {
+          Upload Document
+        }
+      </button>
+      <button type="button" (click)="onCancel()" class="btn-secondary">
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>

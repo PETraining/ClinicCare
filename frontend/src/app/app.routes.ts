@@ -29,6 +29,7 @@ import { PatientReferralTrackingComponent } from './features/patient-portal/refe
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'patient-portal/login', component: PatientLoginComponent },
   {
     path: '',
     component: ShellComponent,
@@ -61,7 +62,6 @@ export const routes: Routes = [
       },
     ],
   },
-  { path: 'patient-portal/login', component: PatientLoginComponent },
   {
     path: 'patient-portal',
     component: PatientPortalShellComponent,
@@ -69,7 +69,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: PatientDashboardComponent },
-      { path: 'tracking', component: PatientReferralTrackingComponent },
+      { path: 'tracking/:referralId', component: PatientReferralTrackingComponent },
     ],
   },
   { path: '**', redirectTo: 'login' },

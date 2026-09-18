@@ -21,11 +21,11 @@ async def doctor_exists(doctor_id: int) -> bool:
     return resp.json()["exists"]
 
 
-async def record_notification(referral_id: int, event_type: str, message: str) -> None:
+async def record_notification(referral_id: int, event_type: str, message: str, patient_id: int) -> None:
     try:
         resp = await _client.post(
             f"{NOTIFICATION_SERVICE_URL}/notifications",
-            json={"ReferralId": referral_id, "EventType": event_type, "Message": message},
+            json={"ReferralId": referral_id, "EventType": event_type, "Message": message, "PatientId": patient_id},
         )
         resp.raise_for_status()
     except httpx.HTTPError as exc:

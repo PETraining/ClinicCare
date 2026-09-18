@@ -1,0 +1,112 @@
+<div class="container">
+  @if (isLoading) {
+    <div class="loading">
+      <p>Loading questionnaire...</p>
+    </div>
+  }
+
+  @if (!isLoading && questionnaire) {
+    <div class="questionnaire-header">
+      <h1>{{ questionnaire.Title }}</h1>
+      @if (questionnaire.Description) {
+        <p class="description">{{ questionnaire.Description }}</p>
+      }
+    </div>
+
+    @if (submitSuccess) {
+      <div class="alert alert-success">
+        <strong>Success!</strong> Your response has been submitted successfully.
+        Redirecting to questionnaires...
+      </div>
+    }
+
+    @if (error) {
+      <div class="alert alert-error">
+        <strong>Error:</strong> {{ error }}
+      </div>
+    }
+
+    <form (ngSubmit)="onSubmit()" class="questionnaire-form">
+      @for (q of questions; track q.id) {
+        <div class="form-group">
+          @if (q.type === 'checkbox') {
+            <div class="checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  [(ngModel)]="answers[q.id]"
+                  [name]="q.id"
+                />
+                {{ q.prompt }}
+              </label>
+            </div>
+          } @else if (q.type === 'select') {
+            <label for="{{ q.id }}">{{ q.prompt }}</label>
+            <select
+              [id]="q.id"
+              [(ngModel)]="answers[q.id]"
+              [name]="q.id"
+              class="form-control"
+            >
+              <option value="">-- Select an option --</option>
+              @if (q.type === 'select' && 'options' in q) {
+                @for (option of q.options; track option) {
+                  <option [value]="option">{{ option }}</option>
+                }
+              }
+            </select>
+          } @else {
+            <label for="{{ q.id }}">{{ q.prompt }}</label>
+            <textarea
+              [id]="q.id"
+              [(ngModel)]="answers[q.id]"
+              [name]="q.id"
+              class="form-control"
+              rows="3"
+            ></textarea>
+          }
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="referral">Linked Referral (Optional)</label>
+        <select
+          id="referral"
+          [(ngModel)]="selectedReferralId"
+          name="referral"
+          class="form-control"
+        >
+          <option [value]="null">-- No Referral --</option>
+          @for (referral of referrals; track referral.ReferralId) {
+            <option [value]="referral.ReferralId">
+              {{ referral.SpecialistDepartment }} - {{ referral.Status }}
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          [disabled]="isSubmitting"
+          class="btn-primary"
+        >
+          @if (isSubmitting) {
+            Submitting...
+          } @else {
+            Submit Response
+          }
+        </button>
+        <button type="button" (click)="onCancel()" class="btn-secondary">
+          Cancel
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (!isLoading && !questionnaire && error) {
+    <div class="alert alert-error">
+      {{ error }}
+    </div>
+  }
+</div>

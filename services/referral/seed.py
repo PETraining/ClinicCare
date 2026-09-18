@@ -2,7 +2,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from models import Appointment, Referral
+from models import Appointment, Referral, ReferralStatusHistory
 
 # PatientId refs: 1=Anjali Verma, 2=Rajesh Kumar, 3=Divya Menon, 4=Suresh Iyengar, 5=Neha Bhatt
 # DoctorId refs: 1=Krishnan/Cardiology, 2=Reddy/Ortho, 3=Nair/Derm, 4=Malhotra/Neuro, 5=Iyer/Endo,
@@ -39,6 +39,42 @@ SEED_REFERRALS = [
          Priority="Routine", Status="Rejected", CreatedAt=datetime(2026, 7, 4, 9, 0), UpdatedAt=datetime(2026, 7, 7, 12, 0)),
 ]
 
+<<<<<<< HEAD
+=======
+# Appointments (Patient Portal / Sub-Feature 1) — additive, loosely correlated
+# to the Accepted/Completed referrals above (ReferralId 5, 6, 7 per the
+# seed-order comments, i.e. the 5th/6th/7th rows inserted above).
+# ReferralId=5 -> PatientId=3 (Divya Menon), Accepted, Dermatology (SpecialistId=3)
+# ReferralId=6 -> PatientId=2 (Rajesh Kumar), Accepted, Orthopedics (SpecialistId=2)
+# ReferralId=7 -> PatientId=4 (Suresh Iyengar), Completed, Cardiology (SpecialistId=1)
+SEED_APPOINTMENTS = [
+    dict(ReferralId=5, PatientId=3, ScheduledAt=datetime(2026, 8, 20, 10, 0),
+         Location="Downtown Clinic - Dermatology Suite", CheckInInstructions="Please arrive 15 minutes early."),
+    dict(ReferralId=6, PatientId=2, ScheduledAt=datetime(2026, 8, 25, 14, 30),
+         Location="Westside Orthopedic Center", CheckInInstructions="Bring any prior X-ray images if available."),
+    dict(ReferralId=7, PatientId=4, ScheduledAt=datetime(2026, 6, 25, 9, 0),
+         Location="City Heart Institute", CheckInInstructions="Fasting required prior to lab work."),
+]
+
+# Status history mirrors seeded referral progressions and timestamps from notification seed
+SEED_STATUS_HISTORY = [
+    dict(ReferralId=3, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 7, 20, 9, 15), Reason="Referral submitted by system."),
+    dict(ReferralId=4, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 7, 22, 11, 0), Reason="Referral submitted by system."),
+    dict(ReferralId=5, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 7, 10, 10, 30), Reason="Referral submitted by system."),
+    dict(ReferralId=5, OldStatus="Submitted", NewStatus="Accepted", ChangedAt=datetime(2026, 7, 12, 14, 0), Reason="Referral accepted by specialist."),
+    dict(ReferralId=6, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 7, 11, 8, 45), Reason="Referral submitted by system."),
+    dict(ReferralId=6, OldStatus="Submitted", NewStatus="Accepted", ChangedAt=datetime(2026, 7, 14, 16, 20), Reason="Referral accepted by specialist."),
+    dict(ReferralId=7, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 6, 15, 9, 0), Reason="Referral submitted by system."),
+    dict(ReferralId=7, OldStatus="Submitted", NewStatus="Accepted", ChangedAt=datetime(2026, 6, 17, 13, 30), Reason="Referral accepted by specialist."),
+    dict(ReferralId=7, OldStatus="Accepted", NewStatus="Completed", ChangedAt=datetime(2026, 6, 25, 15, 0), Reason="Referral completed by system."),
+    dict(ReferralId=8, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 6, 18, 9, 0), Reason="Referral submitted by system."),
+    dict(ReferralId=8, OldStatus="Submitted", NewStatus="Accepted", ChangedAt=datetime(2026, 6, 20, 10, 15), Reason="Referral accepted by specialist."),
+    dict(ReferralId=8, OldStatus="Accepted", NewStatus="Completed", ChangedAt=datetime(2026, 6, 28, 11, 45), Reason="Referral completed by system."),
+    dict(ReferralId=9, OldStatus="Draft", NewStatus="Submitted", ChangedAt=datetime(2026, 7, 5, 9, 30), Reason="Referral submitted by system."),
+    dict(ReferralId=9, OldStatus="Submitted", NewStatus="Rejected", ChangedAt=datetime(2026, 7, 7, 12, 0), Reason="Referral rejected by specialist."),
+]
+
+>>>>>>> c8c0ad3c4d321465544637502323626ca3f53fe6
 
 def seed_if_empty(db: Session) -> None:
     if db.query(Referral).count() > 0:
@@ -50,4 +86,9 @@ def seed_if_empty(db: Session) -> None:
     if db.query(Appointment).count() == 0:
         for row in SEED_APPOINTMENTS:
             db.add(Appointment(**row))
+        db.commit()
+
+    if db.query(ReferralStatusHistory).count() == 0:
+        for row in SEED_STATUS_HISTORY:
+            db.add(ReferralStatusHistory(**row))
         db.commit()

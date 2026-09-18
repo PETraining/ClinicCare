@@ -88,6 +88,7 @@ class AppointmentRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     AppointmentId: int
+<<<<<<< HEAD
     ReferralId: int
     PatientId: int
     SpecialistId: int
@@ -96,3 +97,19 @@ class AppointmentRead(BaseModel):
     Status: AppointmentStatus
     CreatedAt: datetime
     UpdatedAt: datetime
+=======
+
+
+class ReferralStatusHistoryBase(BaseModel):
+    ReferralId: int
+    OldStatus: str
+    NewStatus: str
+    ChangedAt: datetime
+    Reason: Optional[str] = None
+
+
+class ReferralStatusHistoryRead(ReferralStatusHistoryBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    HistoryId: int
+>>>>>>> c8c0ad3c4d321465544637502323626ca3f53fe6

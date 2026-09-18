@@ -22,6 +22,14 @@ export class ReferralService {
       .subscribe((r) => this.referrals.set(r));
   }
 
+  listByPatient(patientId: number) {
+    return this.http.get<Referral[]>(this.base, { params: { patientId } });
+  }
+
+  get(referralId: number) {
+    return this.http.get<Referral>(`${this.base}/${referralId}`);
+  }
+
   create(payload: ReferralCreate) {
     return this.http.post<Referral>(this.base, payload);
   }

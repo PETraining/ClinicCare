@@ -18,4 +18,11 @@ coverage/
 # OS
 .DS_Store
 
+<<<<<<< HEAD
 venv/*
+=======
+# Document storage (uploaded files) but keep seed files
+services/document/storage/*
+!services/document/storage/seed/
+!services/document/storage/seed/*
+>>>>>>> c8c0ad3c4d321465544637502323626ca3f53fe6

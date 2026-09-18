@@ -1,0 +1,38 @@
+<div class="referral-progress-container">
+  <div *ngIf="referral" class="referral-header">
+    <h1>Referral #{{ referral.ReferralId }} Progress</h1>
+    <p class="reason">{{ referral.Reason }}</p>
+    <div class="current-status">
+      <span class="label">Current Status:</span>
+      <span class="status-badge" [ngClass]="'status-' + referral.Status.toLowerCase()">
+        {{ referral.Status }}
+      </span>
+    </div>
+  </div>
+
+  <div class="next-steps">
+    <h3>Next Steps</h3>
+    <p>{{ nextStepsMessage }}</p>
+  </div>
+
+  <div class="timeline">
+    <h3>Status History</h3>
+    <div class="timeline-container">
+      <div *ngIf="history().length === 0" class="no-history">
+        No status changes recorded yet.
+      </div>
+      <div *ngFor="let entry of history()" class="timeline-entry">
+        <div class="timeline-marker"></div>
+        <div class="timeline-content">
+          <div class="status-change">
+            <span class="old-status">{{ entry.OldStatus }}</span>
+            <span class="arrow">→</span>
+            <span class="new-status">{{ entry.NewStatus }}</span>
+          </div>
+          <div class="timestamp">{{ entry.ChangedAt | date: 'medium' }}</div>
+          <div *ngIf="entry.Reason" class="reason">{{ entry.Reason }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

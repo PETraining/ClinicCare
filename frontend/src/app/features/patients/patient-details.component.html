@@ -120,6 +120,7 @@
     <app-documents-panel [patientId]="patient.PatientId" />
   </section>
 
+<<<<<<< HEAD
   <section>
     <div class="section-header">
       <h2>Lab Results</h2>
@@ -129,6 +130,9 @@
   </section>
 
   <a class="new-referral" [routerLink]="['/referrals/new']" [queryParams]="{ patientId: patient.PatientId }">
+=======
+  <a class="new-referral" [routerLink]="['/patients/referrals/new']" [queryParams]="{ patientId: patient.PatientId }">
+>>>>>>> c8c0ad3c4d321465544637502323626ca3f53fe6
     + Create referral for {{ patient.Name }}
   </a>
 } @else {

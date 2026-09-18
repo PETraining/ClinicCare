@@ -1,0 +1,152 @@
+.notification-inbox-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.inbox-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  border-bottom: 2px solid #e0e0e0;
+  padding-bottom: 20px;
+}
+
+.inbox-header h1 {
+  margin: 0;
+  color: #333;
+  font-size: 28px;
+}
+
+.unread-badge {
+  background-color: #dc3545;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #999;
+  font-style: italic;
+}
+
+.notification-card {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.notification-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.notification-card.unread {
+  background-color: #f8f9fa;
+  border-left: 4px solid #007bff;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.event-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  width: fit-content;
+}
+
+.event-badge.event-warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffc107;
+}
+
+.event-badge.event-success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #28a745;
+}
+
+.event-badge.event-danger {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.event-badge.event-info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #bee5eb;
+}
+
+.event-badge.event-secondary {
+  background-color: #e2e3e5;
+  color: #383d41;
+  border: 1px solid #d3d6d8;
+}
+
+.timestamp {
+  font-size: 12px;
+  color: #999;
+}
+
+.notification-content {
+  margin-bottom: 10px;
+}
+
+.message {
+  margin: 0 0 5px 0;
+  color: #333;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.referral-link {
+  margin: 0;
+  font-size: 12px;
+  color: #007bff;
+}
+
+.read-indicator {
+  font-size: 12px;
+  color: #999;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.read-indicator.read {
+  color: #28a745;
+}
+
+.dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: currentColor;
+}

@@ -6,4 +6,6 @@ export interface NotificationEvent {
   EventType: NotificationEventType;
   Timestamp: string;
   Message: string;
+  PatientId: number | null;
+  Read: boolean;
 }
