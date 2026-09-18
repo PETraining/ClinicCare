@@ -25,7 +25,7 @@
         <td>{{ patient.Name }}</td>
         <td>{{ patient.DOB }}</td>
         <td>{{ patient.Gender }}</td>
-        <td><a [routerLink]="['/patients', patient.PatientId]">View details</a></td>
+        <td><a [routerLink]="['/shell/patients', patient.PatientId]">View details</a></td>
       </tr>
     } @empty {
       <tr>
