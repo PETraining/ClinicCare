@@ -39,7 +39,7 @@ SEED_REFERRALS = [
          Priority="Routine", Status="Rejected", CreatedAt=datetime(2026, 7, 4, 9, 0), UpdatedAt=datetime(2026, 7, 7, 12, 0)),
 ]
 
-<<<<<<< HEAD
+
 =======
 # Appointments (Patient Portal / Sub-Feature 1) — additive, loosely correlated
 # to the Accepted/Completed referrals above (ReferralId 5, 6, 7 per the
@@ -74,7 +74,7 @@ SEED_STATUS_HISTORY = [
     dict(ReferralId=9, OldStatus="Submitted", NewStatus="Rejected", ChangedAt=datetime(2026, 7, 7, 12, 0), Reason="Referral rejected by specialist."),
 ]
 
->>>>>>> c8c0ad3c4d321465544637502323626ca3f53fe6
+
 
 def seed_if_empty(db: Session) -> None:
     if db.query(Referral).count() > 0:
