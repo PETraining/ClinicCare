@@ -27,19 +27,19 @@ def on_startup() -> None:
 def list_notifications(
     referralId: Optional[int] = None,
     patientId: Optional[int] = None,
-<<<<<<< HEAD
+
     unreadOnly: bool = False,
     db: Session = Depends(get_db)
-=======
+
     unreadOnly: Optional[bool] = None,
     db: Session = Depends(get_db),
->>>>>>> c8c0ad3c4d321465544637502323626ca3f53fe6
+
 ):
     query = db.query(models.Notification)
     
     if referralId is not None:
         query = query.filter(models.Notification.ReferralId == referralId)
-<<<<<<< HEAD
+
     
     if patientId is not None:
         query = query.filter(models.Notification.PatientId == patientId)
@@ -48,13 +48,13 @@ def list_notifications(
         query = query.filter(models.Notification.Read == False)
     
     return query.order_by(models.Notification.Timestamp.desc()).all()
-=======
+
     if patientId is not None:
         query = query.filter(models.Notification.PatientId == patientId)
     if unreadOnly:
         query = query.filter(models.Notification.Read == False)
     return query.order_by(models.Notification.Timestamp).all()
->>>>>>> c8c0ad3c4d321465544637502323626ca3f53fe6
+
 
 
 @app.post("/notifications", response_model=schemas.NotificationRead, status_code=201)
@@ -64,12 +64,12 @@ def create_notification(payload: schemas.NotificationCreate, db: Session = Depen
         ReferralId=payload.ReferralId,
         EventType=payload.EventType.value,
         Message=payload.Message,
-<<<<<<< HEAD
+
         Source=payload.Source,
-=======
+
         PatientId=payload.PatientId,
         Read=payload.Read,
->>>>>>> c8c0ad3c4d321465544637502323626ca3f53fe6
+
         Timestamp=datetime.utcnow(),
         Read=False,
     )

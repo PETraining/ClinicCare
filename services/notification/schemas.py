@@ -22,11 +22,11 @@ class NotificationBase(BaseModel):
     ReferralId: Optional[int] = None
     EventType: EventType
     Message: str
-<<<<<<< HEAD
+
     Source: Optional[str] = None
-=======
+
     PatientId: Optional[int] = None
->>>>>>> c8c0ad3c4d321465544637502323626ca3f53fe6
+
     Read: bool = False
 
 
