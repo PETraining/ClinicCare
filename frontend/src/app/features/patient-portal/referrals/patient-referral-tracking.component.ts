@@ -1,90 +1,170 @@
-﻿import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { signal, computed } from '@angular/core';
 
 interface Referral {
-  Id: number;
+  ReferralId: number;
   PatientId: number;
+  ReferringDoctorId: number;
   SpecialistId: number;
+  Reason: string;
+  Priority: string;
   Status: string;
-  PriorityLevel: string;
-  CreatedDate: string;
-  UpdatedDate: string;
-  Notes: string;
-}
-
-interface Doctor {
-  Id: number;
-  Name: string;
-  Specialization: string;
+  CreatedAt: string;
+  UpdatedAt: string;
 }
 
 @Component({
   selector: 'app-patient-referral-tracking',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './patient-referral-tracking.component.html',
-  styleUrl: './patient-referral-tracking.component.css'
+  template: `
+    <div class="referral-tracking-container">
+      <h2>Referral Tracking</h2>
+      
+      <div *ngIf="error()" class="error-message">
+        {{ error() }}
+      </div>
+      
+      <div *ngIf="referrals().length === 0 && !error()" class="no-data">
+        No referrals found
+      </div>
+      
+      <div *ngFor="let referral of referrals()" class="referral-card">
+        <div class="referral-header">
+          <h3>Referral #{{ referral.ReferralId }}</h3>
+          <span class="status" [ngClass]="'status-' + referral.Status.toLowerCase()">
+            {{ referral.Status }}
+          </span>
+        </div>
+        <div class="referral-details">
+          <p><strong>Reason:</strong> {{ referral.Reason }}</p>
+          <p><strong>Priority:</strong> <span class="priority" [ngClass]="'priority-' + referral.Priority.toLowerCase()">{{ referral.Priority }}</span></p>
+          <p><strong>Created:</strong> {{ referral.CreatedAt | date: 'short' }}</p>
+        </div>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .referral-tracking-container {
+      padding: 20px;
+    }
+    
+    .error-message {
+      background: #ffebee;
+      color: #c62828;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 16px;
+    }
+    
+    .no-data {
+      padding: 20px;
+      text-align: center;
+      background: #f5f5f5;
+      border-radius: 4px;
+    }
+    
+    .referral-card {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 12px;
+      background: white;
+    }
+    
+    .referral-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .referral-header h3 {
+      margin: 0;
+    }
+    
+    .status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .status-draft {
+      background: #e0e0e0;
+      color: #424242;
+    }
+    
+    .status-submitted {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    
+    .status-accepted {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    
+    .status-completed {
+      background: #e1f5fe;
+      color: #01579b;
+    }
+    
+    .status-rejected {
+      background: #ffebee;
+      color: #c62828;
+    }
+    
+    .priority {
+      font-weight: 500;
+    }
+    
+    .priority-urgent {
+      color: #d32f2f;
+    }
+    
+    .priority-routine {
+      color: #1976d2;
+    }
+  `]
 })
 export class PatientReferralTrackingComponent implements OnInit {
-  referrals: Referral[] = [];
-  doctors: Map<number, Doctor> = new Map();
-  loading = signal(false);
-  error = signal('');
-
-  private statusColors: { [key: string]: string } = {
-    'Draft': '#FFC107',
-    'Submitted': '#2196F3',
-    'Approved': '#4CAF50',
-    'Denied': '#F44336',
-    'Completed': '#4CAF50'
-  };
-
+  referrals = signal<Referral[]>([]);
+  error = signal<string>('');
+  
   constructor(private http: HttpClient) {}
-
-  ngOnInit(): void {
-    // For now, get all referrals - in a real app, would get current patient context
-    this.loading.set(true);
-    this.http.get<Referral[]>('/api/referrals').subscribe({
-      next: (refs) => {
-        this.referrals = refs;
-        this.loadDoctors();
-      },
-      error: (err) => {
-        this.error.set('Failed to load referrals');
-        this.loading.set(false);
-      }
-    });
+  
+  ngOnInit() {
+    this.loadReferrals();
   }
-
-  private loadDoctors(): void {
-    this.http.get<Doctor[]>('/api/doctors').subscribe({
-      next: (doctors) => {
-        doctors.forEach(d => this.doctors.set(d.Id, d));
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      }
-    });
-  }
-
-  getSpecialistName(specialistId: number): string {
-    return this.doctors.get(specialistId)?.Name || 'Unknown Specialist';
-  }
-
-  getStatusColor(status: string): string {
-    return this.statusColors[status] || '#999';
-  }
-
-  getProgressPercentage(status: string): number {
-    const progressMap: { [key: string]: number } = {
-      'Draft': 25,
-      'Submitted': 50,
-      'Approved': 75,
-      'Completed': 100,
-      'Denied': 0
-    };
-    return progressMap[status] || 0;
+  
+  private loadReferrals() {
+    const sessionStr = localStorage.getItem('referraliq_patient_portal_session');
+    if (!sessionStr) {
+      this.error.set('Patient session not found');
+      return;
+    }
+    
+    try {
+      const session = JSON.parse(sessionStr);
+      const patientId = session.patientId;
+      
+      this.http.get<Referral[]>(`/api/referrals?patientId=${patientId}`)
+        .subscribe({
+          next: (data) => {
+            this.referrals.set(data || []);
+            this.error.set('');
+          },
+          error: (err) => {
+            console.error('Failed to load referrals', err);
+            this.error.set('Failed to load referrals');
+            this.referrals.set([]);
+          }
+        });
+    } catch (err) {
+      this.error.set('Invalid patient session');
+    }
   }
 }
