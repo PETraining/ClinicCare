@@ -1,4 +1,4 @@
-from datetime import datetime
+﻿from datetime import datetime
 from enum import Enum
 from typing import Optional
 
@@ -88,7 +88,6 @@ class AppointmentRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     AppointmentId: int
-<<<<<<< HEAD
     ReferralId: int
     PatientId: int
     SpecialistId: int
@@ -97,7 +96,6 @@ class AppointmentRead(BaseModel):
     Status: AppointmentStatus
     CreatedAt: datetime
     UpdatedAt: datetime
-=======
 
 
 class ReferralStatusHistoryBase(BaseModel):
@@ -112,4 +110,3 @@ class ReferralStatusHistoryRead(ReferralStatusHistoryBase):
     model_config = ConfigDict(from_attributes=True)
 
     HistoryId: int
->>>>>>> c8c0ad3c4d321465544637502323626ca3f53fe6
