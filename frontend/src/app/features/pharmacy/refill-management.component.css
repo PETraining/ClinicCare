@@ -1,0 +1,415 @@
+.refill-management-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* HEADER */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.header-content h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  color: #1e293b;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+/* ALERTS */
+.error-alert {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* STATUS OVERVIEW */
+.status-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.status-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 1px solid #e2e8f0;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.status-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
+}
+
+.status-card.pending {
+  border-left: 4px solid #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+}
+
+.status-card.approved {
+  border-left: 4px solid #10b981;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.status-card.fulfilled {
+  border-left: 4px solid #3b82f6;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+}
+
+.status-card.rejected {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+}
+
+.status-count {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.status-label {
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* FILTERS */
+.filters-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filter-group label {
+  font-weight: 500;
+  color: #475569;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.filter-select,
+.filter-input {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  background-color: white;
+  color: #1e293b;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* BUTTONS */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: #e2e8f0;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.btn-secondary:hover {
+  background-color: #cbd5e1;
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  background-color: #94a3b8;
+  color: white;
+  border: none;
+}
+
+.btn-small:hover {
+  background-color: #64748b;
+}
+
+.btn-approve {
+  background-color: #10b981;
+  color: white;
+}
+
+.btn-approve:hover {
+  background-color: #059669;
+}
+
+.btn-fulfill {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.btn-fulfill:hover {
+  background-color: #2563eb;
+}
+
+.btn-reject {
+  background-color: #ef4444;
+  color: white;
+}
+
+.btn-reject:hover {
+  background-color: #dc2626;
+}
+
+/* LOADING & EMPTY */
+.loading-indicator {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+  font-size: 1rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #94a3b8;
+  font-size: 1.1rem;
+}
+
+/* REFILL REQUESTS LIST */
+.refill-requests-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.refill-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background-color: #f8fafc;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.refill-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.refill-card.status-pending {
+  border-left: 4px solid #f59e0b;
+}
+
+.refill-card.status-approved {
+  border-left: 4px solid #10b981;
+}
+
+.refill-card.status-fulfilled {
+  border-left: 4px solid #3b82f6;
+  background-color: #f0fdf4;
+}
+
+.refill-card.status-rejected {
+  border-left: 4px solid #ef4444;
+  background-color: #fef2f2;
+}
+
+/* REFILL HEADER */
+.refill-header {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  background-color: white;
+}
+
+.refill-main-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.refill-id {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.status-badge {
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.status-approved {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.status-badge.status-fulfilled {
+  background-color: #dbeafe;
+  color: #0c4a6e;
+}
+
+.status-badge.status-rejected {
+  background-color: #fee2e2;
+  color: #7f1d1d;
+}
+
+.refill-patient {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+/* REFILL DETAILS */
+.refill-details {
+  padding: 1rem;
+}
+
+.detail-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+}
+
+.detail-row.error {
+  color: #dc2626;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: #475569;
+  min-width: 120px;
+  white-space: nowrap;
+}
+
+.detail-value {
+  color: #1e293b;
+  flex: 1;
+  word-break: break-word;
+}
+
+/* REFILL ACTIONS */
+.refill-actions {
+  padding: 1rem;
+  border-top: 1px solid #e2e8f0;
+  background-color: white;
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.action-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.action-status.completed {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.action-status.rejected {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .refill-management-container {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+  }
+
+  .status-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .filters-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-select,
+  .filter-input {
+    width: 100%;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .refill-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    text-align: center;
+  }
+}

@@ -1,0 +1,47 @@
+name: Claude Prescription PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+          prompt: |
+            Use the PharmacyPrescriptionRequirementValidator agent to review
+            this PR's changes against context-map.md. Run it synchronously
+            and wait for it to fully complete. Do NOT run it in the
+            background, since this job ends as soon as your turn ends.
+
+            Check whether any prescription requirement, acceptance criterion,
+            medication, dosage, quantity, refill rule, prescription status,
+            validation, API, table, field, or endpoint touched here overlaps
+            with what's described there.
+
+            Check whether the implementation is aligned with the applicable
+            prescription requirements and whether automated tests cover the
+            applicable acceptance criteria.
+
+            Do not invent pharmacy, clinical, regulatory, or business
+            requirements that are not documented in context-map.md.
+
+            Post the validator's full report:
+            REQUIREMENT / VERDICT / FINDINGS / WHAT COULD SLIP THROUGH
+            as a comment on this pull request before finishing.
+
+          claude_args: |
+            --permission-mode dontAsk
+            --allowedTools "Read" "Grep" "Glob" "Agent"

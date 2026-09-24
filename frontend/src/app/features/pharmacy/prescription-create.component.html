@@ -1,0 +1,292 @@
+<div class="prescription-create-container">
+  <div class="form-header">
+    <a routerLink="/patients" class="back-link">&larr; Back</a>
+    <h1>Create Prescription</h1>
+  </div>
+
+  @if (success()) {
+    <div class="success-alert">
+      ✅ Prescription added successfully for <strong>{{ patientName() || 'this patient' }}</strong>! Redirecting...
+    </div>
+  }
+
+  @if (error()) {
+    <div class="error-alert">
+      ❌ {{ error() }}
+    </div>
+  }
+
+  <form [formGroup]="prescriptionForm" (ngSubmit)="onSubmit()" class="prescription-form">
+    <div class="form-section">
+      <h2>Patient & Doctor Information</h2>
+
+      <!-- Referral Info Display (if applicable) -->
+      @if (referral()) {
+        <div class="referral-display">
+          <div class="referral-item">
+            <span class="referral-label">📋 Referral:</span>
+            <span class="referral-value">Ref #{{ referral()!.ReferralId }}</span>
+          </div>
+          <div class="referral-item">
+            <span class="referral-label">Reason:</span>
+            <span class="referral-value">{{ referral()!.Reason }}</span>
+          </div>
+          <div class="referral-item">
+            <span class="referral-label">Status:</span>
+            <span class="referral-badge" [class]="'status-' + referral()!.Status.toLowerCase()">
+              {{ referral()!.Status }}
+            </span>
+          </div>
+        </div>
+      }
+
+      <!-- Patient Info Display -->
+      <div class="info-display">
+        <div class="info-item">
+          <span class="info-label">Patient:</span>
+          <span class="info-value">
+            {{ patientName() || 'Loading...' }} (ID: {{ patientId }})
+          </span>
+        </div>
+      </div>
+
+      <!-- Patient ID (hidden) -->
+      <input type="hidden" formControlName="PatientId" />
+      <!-- Referral ID (hidden) -->
+      <input type="hidden" formControlName="ReferralId" />
+
+      <!-- Doctor Dropdown -->
+      <div class="form-group">
+        <label for="doctorId">Prescribing Doctor *</label>
+        @if (doctorsLoading()) {
+          <div class="loading-text">Loading doctors...</div>
+        } @else {
+          <select
+            id="doctorId"
+            formControlName="PrescribingDoctorId"
+            class="form-input"
+            [disabled]="doctors().length === 0"
+          >
+            <option value="">Select a doctor...</option>
+            @for (doctor of doctors(); track doctor.DoctorId) {
+              <option [value]="doctor.DoctorId">
+                {{ doctor.Name }} - {{ doctor.Specialty }}
+              </option>
+            }
+          </select>
+          @if (doctors().length === 0) {
+            <span class="help-text error">No doctors available</span>
+          }
+        }
+      </div>
+
+      <!-- Selected Doctor Details -->
+      @if (selectedDoctor()) {
+        <div class="doctor-details">
+          <div class="detail-item">
+            <span class="detail-label">Doctor:</span>
+            <span class="detail-value">{{ selectedDoctor()?.Name }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Specialty:</span>
+            <span class="detail-value">{{ selectedDoctor()?.Specialty }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Department:</span>
+            <span class="detail-value">{{ selectedDoctor()?.Department }}</span>
+          </div>
+        </div>
+      }
+
+      <!-- Referral ID (optional) -->
+      <div class="form-group">
+        <label for="referralId">Referral ID (Optional)</label>
+        <input
+          type="number"
+          id="referralId"
+          formControlName="ReferralId"
+          placeholder="Leave blank for direct prescription"
+          class="form-input"
+        />
+        <span class="help-text">Link to referral if this prescription is from a referral</span>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Prescription Settings</h2>
+
+      <!-- Status -->
+      <div class="form-group">
+        <label for="status">Status *</label>
+        <select id="status" formControlName="Status" class="form-input">
+          <option value="Active">Active</option>
+          <option value="Completed">Completed</option>
+          <option value="Suspended">Suspended</option>
+          <option value="Voided">Voided</option>
+        </select>
+      </div>
+
+      <!-- Refills Allowed -->
+      <div class="form-group">
+        <label for="refills">Refills Allowed *</label>
+        <select id="refills" formControlName="RefillsAllowed" class="form-input">
+          <option value="0">No refills (one-time only)</option>
+          <option value="1">1 refill</option>
+          <option value="2">2 refills</option>
+          <option value="3">3 refills</option>
+          <option value="5">5 refills</option>
+          <option value="11">11 refills (1 year, monthly)</option>
+          <option value="-1">Unlimited refills</option>
+        </select>
+        <span class="help-text">Number of times this prescription can be refilled</span>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2>Medications</h2>
+
+      <!-- Medication Search & Add -->
+      <div class="medication-search-section">
+        <div class="form-group">
+          <label for="medSearch">Add Medication *</label>
+          @if (medicationsLoading()) {
+            <div class="loading-text">Loading medications...</div>
+          } @else {
+            <div class="search-container">
+              <input
+                type="text"
+                id="medSearch"
+                [value]="medicationSearch()"
+                (input)="onMedicationSearchChange($any($event).target.value)"
+                placeholder="Search by name or dosage (e.g., 'Aspirin', '500mg')"
+                class="form-input search-input"
+              />
+              <span class="search-icon">🔍</span>
+            </div>
+
+            <!-- Medications Dropdown - Show all by default, filtered on search -->
+            @if (filteredMedications().length > 0) {
+              <div class="medications-dropdown">
+                <div class="dropdown-header" *ngIf="medicationSearch().length === 0">
+                  <small>👇 Click to add medication</small>
+                </div>
+                @for (med of filteredMedications(); track med.MedicationId) {
+                  <button
+                    type="button"
+                    class="medication-option"
+                    (click)="addMedication(med)"
+                  >
+                    <div class="med-name">{{ med.Name }} <span class="med-stock-qty">({{ med.StockLevel }} in stock)</span></div>
+                    <div class="med-info">
+                      <span class="med-dosage">{{ med.Dosage }}</span>
+                      <span class="med-status" [class]="'status-' + med.StockStatus?.toLowerCase()">
+                        {{ med.stockStatusLabel }}
+                      </span>
+                    </div>
+                  </button>
+                }
+              </div>
+            } @else if (medicationSearch().length > 0 && filteredMedications().length === 0) {
+              <div class="no-results">❌ No medications found matching "{{ medicationSearch() }}"</div>
+            } @else {
+              <div class="no-results" style="display: none;"></div>
+            }
+          }
+        </div>
+      </div>
+
+      <!-- Added Medications List -->
+      <div class="added-medications-section">
+        @if (medicationsArray.length > 0) {
+          <h3>Added Medications ({{ medicationsArray.length }})</h3>
+          <div class="medications-list">
+            @for (med of medicationsArray.controls; let i = $index; track i) {
+              <div class="medication-item" [formGroup]="$any(med)">
+                <div class="med-item-main">
+                  <div class="med-item-name">
+                    {{ med.get('Name')?.value }} ({{ med.get('Dosage')?.value }})
+                  </div>
+                  <div class="med-item-status" [class]="'status-' + med.get('StockStatus')?.value?.toLowerCase()">
+                    {{ getStockStatusLabel(med.get('StockStatus')?.value) }}
+                  </div>
+                </div>
+
+                <div class="med-item-fields">
+                  <!-- Quantity -->
+                  <div class="form-group inline">
+                    <label for="qty-{{ i }}">Qty</label>
+                    <input
+                      type="number"
+                      [id]="'qty-' + i"
+                      formControlName="quantity"
+                      min="1"
+                      class="form-input inline-input"
+                    />
+                  </div>
+
+                  <!-- Frequency -->
+                  <div class="form-group inline">
+                    <label for="freq-{{ i }}">Frequency</label>
+                    <select [id]="'freq-' + i" formControlName="frequency" class="form-input inline-input">
+                      <option>Once daily</option>
+                      <option>Twice daily</option>
+                      <option>Three times daily</option>
+                      <option>As needed</option>
+                      <option>Every 6 hours</option>
+                      <option>Every 8 hours</option>
+                      <option>Every 12 hours</option>
+                      <option>Once weekly</option>
+                      <option>Twice weekly</option>
+                    </select>
+                  </div>
+
+                  <!-- Instructions -->
+                  <div class="form-group inline full-width">
+                    <label for="inst-{{ i }}">Instructions</label>
+                    <input
+                      type="text"
+                      [id]="'inst-' + i"
+                      formControlName="instructions"
+                      placeholder="e.g., Take with food"
+                      class="form-input inline-input"
+                    />
+                  </div>
+
+                  <!-- Remove Button -->
+                  <button
+                    type="button"
+                    class="btn btn-remove"
+                    (click)="removeMedication(i)"
+                  >
+                    ✕ Remove
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-text">No medications added yet. Search and select medications above.</p>
+        }
+      </div>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box">
+      <strong>💡 Tip:</strong> Add at least one medication before submitting. Stock status shows medication availability in the pharmacy.
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="loading() || prescriptionForm.invalid || medicationsArray.length === 0">
+        @if (loading()) {
+          <span>Creating...</span>
+        } @else {
+          <span>Create Prescription</span>
+        }
+      </button>
+      <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading()">
+        Cancel
+      </button>
+    </div>
+  </form>
+</div>

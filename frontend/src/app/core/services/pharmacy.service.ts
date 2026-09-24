@@ -1,6 +1,6 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { switchMap } from 'rxjs';
+import { switchMap, map, catchError, of, Observable } from 'rxjs';
 import { API_BASE_URL } from '../config';
 import {
   Medication,
@@ -43,9 +43,11 @@ export class PharmacyService {
 
   // ============ COMPUTED SIGNALS ============
 
-  /** Count of pending (active) prescriptions */
+  /** Count of pending (non-fulfilled) prescriptions */
   pendingPrescriptionsCount = computed(() => {
-    return this.prescriptions().filter(p => p.Status === 'Active').length;
+    return this.prescriptions().filter(
+      p => p.Status === 'Prescribed' || p.Status === 'PartiallyFulfilled'
+    ).length;
   });
 
   /** Count of low-stock items */
@@ -155,6 +157,15 @@ export class PharmacyService {
   }
 
   /**
+   * Get all prescriptions for a specific patient
+   */
+  getPrescriptionsByPatient(patientId: number) {
+    return this.http.get<Prescription[]>(
+      `${this.base}/prescriptions?patient_id=${patientId}`
+    );
+  }
+
+  /**
    * Create a new prescription
    */
   createPrescription(prescription: Omit<Prescription, 'PrescriptionId' | 'CreatedAt' | 'UpdatedAt'>) {
@@ -233,6 +244,28 @@ export class PharmacyService {
     );
   }
 
+  // ============ PATIENT & DOCTOR LOOKUP ============
+
+  /**
+   * Get patient name by ID
+   */
+  getPatientName(patientId: number): Observable<string> {
+    return this.http.get<any>(`${API_BASE_URL}/patients/${patientId}`).pipe(
+      map(patient => patient.Name || `Patient #${patientId}`),
+      catchError(() => of(`Patient #${patientId}`))
+    );
+  }
+
+  /**
+   * Get doctor name by ID
+   */
+  getDoctorName(doctorId: number): Observable<string> {
+    return this.http.get<any>(`${API_BASE_URL}/doctors/${doctorId}`).pipe(
+      map(doctor => doctor.Name || `Doctor #${doctorId}`),
+      catchError(() => of(`Doctor #${doctorId}`))
+    );
+  }
+
   // ============ UTILITY METHODS ============
 
   /**
@@ -270,5 +303,48 @@ export class PharmacyService {
         },
       });
     }
+  }
+
+  // ============ REFILL REQUEST METHODS ============
+
+  /**
+   * Get all refill requests with optional filtering
+   */
+  getRefillRequests(status?: string) {
+    let url = `${this.base}/refill-requests`;
+    if (status) {
+      url += `?status=${status}`;
+    }
+    return this.http.get<any[]>(url);
+  }
+
+  /**
+   * Approve a refill request
+   */
+  approveRefillRequest(refillRequestId: number, approvedBy: string) {
+    return this.http.post(
+      `${this.base}/refill-requests/${refillRequestId}/approve`,
+      { ApprovedBy: approvedBy, Notes: '' }
+    );
+  }
+
+  /**
+   * Fulfill a refill request (dispense)
+   */
+  fulfillRefillRequest(refillRequestId: number, fulfilledBy: string) {
+    return this.http.post(
+      `${this.base}/refill-requests/${refillRequestId}/fulfill`,
+      { FulfilledBy: fulfilledBy, Notes: '' }
+    );
+  }
+
+  /**
+   * Reject a refill request
+   */
+  rejectRefillRequest(refillRequestId: number, rejectionReason: string, rejectedBy: string) {
+    return this.http.post(
+      `${this.base}/refill-requests/${refillRequestId}/reject`,
+      { RejectionReason: rejectionReason, RejectedBy: rejectedBy }
+    );
   }
 }

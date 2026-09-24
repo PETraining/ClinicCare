@@ -30,12 +30,12 @@
     <div class="info-grid">
       <div class="info-card">
         <div class="info-label">Patient</div>
-        <div class="info-value">#{{ selectedPrescription()!.PatientId }}</div>
+        <div class="info-value">{{ getPatientNameSignal(selectedPrescription()!.PatientId)() }} (ID: {{ selectedPrescription()!.PatientId }})</div>
       </div>
 
       <div class="info-card">
         <div class="info-label">Prescribing Doctor</div>
-        <div class="info-value">#{{ selectedPrescription()!.PrescribingDoctorId }}</div>
+        <div class="info-value">{{ getDoctorNameSignal(selectedPrescription()!.PrescribingDoctorId)() }} (ID: {{ selectedPrescription()!.PrescribingDoctorId }})</div>
       </div>
 
       <div class="info-card">
@@ -56,7 +56,10 @@
       <div *ngIf="selectedPrescription()!.Medications.length > 0; else noMedications" class="medications-list">
         <div *ngFor="let med of selectedPrescription()!.Medications" class="medication-item">
           <div class="med-details">
-            <div class="med-id">Medication ID: {{ med.medication_id }}</div>
+            <div class="med-name">
+              <strong>{{ med.Name || 'Medication #' + med.medication_id }}</strong>
+              <span class="med-dosage" *ngIf="med.Dosage">({{ med.Dosage }})</span>
+            </div>
             <div class="med-quantity">Quantity: <strong>{{ med.quantity }}</strong> units</div>
             <div class="med-frequency">Frequency: <strong>{{ med.frequency }}</strong></div>
             <div *ngIf="med.instructions" class="med-instructions">
@@ -75,7 +78,7 @@
         <button
           (click)="toggleAddMedicationForm()"
           class="button button-success"
-          [disabled]="selectedPrescription()!.Status !== 'Active'"
+          [disabled]="!(selectedPrescription()!.Status === 'Prescribed' || selectedPrescription()!.Status === 'PartiallyFulfilled')"
           title="Add new medication to this prescription"
         >
           {{ showAddMedicationForm() ? '✕ Cancel' : '+ Add Medication' }}
@@ -183,8 +186,8 @@
       </form>
     </section>
 
-    <!-- Dispensing Form (only if Active) -->
-    <section *ngIf="selectedPrescription()!.Status === 'Active'" class="section dispense-section">
+    <!-- Dispensing Form (only if Prescribed or PartiallyFulfilled) -->
+    <section *ngIf="(selectedPrescription()!.Status === 'Prescribed' || selectedPrescription()!.Status === 'PartiallyFulfilled')" class="section dispense-section">
       <h2>Dispense Medication</h2>
 
       <!-- Success Message -->
@@ -209,7 +212,7 @@
           >
             <option [value]="null">-- Select medication --</option>
             <option *ngFor="let med of availableMedicationsToDispense" [value]="med.medication_id">
-              Medication #{{ med.medication_id }} ({{ med.quantity }} units)
+              {{ med.name }} {{ med.dosage ? '- ' + med.dosage : '' }} ({{ med.quantity }} units prescribed)
             </option>
           </select>
         </div>
@@ -230,7 +233,7 @@
         <button
           type="submit"
           class="button button-primary"
-          [disabled]="dispensing() || selectedPrescription()!.Status !== 'Active'"
+          [disabled]="dispensing() || !(selectedPrescription()!.Status === 'Prescribed' || selectedPrescription()!.Status === 'PartiallyFulfilled')"
         >
           {{ dispensing() ? 'Dispensing...' : 'Dispense Medication' }}
         </button>
@@ -239,36 +242,55 @@
 
     <!-- Dispensing History -->
     <section class="section">
-      <h2>Dispensing History</h2>
+      <h2>📋 Dispensing History & Audit Trail</h2>
+
+      <div *ngIf="selectedPrescription()" class="dispensing-summary">
+        <div class="summary-row">
+          <span class="label">Patient:</span>
+          <span class="value">{{ getPatientNameSignal(selectedPrescription()!.PatientId)() }} (ID: {{ selectedPrescription()!.PatientId }})</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Prescribing Doctor:</span>
+          <span class="value">{{ getDoctorNameSignal(selectedPrescription()!.PrescribingDoctorId)() }} (ID: {{ selectedPrescription()!.PrescribingDoctorId }})</span>
+        </div>
+        <div class="summary-row">
+          <span class="label">Created:</span>
+          <span class="value">{{ selectedPrescription()!.CreatedAt | date: 'medium' }}</span>
+        </div>
+      </div>
 
       <div
         *ngIf="selectedPrescription()!.DispensingRecords && selectedPrescription()!.DispensingRecords!.length > 0; else noHistory"
         class="history-table"
       >
-        <table class="table">
+        <table class="table dispensing-records-table">
           <thead>
             <tr>
-              <th>ID</th>
+              <th>#</th>
               <th>Medication</th>
-              <th>Quantity</th>
-              <th>Dispensed At</th>
+              <th>Dosage</th>
+              <th>Qty Dispensed</th>
               <th>Dispensed By</th>
+              <th>Date & Time</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let record of selectedPrescription()!.DispensingRecords">
-              <td>#{{ record.DispensingId }}</td>
-              <td>#{{ record.MedicationId }}</td>
-              <td>{{ record.QuantityDispensed }} units</td>
-              <td>{{ record.DispensedAt | date: 'short' }}</td>
-              <td>{{ record.DispensedBy }}</td>
+            <tr *ngFor="let record of selectedPrescription()!.DispensingRecords; let i = index" class="record-row">
+              <td class="record-id">{{ i + 1 }}</td>
+              <td class="medication-name">
+                <strong>{{ getMedicationName(record.MedicationId) }}</strong>
+              </td>
+              <td class="dosage">{{ getMedicationDosage(record.MedicationId) }}</td>
+              <td class="quantity">{{ record.QuantityDispensed }} units</td>
+              <td class="dispenser">{{ record.DispensedBy }}</td>
+              <td class="date">{{ record.DispensedAt | date: 'medium' }}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <ng-template #noHistory>
-        <p class="no-data">No medications have been dispensed yet</p>
+        <p class="no-data">✓ No medications dispensed yet - Ready for dispensing</p>
       </ng-template>
     </section>
   </div>
